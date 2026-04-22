@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.git/
+.gitignore
+.env
+.planning/
+dataset/
+*.md
+ingestion_checkpoint.json
