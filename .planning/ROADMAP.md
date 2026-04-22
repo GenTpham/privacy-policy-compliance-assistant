@@ -28,7 +28,14 @@
 2. After running the ingestion script, Qdrant reports the expected collection with all context passages stored, each chunk carrying `text`, `title`, `source_doc`, and `chunk_index` metadata.
 3. The ingestion sanity check passes: a known passage is embedded, queried, and confirmed to rank #1 in search results.
 4. A developer can run the backend locally using the Python 3.11 `.venv` with all secrets loaded from `.env` — no API keys appear in source code.
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+- [ ] 01-PLAN-01-project-scaffolding.md — Project directory structure, requirements.txt, .env.example, .gitignore, .dockerignore
+- [ ] 01-PLAN-02-docker-compose-infrastructure.md — docker-compose.yml (Qdrant named volume + healthcheck) and backend Dockerfile
+- [ ] 01-PLAN-03-fastapi-backend-shell.md — pydantic-settings config, FastAPI lifespan with Qdrant collection bootstrap, /health endpoint
+- [ ] 01-PLAN-04-ingestion-pipeline.md — Text chunker and full ingestion script (dedup, checkpoint, rate-limit backoff, sanity check)
+- [ ] 01-PLAN-05-ingestion-eval-suite.md — Pytest eval suite covering all 10 AI-SPEC eval dimensions + Makefile targets
 
 ---
 
@@ -149,7 +156,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Infrastructure & Data Ingestion | 0/? | Not started | - |
+| 1. Infrastructure & Data Ingestion | 0/5 | Planned | - |
 | 2. Core RAG Pipeline | 0/? | Not started | - |
 | 3. Authentication | 0/? | Not started | - |
 | 4. Web Frontend | 0/? | Not started | - |
@@ -158,4 +165,4 @@
 
 ---
 *Roadmap created: 2026-04-22*
-*Last updated: 2026-04-22 after initial creation*
+*Last updated: 2026-04-22 — Phase 1 plans created (5 plans, 3 waves)*
