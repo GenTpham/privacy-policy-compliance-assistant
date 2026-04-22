@@ -1,3 +1,18 @@
+---
+gsd_state_version: 1.0
+milestone: v1.0
+milestone_name: milestone
+current_phase: Not started
+status: Not started
+last_updated: "2026-04-22T03:19:54.139Z"
+progress:
+  total_phases: 6
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
+---
+
 # Project State
 
 **Project:** Privacy Policy Compliance Assistant
@@ -49,6 +64,7 @@ See: `.planning/PROJECT.md`
 ## Accumulated Context
 
 ### Key Decisions
+
 - No LangChain / LlamaIndex — raw Python pipeline (linear 3-step pipeline; zero framework overhead)
 - Qdrant single collection `policies` with COSINE distance metric (immutable — get it right at creation)
 - Named Docker volumes (not bind mounts) for Qdrant — Windows WSL2 POSIX filesystem incompatibility
@@ -58,20 +74,24 @@ See: `.planning/PROJECT.md`
 - Ingestion as offline script, not on-startup (avoids re-indexing on every container restart)
 
 ### Open Questions (resolve during implementation)
+
 - Nemotron embedding dimension — probe at runtime: `len(resp.data[0].embedding)`
 - Score threshold 0.55 is a starting estimate — calibrate from actual score distributions post-ingestion
 - Conflict detection false-positive rate — spike test with ~20 known cross-document questions before committing to Phase 5
 - Confirm OpenRouter billing is configured before bulk ingestion of 17K passages
 
 ### Watch-Outs
+
 - Qdrant distance metric is immutable after collection creation — verify Nemotron outputs normalized vectors first
 - OpenRouter embedding truncation returns HTTP 200 with no error — validate token count before every embedding call
 - Citation hallucination risk (17–33% in legal RAG without enforcement) — enforce via "cite or abstain" prompt + programmatic ID verification
 
 ### Todos
+
 - (none yet — populated during phase execution)
 
 ### Blockers
+
 - (none)
 
 ---
