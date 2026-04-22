@@ -1,1 +1,9 @@
 .env
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+ingestion_checkpoint.json
+*.db
+*.sqlite
+.DS_Store
