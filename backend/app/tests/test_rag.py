@@ -13,6 +13,10 @@ Run unit tests: pytest backend/app/tests/test_rag.py -x -v
 Run one test:   pytest backend/app/tests/test_rag.py::test_fabricated_citation_stripped -x
 """
 import pytest
+from unittest.mock import AsyncMock, MagicMock, patch
+
+from backend.app.services.rag import _build_messages, _build_verified_citations
+from backend.app.services import rag
 
 
 # ── RAG-01: embed calls correct model ─────────────────────────────────────────
@@ -46,7 +50,10 @@ def test_system_prompt_abstain_wording(sample_scored_point):
     RAG-04: _build_messages system content contains the exact D-05 abstain instruction.
     Pure function test — no mocks needed.
     """
-    pytest.skip("stub — implemented in Wave 1")
+    messages = _build_messages("test question", [sample_scored_point], [])
+    system_content = messages[0]["content"]
+    assert "The provided policies do not contain sufficient information to answer this question." in system_content
+    assert "Do not infer, guess, or use outside knowledge." in system_content
 
 
 # ── RAG-05: delta events arrive before done ───────────────────────────────────
@@ -64,7 +71,14 @@ def test_history_sliced_to_6(sample_scored_point):
     RAG-06: _build_messages includes at most 6 history messages (3 turns) before user message.
     Pure function test — system(1) + history(6) + user(1) = 8 messages max.
     """
-    pytest.skip("stub — implemented in Wave 1")
+    long_history = [
+        {"role": "user" if i % 2 == 0 else "assistant", "content": f"message {i}"}
+        for i in range(20)
+    ]
+    messages = _build_messages("new question", [sample_scored_point], long_history)
+    assert len(messages) == 8
+    assert messages[0]["role"] == "system"
+    assert messages[-1]["content"] == "new question"
 
 
 # ── RAG-07: no LLM call on empty retrieval ───────────────────────────────────
@@ -85,7 +99,10 @@ def test_citations_have_title_and_text(sample_scored_point):
     CITE-01: _build_verified_citations returns dicts with non-empty 'title' and 'text' fields.
     Pure function test.
     """
-    pytest.skip("stub — implemented in Wave 1")
+    citations = _build_verified_citations("[1]", [sample_scored_point])
+    assert len(citations) == 1
+    assert citations[0]["title"] == "Privacy Policy v2"
+    assert citations[0]["text"] == "Personal data must be retained no longer than 30 days."
 
 
 # ── CITE-02: done event shape ─────────────────────────────────────────────────
@@ -95,7 +112,11 @@ def test_done_event_shape(sample_scored_point):
     CITE-02: done event has shape {type: 'done', answer: str, citations: [{id, qdrant_id, title, text}]}.
     Pure function test using _build_verified_citations directly.
     """
-    pytest.skip("stub — implemented in Wave 1")
+    citations = _build_verified_citations("[1]", [sample_scored_point])
+    assert len(citations) == 1
+    result = citations[0]
+    assert set(result.keys()) >= {"id", "qdrant_id", "title", "text"}
+    assert result["id"] == 1
 
 
 # ── CITE-03: fabricated citation stripped ────────────────────────────────────
@@ -106,4 +127,7 @@ def test_fabricated_citation_stripped(sample_scored_point):
     Answer references [1] (valid) and [3] (fabricated — only 1 chunk). [3] must not appear in output.
     Pure function test.
     """
-    pytest.skip("stub — implemented in Wave 1")
+    citations = _build_verified_citations("Per [1], data retained. See also [3].", [sample_scored_point])
+    ids = [c["id"] for c in citations]
+    assert 1 in ids
+    assert 3 not in ids

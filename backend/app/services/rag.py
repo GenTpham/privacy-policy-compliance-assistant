@@ -46,3 +46,64 @@ qdrant = AsyncQdrantClient(
     port=_settings.qdrant_port,
     api_key=_settings.qdrant_api_key,
 )
+
+
+# ── Pure helper functions ──────────────────────────────────────────────────────
+
+def _build_messages(
+    user_question: str,
+    retrieved_chunks: list,
+    history: list[dict],
+) -> list[dict]:
+    """
+    Build the OpenAI messages array for the LLM call.
+    - System message: numbered chunk context + D-05 abstain instruction (D-04)
+    - History: last 6 messages from client-provided array (D-10, RAG-06)
+    - User: the current question
+    """
+    context_lines = [
+        f"[{i}] source: {c.payload.get('title', 'Unknown')}\n{c.payload.get('text', '')}"
+        for i, c in enumerate(retrieved_chunks, start=1)
+    ]
+    system_content = (
+        "You are a privacy policy compliance assistant.\n"
+        "Answer using ONLY the policy passages below. Cite each passage you use by its numeric ID: [1], [2], etc.\n"
+        "Do not cite any source not listed in the numbered passages.\n\n"
+        f"{ABSTAIN_INSTRUCTION}\n\n"
+        "Context passages:\n" + "\n\n".join(context_lines)
+    )
+    # D-10: last 6 messages = last 3 user/assistant turns
+    recent_history = history[-6:] if len(history) > 6 else history
+    messages: list[dict] = [{"role": "system", "content": system_content}]
+    messages.extend(recent_history)
+    messages.append({"role": "user", "content": user_question})
+    return messages
+
+
+def _build_verified_citations(answer: str, retrieved_chunks: list) -> list[dict]:
+    """
+    Extract [N] references from answer text, verify against retrieved set, build citations.
+    Fabricated IDs (N > len(retrieved_chunks)) are stripped with a warning log (D-07).
+    Order preserving: first occurrence of each ID determines output order.
+    """
+    n = len(retrieved_chunks)
+    # Extract all [N] references — deduplicated, first-occurrence order preserved
+    raw_ids = list(dict.fromkeys(int(m) for m in re.findall(r'\[(\d+)\]', answer)))
+
+    citations: list[dict] = []
+    for ref_id in raw_ids:
+        if 1 <= ref_id <= n:
+            chunk = retrieved_chunks[ref_id - 1]  # 1-based → 0-based
+            citations.append({
+                "id": ref_id,
+                "qdrant_id": str(chunk.id),
+                "title": chunk.payload.get("title", ""),
+                "text": chunk.payload.get("text", ""),
+            })
+        else:
+            logger.warning(
+                "[warn] fabricated citation [%d] stripped from response (only %d chunks retrieved)",
+                ref_id,
+                n,
+            )
+    return citations
