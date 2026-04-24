@@ -2,22 +2,22 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 01
+current_phase: 02
 status: executing
-last_updated: "2026-04-24T08:01:51.384Z"
+last_updated: "2026-04-24T08:43:35.347Z"
 progress:
   total_phases: 6
   completed_phases: 1
   total_plans: 8
-  completed_plans: 5
-  percent: 63
+  completed_plans: 6
+  percent: 75
 ---
 
 # Project State
 
 **Project:** Privacy Policy Compliance Assistant
 **Milestone:** M1 — Initial Build
-**Current Phase:** 01
+**Current Phase:** 02
 
 ---
 
@@ -36,9 +36,10 @@ progress:
 
 ## Current Position
 
-Phase: 02 (Core RAG Pipeline) — NEXT
+Phase: 02 (core-rag-pipeline) — EXECUTING
+Plan: 2 of 3
 **Status:** Ready to execute
-**Progress:** [##--------] 17%
+**Progress:** [████████░░] 75%
 
 ---
 
@@ -46,7 +47,7 @@ Phase: 02 (Core RAG Pipeline) — NEXT
 
 See: `.planning/PROJECT.md`
 **Core value:** Users can ask any compliance question and immediately get an answer with exact quotes from the authoritative policy documents — no guessing, no hallucination, traceable to source.
-**Current focus:** Phase 01 — Infrastructure & Data Ingestion
+**Current focus:** Phase 02 — core-rag-pipeline
 
 ---
 
@@ -54,11 +55,10 @@ See: `.planning/PROJECT.md`
 
 | Metric | Value |
 |--------|-------|
-| Phases complete | 0 / 6 |
-| Requirements complete | 0 / 36 |
-| Plans complete | 0 / ? |
-
----
+| Phases complete | 1 / 6 |
+| Requirements complete | 10 / 36 |
+| Plans complete | 6 / 8 |
+| Phase 02 P01 duration | 8 min (4 tasks, 5 files) |
 
 ## Accumulated Context
 
@@ -71,6 +71,9 @@ See: `.planning/PROJECT.md`
 - PyJWT + pwdlib[argon2] — current FastAPI-endorsed replacements for deprecated python-jose / passlib
 - React + Vite + Tailwind + shadcn/ui (not Streamlit / Gradio) — full auth control and citation panel flexibility
 - Ingestion as offline script, not on-startup (avoids re-indexing on every container restart)
+- Function-scoped fixtures only — module scope causes test-order-dependent state bleed with async mocks (Phase 2 Plan 01)
+- asyncio_mode=auto in pytest.ini — backward-compatible with existing @pytest.mark.asyncio decorators (Phase 2 Plan 01)
+- pytest.skip('stub') pattern for Wave 0 stubs — CI never blocked by pre-implementation tests (Phase 2 Plan 01)
 
 ### Open Questions (resolve during implementation)
 
@@ -97,7 +100,8 @@ See: `.planning/PROJECT.md`
 
 ## Session Continuity
 
-*Last session: 2026-04-24 — Phase 1 complete (all 5 plans executed)*
+*Last session: 2026-04-24 — Phase 2 Plan 01 complete (Wave 0 test infrastructure)*
+*Stopped at: Completed 02-01-PLAN.md*
 
 ### Phase 1 Deliverables
 
@@ -107,6 +111,10 @@ See: `.planning/PROJECT.md`
 - Plan 04: Text chunker (400T/50T overlap) + full ingestion pipeline (dedup, checkpoint, backoff, sanity check)
 - Plan 05: 10-dimension eval suite (pytest) + Makefile with eval-ingest / eval-ingest-fast targets
 
+### Phase 2 Deliverables (in progress)
+
+- Plan 01: pytest.ini (asyncio_mode=auto) + conftest.py (3 fixtures) + 12 test stubs (10 RAG + 2 HTTP) — Wave 0 complete
+
 ---
 *State initialized: 2026-04-22*
-*Last updated: 2026-04-24 after Phase 1 completion*
+*Last updated: 2026-04-24 after Phase 2 Plan 01 completion*

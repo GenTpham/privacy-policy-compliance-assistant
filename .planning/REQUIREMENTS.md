@@ -26,19 +26,19 @@
 
 ### RAG Pipeline
 
-- [ ] **RAG-01**: User question is embedded via `nvidia/llama-nemotron-embed-vl-1b-v2` on OpenRouter and used to query Qdrant
-- [ ] **RAG-02**: System retrieves top-5 most relevant chunks (with score threshold ≥0.55); chunks below threshold are discarded
-- [ ] **RAG-03**: Retrieved chunks are passed to `google/gemma-4-26b-a4b` on OpenRouter with a grounded-response system prompt
-- [ ] **RAG-04**: System prompt instructs the model to cite only from provided chunks by numeric ID; if context is insufficient, model must explicitly say so ("cite or abstain")
-- [ ] **RAG-05**: LLM response is streamed to the client via Server-Sent Events (SSE); first token arrives within 3 seconds
-- [ ] **RAG-06**: Conversation history (last 3 turns) is included in the LLM prompt for multi-turn follow-up queries
-- [ ] **RAG-07**: When no chunk exceeds the score threshold, system returns a "no matching policy found" message without calling the LLM
+- [x] **RAG-01**: User question is embedded via `nvidia/llama-nemotron-embed-vl-1b-v2` on OpenRouter and used to query Qdrant
+- [x] **RAG-02**: System retrieves top-5 most relevant chunks (with score threshold ≥0.55); chunks below threshold are discarded
+- [x] **RAG-03**: Retrieved chunks are passed to `google/gemma-4-26b-a4b` on OpenRouter with a grounded-response system prompt
+- [x] **RAG-04**: System prompt instructs the model to cite only from provided chunks by numeric ID; if context is insufficient, model must explicitly say so ("cite or abstain")
+- [x] **RAG-05**: LLM response is streamed to the client via Server-Sent Events (SSE); first token arrives within 3 seconds
+- [x] **RAG-06**: Conversation history (last 3 turns) is included in the LLM prompt for multi-turn follow-up queries
+- [x] **RAG-07**: When no chunk exceeds the score threshold, system returns a "no matching policy found" message without calling the LLM
 
 ### Citations
 
-- [ ] **CITE-01**: Every answer includes at least one verbatim excerpt from a retrieved chunk, with the source document title
-- [ ] **CITE-02**: Each citation is linked to its chunk ID in the response payload: `{answer, citations: [{id, title, text}]}`
-- [ ] **CITE-03**: Citation IDs referenced in the answer text are verified programmatically to exist in the retrieved set (no fabricated IDs)
+- [x] **CITE-01**: Every answer includes at least one verbatim excerpt from a retrieved chunk, with the source document title
+- [x] **CITE-02**: Each citation is linked to its chunk ID in the response payload: `{answer, citations: [{id, title, text}]}`
+- [x] **CITE-03**: Citation IDs referenced in the answer text are verified programmatically to exist in the retrieved set (no fabricated IDs)
 - [ ] **CITE-04**: Frontend displays each citation as an expandable inline panel beneath the answer, showing the document title and full verbatim excerpt
 
 ### Cross-Document Conflict Detection
@@ -126,16 +126,16 @@
 | INGEST-04 | Phase 1 | Pending |
 | INGEST-05 | Phase 1 | Pending |
 | INGEST-06 | Phase 1 | Pending |
-| RAG-01 | Phase 2 | Pending |
-| RAG-02 | Phase 2 | Pending |
-| RAG-03 | Phase 2 | Pending |
-| RAG-04 | Phase 2 | Pending |
-| RAG-05 | Phase 2 | Pending |
-| RAG-06 | Phase 2 | Pending |
-| RAG-07 | Phase 2 | Pending |
-| CITE-01 | Phase 2 | Pending |
-| CITE-02 | Phase 2 | Pending |
-| CITE-03 | Phase 2 | Pending |
+| RAG-01 | Phase 2 | Complete |
+| RAG-02 | Phase 2 | Complete |
+| RAG-03 | Phase 2 | Complete |
+| RAG-04 | Phase 2 | Complete |
+| RAG-05 | Phase 2 | Complete |
+| RAG-06 | Phase 2 | Complete |
+| RAG-07 | Phase 2 | Complete |
+| CITE-01 | Phase 2 | Complete |
+| CITE-02 | Phase 2 | Complete |
+| CITE-03 | Phase 2 | Complete |
 | CITE-04 | Phase 4 | Pending |
 | CONFLICT-01 | Phase 5 | Pending |
 | CONFLICT-02 | Phase 5 | Pending |
