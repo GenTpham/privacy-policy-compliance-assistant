@@ -49,7 +49,12 @@ Plans:
 3. Every answer includes at least one verbatim excerpt from a retrieved chunk with the source document title.
 4. When no chunk exceeds the 0.55 score threshold, the endpoint returns a "no matching policy found" message without calling the LLM.
 5. Follow-up questions that reference the previous turn produce coherent answers, confirming conversation history (last 3 turns) is included in the prompt.
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Wave 0: pytest infrastructure (pytest.ini, conftest.py, 10+2 test stubs)
+- [ ] 02-02-PLAN.md — Wave 1: backend/app/services/rag.py (embed, retrieve, stream, verify citations)
+- [ ] 02-03-PLAN.md — Wave 1: backend/app/api/chat.py (router, Pydantic models, StreamingResponse) + main.py wiring
 
 ---
 
@@ -157,7 +162,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Infrastructure & Data Ingestion | 0/5 | Planned | - |
-| 2. Core RAG Pipeline | 0/? | Not started | - |
+| 2. Core RAG Pipeline | 0/3 | Planned | - |
 | 3. Authentication | 0/? | Not started | - |
 | 4. Web Frontend | 0/? | Not started | - |
 | 5. Cross-Document Conflict Detection | 0/? | Not started | - |
@@ -165,4 +170,4 @@ Plans:
 
 ---
 *Roadmap created: 2026-04-22*
-*Last updated: 2026-04-22 — Phase 1 plans created (5 plans, 3 waves)*
+*Last updated: 2026-04-24 — Phase 2 plans created (3 plans, 2 waves)*
