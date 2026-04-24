@@ -24,7 +24,7 @@ async def _probe_embedding_dim(client: AsyncOpenAI, model: str) -> int:
     Nemotron's output dimension is not documented — must be discovered at runtime.
     Never hardcode this value (AI-SPEC Critical Failure Mode 5).
     """
-    resp = await client.embeddings.create(model=model, input="probe")
+    resp = await client.embeddings.create(model=model, input="probe", encoding_format="float")
     dim = len(resp.data[0].embedding)
     print(f"[startup] Nemotron embedding dimension: {dim}")
     return dim

@@ -134,6 +134,7 @@ async def stream_answer(
     embed_resp = await openrouter.embeddings.create(
         model=EMBEDDING_MODEL,
         input=message,
+        encoding_format="float",
     )
     query_vector = embed_resp.data[0].embedding
 
