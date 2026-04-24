@@ -15,8 +15,23 @@ Run one test:   pytest backend/app/tests/test_rag.py::test_fabricated_citation_s
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from backend.app.services.rag import _build_messages, _build_verified_citations
+from backend.app.services.rag import _build_messages, _build_verified_citations, stream_answer
 from backend.app.services import rag
+
+
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
+async def _fake_stream(token: str):
+    """Async generator simulating one real token then a final None-content chunk."""
+    chunk = MagicMock()
+    chunk.choices = [MagicMock()]
+    chunk.choices[0].delta.content = token
+    yield chunk
+    # Final chunk with None content (stop reason)
+    final = MagicMock()
+    final.choices = [MagicMock()]
+    final.choices[0].delta.content = None
+    yield final
 
 
 # ── RAG-01: embed calls correct model ─────────────────────────────────────────
@@ -24,7 +39,15 @@ from backend.app.services import rag
 @pytest.mark.asyncio
 async def test_embed_calls_correct_model(mock_openrouter, mock_qdrant):
     """RAG-01: embeddings.create called with model='nvidia/llama-nemotron-embed-vl-1b-v2'."""
-    pytest.skip("stub — implemented in Wave 1")
+    with patch.object(rag, "openrouter", mock_openrouter), \
+         patch.object(rag, "qdrant", mock_qdrant):
+        events = [e async for e in stream_answer("test query", [])]
+
+    mock_openrouter.embeddings.create.assert_called_once()
+    call_args = mock_openrouter.embeddings.create.call_args
+    # model is always passed as keyword argument in stream_answer
+    model_arg = call_args.kwargs.get("model")
+    assert model_arg == "nvidia/llama-nemotron-embed-vl-1b-v2"
 
 
 # ── RAG-02: retrieve params ────────────────────────────────────────────────────
@@ -32,7 +55,15 @@ async def test_embed_calls_correct_model(mock_openrouter, mock_qdrant):
 @pytest.mark.asyncio
 async def test_retrieve_params(mock_openrouter, mock_qdrant):
     """RAG-02: qdrant.search called with limit=5, score_threshold=0.55, with_payload=True."""
-    pytest.skip("stub — implemented in Wave 1")
+    with patch.object(rag, "openrouter", mock_openrouter), \
+         patch.object(rag, "qdrant", mock_qdrant):
+        events = [e async for e in stream_answer("test query", [])]
+
+    mock_qdrant.search.assert_called_once()
+    call_kwargs = mock_qdrant.search.call_args.kwargs
+    assert call_kwargs.get("limit") == 5
+    assert call_kwargs.get("score_threshold") == 0.55
+    assert call_kwargs.get("with_payload") is True
 
 
 # ── RAG-03: prompt contains numbered chunks ────────────────────────────────────
@@ -40,7 +71,18 @@ async def test_retrieve_params(mock_openrouter, mock_qdrant):
 @pytest.mark.asyncio
 async def test_prompt_contains_numbered_chunks(mock_openrouter, mock_qdrant, sample_scored_point):
     """RAG-03: system message contains '[1] source:' formatted numbered chunk."""
-    pytest.skip("stub — implemented in Wave 1")
+    mock_qdrant.search = AsyncMock(return_value=[sample_scored_point])
+    mock_openrouter.chat.completions.create = AsyncMock(return_value=_fake_stream("answer"))
+
+    with patch.object(rag, "openrouter", mock_openrouter), \
+         patch.object(rag, "qdrant", mock_qdrant):
+        events = [e async for e in stream_answer("test query", [])]
+
+    # Inspect the messages passed to chat.completions.create
+    chat_call_kwargs = mock_openrouter.chat.completions.create.call_args.kwargs
+    messages = chat_call_kwargs["messages"]
+    system_content = messages[0]["content"]
+    assert "[1] source: Privacy Policy v2" in system_content
 
 
 # ── RAG-04: abstain wording in system prompt ──────────────────────────────────
@@ -61,7 +103,19 @@ def test_system_prompt_abstain_wording(sample_scored_point):
 @pytest.mark.asyncio
 async def test_delta_before_done(mock_openrouter, mock_qdrant, sample_scored_point):
     """RAG-05: at least one delta event is yielded before the done event."""
-    pytest.skip("stub — implemented in Wave 1")
+    mock_qdrant.search = AsyncMock(return_value=[sample_scored_point])
+    mock_openrouter.chat.completions.create = AsyncMock(return_value=_fake_stream("Hello"))
+
+    with patch.object(rag, "openrouter", mock_openrouter), \
+         patch.object(rag, "qdrant", mock_qdrant):
+        events = [e async for e in stream_answer("test query", [])]
+
+    assert any(e["type"] == "delta" for e in events)
+    assert events[-1]["type"] == "done"
+    # Delta must appear before done
+    delta_idx = next(i for i, e in enumerate(events) if e["type"] == "delta")
+    done_idx = next(i for i, e in enumerate(events) if e["type"] == "done")
+    assert delta_idx < done_idx
 
 
 # ── RAG-06: history sliced to last 6 messages ────────────────────────────────
@@ -89,7 +143,14 @@ async def test_no_results_early_return(mock_openrouter, mock_qdrant):
     RAG-07 + D-14: when qdrant.search returns [], stream_answer yields a done event
     with answer='No matching policy found for your question.' and never calls LLM.
     """
-    pytest.skip("stub — implemented in Wave 1")
+    # mock_qdrant.search already returns [] by default from conftest
+    with patch.object(rag, "openrouter", mock_openrouter), \
+         patch.object(rag, "qdrant", mock_qdrant):
+        events = [e async for e in stream_answer("test query", [])]
+
+    assert events[-1]["type"] == "done"
+    assert "No matching policy" in events[-1]["answer"]
+    mock_openrouter.chat.completions.create.assert_not_called()
 
 
 # ── CITE-01: citations contain title and text ────────────────────────────────
