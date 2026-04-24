@@ -139,13 +139,15 @@ async def stream_answer(
     query_vector = embed_resp.data[0].embedding
 
     # Step 2: Retrieve from Qdrant (RAG-02, D-12, D-13)
-    results = await qdrant.search(
+    # qdrant-client 1.13+ replaced search() with query_points() — returns QueryResponse with .points
+    response = await qdrant.query_points(
         collection_name=COLLECTION_NAME,
-        query_vector=query_vector,
+        query=query_vector,
         limit=5,
         score_threshold=0.55,
         with_payload=True,
     )
+    results = response.points
 
     # Step 3: Early return if no chunks meet threshold (RAG-07, D-14)
     if not results:

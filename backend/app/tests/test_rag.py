@@ -59,8 +59,8 @@ async def test_retrieve_params(mock_openrouter, mock_qdrant):
          patch.object(rag, "qdrant", mock_qdrant):
         events = [e async for e in stream_answer("test query", [])]
 
-    mock_qdrant.search.assert_called_once()
-    call_kwargs = mock_qdrant.search.call_args.kwargs
+    mock_qdrant.query_points.assert_called_once()
+    call_kwargs = mock_qdrant.query_points.call_args.kwargs
     assert call_kwargs.get("limit") == 5
     assert call_kwargs.get("score_threshold") == 0.55
     assert call_kwargs.get("with_payload") is True
@@ -71,7 +71,8 @@ async def test_retrieve_params(mock_openrouter, mock_qdrant):
 @pytest.mark.asyncio
 async def test_prompt_contains_numbered_chunks(mock_openrouter, mock_qdrant, sample_scored_point):
     """RAG-03: system message contains '[1] source:' formatted numbered chunk."""
-    mock_qdrant.search = AsyncMock(return_value=[sample_scored_point])
+    mock_resp = MagicMock(); mock_resp.points = [sample_scored_point]
+    mock_qdrant.query_points = AsyncMock(return_value=mock_resp)
     mock_openrouter.chat.completions.create = AsyncMock(return_value=_fake_stream("answer"))
 
     with patch.object(rag, "openrouter", mock_openrouter), \
@@ -103,7 +104,8 @@ def test_system_prompt_abstain_wording(sample_scored_point):
 @pytest.mark.asyncio
 async def test_delta_before_done(mock_openrouter, mock_qdrant, sample_scored_point):
     """RAG-05: at least one delta event is yielded before the done event."""
-    mock_qdrant.search = AsyncMock(return_value=[sample_scored_point])
+    mock_resp = MagicMock(); mock_resp.points = [sample_scored_point]
+    mock_qdrant.query_points = AsyncMock(return_value=mock_resp)
     mock_openrouter.chat.completions.create = AsyncMock(return_value=_fake_stream("Hello"))
 
     with patch.object(rag, "openrouter", mock_openrouter), \

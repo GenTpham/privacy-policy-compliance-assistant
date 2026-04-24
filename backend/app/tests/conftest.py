@@ -36,7 +36,10 @@ def mock_qdrant():
     Default: empty list (no chunks above threshold) — tests override as needed.
     """
     client = MagicMock(spec=AsyncQdrantClient)
-    client.search = AsyncMock(return_value=[])
+    # qdrant-client 1.13+ uses query_points() — returns QueryResponse with .points
+    mock_response = MagicMock()
+    mock_response.points = []
+    client.query_points = AsyncMock(return_value=mock_response)
     return client
 
 
