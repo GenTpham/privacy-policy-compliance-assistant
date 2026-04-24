@@ -53,7 +53,7 @@ Plans:
 
 Plans:
 - [x] 02-01-PLAN.md — Wave 0: pytest infrastructure (pytest.ini, conftest.py, 10+2 test stubs)
-- [ ] 02-02-PLAN.md — Wave 1: backend/app/services/rag.py (embed, retrieve, stream, verify citations)
+- [x] 02-02-PLAN.md — Wave 1: backend/app/services/rag.py (embed, retrieve, stream, verify citations)
 - [ ] 02-03-PLAN.md — Wave 1: backend/app/api/chat.py (router, Pydantic models, StreamingResponse) + main.py wiring
 
 ---
