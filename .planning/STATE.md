@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 current_phase: 02
-status: executing
-last_updated: "2026-04-24T08:51:07.882Z"
+status: verifying
+last_updated: "2026-04-24T08:57:13.765Z"
 progress:
   total_phases: 6
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 8
-  completed_plans: 7
-  percent: 88
+  completed_plans: 8
+  percent: 100
 ---
 
 # Project State
@@ -38,8 +38,8 @@ progress:
 
 Phase: 02 (core-rag-pipeline) — EXECUTING
 Plan: 3 of 3
-**Status:** Ready to execute
-**Progress:** [█████████░] 88%
+**Status:** Phase complete — ready for verification
+**Progress:** [██████████] 100%
 
 ---
 
@@ -60,6 +60,7 @@ See: `.planning/PROJECT.md`
 | Plans complete | 6 / 8 |
 | Phase 02 P01 duration | 8 min (4 tasks, 5 files) |
 | Phase 02 P02 | 5 min | 3 tasks | 3 files |
+| Phase 02 P03 | 4 min | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -77,6 +78,8 @@ See: `.planning/PROJECT.md`
 - pytest.skip('stub') pattern for Wave 0 stubs — CI never blocked by pre-implementation tests (Phase 2 Plan 01)
 - patch.object(rag, 'openrouter', mock) for module-level singleton mocking — cleaner than @patch decorator for async generator tests (Phase 2 Plan 02)
 - stream_answer yields delta/done/error event types — HTTP SSE routing handled in chat.py (Plan 03), not in the generator itself (Phase 2 Plan 02)
+- HistoryItem.role: Literal[user, assistant] is the security control — never widen (D-03 / Pitfall 3, Phase 2 Plan 03)
+- Deferred opentelemetry imports inside setup_tracing() body — telemetry.py safe to import without opentelemetry installed (Phase 2 Plan 03)
 
 ### Open Questions (resolve during implementation)
 
@@ -118,7 +121,8 @@ See: `.planning/PROJECT.md`
 
 - Plan 01: pytest.ini (asyncio_mode=auto) + conftest.py (3 fixtures) + 12 test stubs (10 RAG + 2 HTTP) — Wave 0 complete
 - Plan 02: backend/app/services/rag.py — stream_answer async generator, _build_messages, _build_verified_citations — 10/10 tests passing
+- Plan 03: backend/app/api/chat.py + main.py router wiring — POST /api/chat SSE endpoint, 12/12 tests passing
 
 ---
 *State initialized: 2026-04-22*
-*Last updated: 2026-04-24 after Phase 2 Plan 01 completion*
+*Last updated: 2026-04-24 after Phase 2 Plan 03 completion — awaiting human-verify checkpoint*

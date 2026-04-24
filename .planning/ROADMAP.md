@@ -9,7 +9,7 @@
 | # | Phase | Goal | Requirements | Success Criteria |
 |---|-------|------|--------------|-----------------|
 | 1 | Infrastructure & Data Ingestion | Qdrant is running, the full corpus is indexed, and ingestion health checks pass | INFRA-01, INFRA-02, INFRA-03, INFRA-04, INFRA-05, INGEST-01, INGEST-02, INGEST-03, INGEST-04, INGEST-05, INGEST-06 | 4 criteria |
-| 2 | Core RAG Pipeline | 1/3 | In Progress|  |
+| 2 | Core RAG Pipeline | 3/3 | Complete   | 2026-04-24 |
 | 3 | Authentication | All chat endpoints are JWT-protected; login, refresh, and logout work end-to-end | AUTH-01, AUTH-02, AUTH-03, AUTH-04, AUTH-05 | 4 criteria |
 | 4 | Web Frontend | A browser user can log in, ask questions, see streamed answers with expandable citation cards, and log out | UI-01, UI-02, UI-03, UI-04, UI-05, UI-06, CITE-04 | 5 criteria |
 | 5 | Cross-Document Conflict Detection | Comparison queries retrieve multi-document chunks and return a classified conflict response with cited passages from each source | CONFLICT-01, CONFLICT-02, CONFLICT-03, CONFLICT-04 | 4 criteria |
@@ -54,7 +54,7 @@ Plans:
 Plans:
 - [x] 02-01-PLAN.md — Wave 0: pytest infrastructure (pytest.ini, conftest.py, 10+2 test stubs)
 - [x] 02-02-PLAN.md — Wave 1: backend/app/services/rag.py (embed, retrieve, stream, verify citations)
-- [ ] 02-03-PLAN.md — Wave 1: backend/app/api/chat.py (router, Pydantic models, StreamingResponse) + main.py wiring
+- [x] 02-03-PLAN.md — Wave 1: backend/app/api/chat.py (router, Pydantic models, StreamingResponse) + main.py wiring
 
 ---
 
