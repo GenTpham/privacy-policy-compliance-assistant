@@ -11,6 +11,7 @@ from openai import AsyncOpenAI
 from qdrant_client import AsyncQdrantClient
 from qdrant_client.models import Distance, VectorParams
 
+from backend.app.api.chat import router as chat_router
 from backend.app.core.config import get_settings
 from backend.app.core.telemetry import setup_tracing
 
@@ -93,12 +94,14 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 
 def create_app() -> FastAPI:
-    return FastAPI(
+    app = FastAPI(
         title="Privacy Policy Compliance Assistant",
         description="RAG-based chatbot for privacy policy Q&A with inline citations.",
         version="0.1.0",
         lifespan=lifespan,
     )
+    app.include_router(chat_router, prefix="/api")
+    return app
 
 
 app = create_app()
