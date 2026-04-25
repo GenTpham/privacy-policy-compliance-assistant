@@ -90,7 +90,7 @@ async def test_embedding_dim_matches_collection(qdrant_client: AsyncQdrantClient
         base_url="https://openrouter.ai/api/v1",
         api_key=settings.openrouter_api_key,
     )
-    resp = await openrouter.embeddings.create(model=EMBED_MODEL, input="probe")
+    resp = await openrouter.embeddings.create(model=EMBED_MODEL, input="probe", encoding_format="float")
     probed_dim = len(resp.data[0].embedding)
 
     info = await qdrant_client.get_collection(COLLECTION_NAME)
@@ -118,18 +118,18 @@ async def test_rank1_sanity_check(qdrant_client: AsyncQdrantClient, corpus_passa
     )
 
     first_text = corpus_passages[0]["context"].strip()
-    resp = await openrouter.embeddings.create(model=EMBED_MODEL, input=first_text)
+    resp = await openrouter.embeddings.create(model=EMBED_MODEL, input=first_text, encoding_format="float")
     query_vec = resp.data[0].embedding
 
-    results = await qdrant_client.search(
+    response = await qdrant_client.query_points(
         collection_name=COLLECTION_NAME,
-        query_vector=query_vec,
+        query=query_vec,
         limit=1,
         with_payload=True,
     )
 
-    assert results, "No results returned for first passage query — collection may be empty"
-    score = results[0].score
+    assert response.points, "No results returned for first passage query — collection may be empty"
+    score = response.points[0].score
     assert score > 0.99, (
         f"Rank-1 sanity check FAILED: score={score:.4f} (expected > 0.99). "
         "This may indicate a distance metric mismatch, failed ingestion, or model change."
