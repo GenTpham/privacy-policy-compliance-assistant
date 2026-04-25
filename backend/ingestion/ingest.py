@@ -69,7 +69,7 @@ async def probe_embedding_dim() -> int:
     Probe Nemotron embedding dimension via a live API call.
     Never hardcoded — dimension is read from the first response (AI-SPEC §3 pattern).
     """
-    resp = await openrouter.embeddings.create(model=EMBED_MODEL, input="probe")
+    resp = await openrouter.embeddings.create(model=EMBED_MODEL, input="probe", encoding_format="float")
     return len(resp.data[0].embedding)
 
 
@@ -148,7 +148,7 @@ async def embed_batch(texts: list[str], retries: int = 5) -> list[list[float]]:
     """
     for attempt in range(retries):
         try:
-            resp = await openrouter.embeddings.create(model=EMBED_MODEL, input=texts)
+            resp = await openrouter.embeddings.create(model=EMBED_MODEL, input=texts, encoding_format="float")
             # Sort by index to ensure order matches input (AI-SPEC §3 note)
             return [item.embedding for item in sorted(resp.data, key=lambda x: x.index)]
         except Exception as exc:
@@ -174,17 +174,17 @@ async def sanity_check() -> None:
     first_text = raw[0]["context"].strip()
 
     vecs = await embed_batch([first_text])
-    results = await qdrant.search(
+    response = await qdrant.query_points(
         collection_name=COLLECTION_NAME,
-        query_vector=vecs[0],
+        query=vecs[0],
         limit=1,
         with_payload=True,
     )
 
-    if not results:
+    if not response.points:
         raise AssertionError("[sanity_check] FAILED: no results returned for first passage query")
 
-    score = results[0].score
+    score = response.points[0].score
     if score <= 0.99:
         raise AssertionError(
             f"[sanity_check] FAILED: rank-1 score={score:.4f} (expected > 0.99). "
