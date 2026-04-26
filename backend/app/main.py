@@ -4,18 +4,65 @@ FastAPI application factory.
 Lifespan: probes embedding dimension, bootstraps Qdrant 'policies' collection.
 """
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import AsyncIterator
 
 from fastapi import FastAPI
 from openai import AsyncOpenAI
 from qdrant_client import AsyncQdrantClient
 from qdrant_client.models import Distance, VectorParams
+from sqlalchemy import select
 
+from backend.app.api.auth import router as auth_router
 from backend.app.api.chat import router as chat_router
 from backend.app.core.config import get_settings
 from backend.app.core.telemetry import setup_tracing
+from backend.app.db.models import Base, User
+from backend.app.db.session import init_db, get_db
+from backend.app.services.auth import hash_password
 
 COLLECTION_NAME = "policies"
+
+
+async def _init_db_and_seed(settings) -> None:
+    """
+    Idempotent: create users table if not exists, seed admin user if env vars set.
+    Called from lifespan. D-01: single user from ENV vars.
+    D-13 (AUTH-05): jwt_secret length validated before this runs.
+    """
+    # Ensure backend/data/ directory exists (Research Open Question 1)
+    Path("backend/data").mkdir(parents=True, exist_ok=True)
+
+    db_url = "sqlite+aiosqlite:///backend/data/users.db"
+    init_db(db_url)
+
+    # Import session factory (available after init_db call)
+    from backend.app.db.session import _session_factory
+
+    # Create tables (idempotent — skips existing tables)
+    from backend.app.db import session as db_session_mod
+    engine = db_session_mod._engine
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+    # Seed admin user from env vars if set
+    if not settings.admin_username or not settings.admin_password:
+        print("[startup] ADMIN_USERNAME/ADMIN_PASSWORD not set — skipping user seed.")
+        return
+
+    async with _session_factory() as session:
+        result = await session.execute(
+            select(User).where(User.username == settings.admin_username)
+        )
+        if result.scalar_one_or_none() is None:
+            session.add(User(
+                username=settings.admin_username,
+                hashed_password=hash_password(settings.admin_password),
+            ))
+            await session.commit()
+            print(f"[startup] Admin user '{settings.admin_username}' seeded.")
+        else:
+            print(f"[startup] Admin user '{settings.admin_username}' already exists.")
 
 
 async def _probe_embedding_dim(client: AsyncOpenAI, model: str) -> int:
@@ -66,6 +113,17 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """
     settings = get_settings()
 
+    # AUTH-05: fail fast if jwt_secret is too short (< 32 chars)
+    if len(settings.jwt_secret) < 32:
+        raise ValueError(
+            f"JWT_SECRET must be at least 32 characters long "
+            f"(currently {len(settings.jwt_secret)} chars). "
+            f"Generate one with: openssl rand -hex 32"
+        )
+
+    # Phase 3: Initialize DB and seed admin user
+    await _init_db_and_seed(settings)
+
     # Telemetry (gracefully skips if Phoenix is not running)
     setup_tracing()
 
@@ -101,6 +159,7 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
     app.include_router(chat_router, prefix="/api")
+    app.include_router(auth_router, prefix="/auth")
     return app
 
 

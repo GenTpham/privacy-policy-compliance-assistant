@@ -22,6 +22,11 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
 
+    # Auth — Phase 3 additions
+    refresh_token_expire_days: int = 7
+    admin_username: str | None = None   # Optional — skip seed if not set (D-01)
+    admin_password: str | None = None   # Optional — skip seed if not set (D-01)
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 
