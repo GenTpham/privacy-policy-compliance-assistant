@@ -71,7 +71,7 @@ Plans:
 
 Plans:
 - [x] 03-01-PLAN.md — Wave 1: test infrastructure (conftest.py auth fixtures + 10 test stubs in test_auth.py)
-- [ ] 03-02-PLAN.md — Wave 2: DB layer (models.py + session.py) + auth service (JWT + password)
+- [x] 03-02-PLAN.md — Wave 2: DB layer (models.py + session.py) + auth service (JWT + password)
 - [ ] 03-03-PLAN.md — Wave 3: config extension + lifespan wiring + auth router + chat protection + 10 tests green
 
 ---
