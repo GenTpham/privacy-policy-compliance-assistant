@@ -67,7 +67,12 @@ Plans:
 2. A user can POST to `/auth/login` with correct credentials and receive an access token (expires 30 min) and a refresh token.
 3. Using the refresh token against `/auth/refresh` issues a new access token without re-entering credentials.
 4. Passwords are stored as Argon2 hashes in SQLite; querying the database directly reveals no plaintext passwords.
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Wave 1: test infrastructure (conftest.py auth fixtures + 10 test stubs in test_auth.py)
+- [ ] 03-02-PLAN.md — Wave 2: DB layer (models.py + session.py) + auth service (JWT + password)
+- [ ] 03-03-PLAN.md — Wave 3: config extension + lifespan wiring + auth router + chat protection + 10 tests green
 
 ---
 
@@ -163,11 +168,11 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Infrastructure & Data Ingestion | 0/5 | Planned | - |
 | 2. Core RAG Pipeline | 0/3 | Planned | - |
-| 3. Authentication | 0/? | Not started | - |
+| 3. Authentication | 0/3 | Planned | - |
 | 4. Web Frontend | 0/? | Not started | - |
 | 5. Cross-Document Conflict Detection | 0/? | Not started | - |
 | 6. Integration & Docker Compose Finalization | 0/? | Not started | - |
 
 ---
 *Roadmap created: 2026-04-22*
-*Last updated: 2026-04-24 — Phase 2 plans created (3 plans, 2 waves)*
+*Last updated: 2026-04-26 — Phase 3 plans created (3 plans, 3 waves)*
