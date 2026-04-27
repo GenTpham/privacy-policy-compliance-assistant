@@ -33,6 +33,11 @@ from backend.app.db.session import get_db
 # Creating per-request would re-tune parameters each time (slow and unnecessary).
 _password_hasher = PasswordHash.recommended()
 
+# Sentinel hash used when no user is found — ensures verify_password (Argon2id) is always
+# called so the timing cost is paid regardless of whether the username exists.
+# This prevents username enumeration via response latency.
+_DUMMY_HASH: str = _password_hasher.hash("__dummy__")
+
 
 def hash_password(plain: str) -> str:
     """Hash a plaintext password using Argon2id. Returns '$argon2id$...' string."""

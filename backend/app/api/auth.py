@@ -21,6 +21,7 @@ from backend.app.core.config import Settings, get_settings
 from backend.app.db.models import User
 from backend.app.db.session import get_db
 from backend.app.services.auth import (
+    _DUMMY_HASH,
     create_access_token,
     create_refresh_token,
     decode_token,
@@ -74,9 +75,10 @@ async def login(
     result = await db.execute(select(User).where(User.username == body.username))
     user = result.scalar_one_or_none()
 
-    # Always call verify_password to maintain constant timing (avoid username enumeration)
-    stored_hash = user.hashed_password if user is not None else ""
-    password_valid = verify_password(body.password, stored_hash) if stored_hash else False
+    # Always call verify_password to maintain constant timing (avoid username enumeration).
+    # _DUMMY_HASH is used when the user does not exist so the Argon2id cost is always paid.
+    stored_hash = user.hashed_password if user is not None else _DUMMY_HASH
+    password_valid = verify_password(body.password, stored_hash)
 
     if user is None or not password_valid:
         raise HTTPException(
