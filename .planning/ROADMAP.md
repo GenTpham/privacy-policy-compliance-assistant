@@ -86,7 +86,15 @@ Plans:
 3. Each assistant message displays expandable citation cards below the answer, each card showing the document title and the full verbatim excerpt.
 4. When no relevant policy is found, the UI shows a clearly worded "No matching policy found" message in place of an answer.
 5. Clicking the logout button clears the session and returns the user to the login page, with the chat endpoint now returning HTTP 401.
-**Plans**: TBD
+**Plans**: 6 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — Wave 1: Vite+React scaffold, shadcn/ui init (new-york), vitest+happy-dom config, 6 test stub files
+- [ ] 04-02-PLAN.md — Wave 2: tokens.ts, api.ts (fetchWithAuth + silent refresh), vite.config.ts proxy, App.tsx routes, ProtectedRoute
+- [ ] 04-03-PLAN.md — Wave 3: useAuth hook (login/logout/forceLogout), LoginForm (all states), LoginPage layout
+- [ ] 04-04-PLAN.md — Wave 3: useSSEChat hook (SSE parser), StreamingCursor, CitationCard, NoMatchMessage (parallel with plan 03)
+- [ ] 04-05-PLAN.md — Wave 4: MessageBubble, MessageList, ChatInput, Header, ChatPage composition
+- [ ] 04-06-PLAN.md — Wave 5: All 6 test stubs replaced with passing implementations
 
 ---
 
@@ -169,10 +177,10 @@ Plans:
 | 1. Infrastructure & Data Ingestion | 0/5 | Planned | - |
 | 2. Core RAG Pipeline | 0/3 | Planned | - |
 | 3. Authentication | 0/3 | Planned | - |
-| 4. Web Frontend | 0/? | Not started | - |
+| 4. Web Frontend | 0/6 | Planned | - |
 | 5. Cross-Document Conflict Detection | 0/? | Not started | - |
 | 6. Integration & Docker Compose Finalization | 0/? | Not started | - |
 
 ---
 *Roadmap created: 2026-04-22*
-*Last updated: 2026-04-26 — Phase 3 plans created (3 plans, 3 waves)*
+*Last updated: 2026-04-27 — Phase 4 plans created (6 plans, 5 waves)*
