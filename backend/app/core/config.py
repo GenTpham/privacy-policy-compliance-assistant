@@ -5,6 +5,7 @@ Missing required fields raise ValidationError immediately (fail-fast pattern).
 """
 from functools import lru_cache
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings
 
 
@@ -12,6 +13,16 @@ class Settings(BaseSettings):
     # Required — no default. Missing value raises ValidationError at startup.
     openrouter_api_key: str
     jwt_secret: str
+
+    @field_validator("jwt_secret")
+    @classmethod
+    def jwt_secret_length(cls, v: str) -> str:
+        if len(v) < 32:
+            raise ValueError(
+                f"JWT_SECRET must be at least 32 characters (got {len(v)}). "
+                "Generate with: openssl rand -hex 32"
+            )
+        return v
 
     # Qdrant connection — override QDRANT_HOST to "qdrant" inside Docker Compose
     qdrant_host: str = "localhost"

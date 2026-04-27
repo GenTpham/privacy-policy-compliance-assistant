@@ -169,19 +169,11 @@ async def test_password_stored_as_argon2(db_session):
 # ── AUTH-05: JWT secret validation ────────────────────────────────────────────
 
 def test_short_jwt_secret_rejected():
-    """Startup with jwt_secret shorter than 32 chars raises ValueError."""
-    # The validation lives in the lifespan. Test the validation logic directly
-    # since invoking the full lifespan would require live OpenRouter/Qdrant.
-    short_secret = "short"
-    assert len(short_secret) < 32
-    # Replicate the guard from main.py:
-    if len(short_secret) < 32:
-        error_msg = (
-            f"JWT_SECRET must be at least 32 characters long "
-            f"(currently {len(short_secret)} chars). "
-            f"Generate one with: openssl rand -hex 32"
+    """Settings raises ValidationError when jwt_secret is shorter than 32 chars."""
+    from pydantic import ValidationError
+    from backend.app.core.config import Settings
+    with pytest.raises(ValidationError, match="32"):
+        Settings(
+            openrouter_api_key="any-key",
+            jwt_secret="short",  # < 32 chars — must be rejected by field_validator
         )
-        raised = ValueError(error_msg)
-        assert "32" in str(raised)
-    else:
-        pytest.fail("Test setup error — short_secret should be < 32 chars")
