@@ -1,7 +1,8 @@
 ---
 phase: 4
 slug: web-frontend
-status: draft
+status: approved
+reviewed_at: 2026-04-27
 shadcn_initialized: false
 preset: none
 created: 2026-04-27
@@ -62,16 +63,16 @@ Exceptions:
 | Role | Size | Weight | Line Height |
 |------|------|--------|-------------|
 | Body | 16px | 400 (regular) | 1.5 |
-| Label | 14px | 500 (medium) | 1.4 |
+| Label | 14px | 600 (semibold) | 1.4 |
 | Heading | 20px | 600 (semibold) | 1.2 |
 | Caption | 12px | 400 (regular) | 1.4 |
 
 **Notes:**
 - Body (16px / 400 / 1.5): All chat message text, citation excerpt text, login form helper text.
-- Label (14px / 500 / 1.4): Form field labels, citation card document title, button text, nav items.
+- Label (14px / 600 / 1.4): Form field labels, citation card document title, button text, nav items.
 - Heading (20px / 600 / 1.2): Login page title ("Sign in"), page-level section headings.
 - Caption (12px / 400 / 1.4): Citation card collapsed preview (~50-char excerpt), timestamp if added, secondary meta.
-- Only 2 weights are used: 400 and 600. Weight 500 is used only for labels (shadcn default; collapses to 600 if constrained).
+- Exactly 2 weights are used: 400 (regular) for body and caption; 600 (semibold) for heading and label.
 
 ---
 
@@ -85,7 +86,7 @@ Exceptions:
 | Destructive | `#ef4444` / `hsl(0 84.2% 60.2%)` | Logout button hover state only |
 
 **Accent reserved for (explicit list):**
-1. Primary CTA buttons: "Sign In" and "Send" button background
+1. Primary CTA buttons: "Sign In" and "Send Message" button background
 2. Blinking streaming cursor character (`|`)
 3. Collapsible expand/collapse chevron icon in citation cards
 4. Focus ring outline on interactive elements (via Radix/shadcn default ring)
@@ -122,12 +123,14 @@ Exceptions:
 
 ### Chat Page (`/` or `/chat`)
 
+**Primary visual anchor:** Message list — takes flex-remaining vertical space, highest information density. All other regions (header bar, input row) are fixed-height and secondary to the message list.
+
 **Layout:** Single-column, full-width. No sidebar. Source: CONTEXT.md D-01.
 
 Sub-regions top to bottom:
 1. **Header bar** — fixed top, full width, height 56px. Contains app title left-aligned ("Privacy Policy Assistant") and "Log out" button right-aligned.
 2. **Message list** — scrollable, takes remaining vertical space. Overflow-y: auto. Scroll-to-bottom on new message.
-3. **Input row** — fixed bottom, full width, height 52px. Contains text input (flex-grow) and "Send" button.
+3. **Input row** — fixed bottom, full width, height 52px. Contains text input (flex-grow) and "Send Message" button.
 
 **Message bubbles:**
 - User message: right-aligned, `bg-zinc-100`, `rounded-lg`, `px-4 py-3`, `max-w-[70%]`
@@ -208,7 +211,7 @@ Triggered when backend returns RAG-07 path (no chunks above 0.55 threshold).
 | Element | Copy |
 |---------|------|
 | Primary CTA (login) | "Sign In" |
-| Primary CTA (chat) | "Send" |
+| Primary CTA (chat) | "Send Message" |
 | Login page heading | "Sign in to continue" |
 | Login username label | "Username" |
 | Login password label | "Password" |
