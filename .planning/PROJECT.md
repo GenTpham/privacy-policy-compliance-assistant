@@ -12,17 +12,16 @@ Users can ask any compliance question and immediately get an answer with exact q
 
 ### Validated
 
-(None yet — ship to validate)
+- [x] Document ingestion pipeline: extract context passages from dataset JSON, embed with NVIDIA Nemotron, store in Qdrant — *Validated in Phase 1: Infrastructure & Data Ingestion*
+- [x] Semantic search: embed user query and retrieve top-k relevant chunks from Qdrant — *Validated in Phase 1: Infrastructure & Data Ingestion*
+- [x] Answer generation: pass retrieved chunks to Gemma 4 26B A4B (OpenRouter) with prompt instructing grounded response — *Validated in Phase 2: Core RAG Pipeline*
+- [x] Inline citations: response displays verbatim excerpt(s) from source document alongside the generated answer — *Validated in Phase 2: Core RAG Pipeline*
+- [x] Authentication: user login required to access the chat interface — *Validated in Phase 3: Authentication*
 
 ### Active
 
-- [ ] Document ingestion pipeline: extract context passages from dataset JSON, embed with NVIDIA Nemotron, store in Qdrant
-- [ ] Semantic search: embed user query and retrieve top-k relevant chunks from Qdrant
-- [ ] Answer generation: pass retrieved chunks to Gemma 4 26B A4B (OpenRouter) with prompt instructing grounded response
-- [ ] Inline citations: response displays verbatim excerpt(s) from source document alongside the generated answer
 - [ ] Cross-document comparison: identify and surface contradictions/conflicts between policies across multiple documents in a single query
 - [ ] Web UI: chat interface with message history, input box, and citation display panel
-- [ ] Authentication: user login required to access the chat interface
 - [ ] Docker Compose: all services (API backend, Qdrant, frontend) packaged and runnable with `docker compose up`
 - [ ] Environment config: API keys loaded from `.env`, Python 3.11 virtualenv for local dev
 
@@ -86,4 +85,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-21 after initialization*
+*Last updated: 2026-04-27 — Phase 3 complete: authentication (JWT + Argon2id + DB layer)*

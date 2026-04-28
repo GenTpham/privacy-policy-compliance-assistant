@@ -10,11 +10,13 @@ import json
 from collections.abc import AsyncGenerator
 from typing import Literal
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 
+from backend.app.db.models import User
 from backend.app.services import rag
+from backend.app.services.auth import get_current_user
 
 router = APIRouter()
 
@@ -56,7 +58,7 @@ class Citation(BaseModel):
 @router.post("/chat")
 async def chat_endpoint(
     request: ChatRequest,
-    # current_user: User = Depends(get_current_user),  # Phase 3 adds this
+    current_user: User = Depends(get_current_user),
 ) -> StreamingResponse:
     """
     POST /api/chat — accepts a question and optional conversation history,
