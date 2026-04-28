@@ -1,11 +1,18 @@
-import { describe, test } from "vitest";
+import { describe, test, expect } from "vitest";
+import { render, screen } from "@testing-library/react";
+import { NoMatchMessage } from "@/components/chat/NoMatchMessage";
 
 describe("NoMatchMessage (UI-05)", () => {
-  test.skip("renders heading 'No matching policy found'", () => {
-    // TODO: render NoMatchMessage; verify heading text present
+  test("renders 'No matching policy found' heading", () => {
+    render(<NoMatchMessage />);
+    expect(screen.getByText("No matching policy found")).toBeInTheDocument();
   });
 
-  test.skip("renders body copy about rephrasing the question", () => {
-    // TODO: render NoMatchMessage; verify body text
+  test("renders body copy about rephrasing the question", () => {
+    render(<NoMatchMessage />);
+    expect(
+      screen.getByText(/The query did not match any passages/)
+    ).toBeInTheDocument();
+    expect(screen.getByText(/Try rephrasing your question/)).toBeInTheDocument();
   });
 });
