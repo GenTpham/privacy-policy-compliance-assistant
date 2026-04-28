@@ -110,8 +110,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 05-01-PLAN.md — Wave 0: test stubs (conftest fixture + 6 test_rag stubs + 3 test_chat_endpoint stubs)
-- [ ] 05-02-PLAN.md — Wave 1: is_conflict_query + routing branch (chat.py) + stream_conflict_answer + _build_conflict_messages (rag.py)
+- [x] 05-01-PLAN.md — Wave 0: test stubs (conftest fixture + 6 test_rag stubs + 3 test_chat_endpoint stubs)
+- [x] 05-02-PLAN.md — Wave 1: is_conflict_query + routing branch (chat.py) + stream_conflict_answer + _build_conflict_messages (rag.py)
 
 ---
 
@@ -127,8 +127,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 05-01-PLAN.md — Wave 0: test stubs (conftest fixture + 6 test_rag stubs + 3 test_chat_endpoint stubs)
-- [ ] 05-02-PLAN.md — Wave 1: is_conflict_query + routing branch (chat.py) + stream_conflict_answer + _build_conflict_messages (rag.py)
+- [x] 05-01-PLAN.md — Wave 0: test stubs (conftest fixture + 6 test_rag stubs + 3 test_chat_endpoint stubs)
+- [x] 05-02-PLAN.md — Wave 1: is_conflict_query + routing branch (chat.py) + stream_conflict_answer + _build_conflict_messages (rag.py)
 
 ---
 
