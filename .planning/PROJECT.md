@@ -85,4 +85,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-04-27 — Phase 3 complete: authentication (JWT + Argon2id + DB layer)*
+*Last updated: 2026-04-28 — Phase 5 complete: cross-document conflict detection (is_conflict_query + stream_conflict_answer + Verdict classification prompt; 32/32 tests green)*
