@@ -92,32 +92,33 @@ async def test_system_role_rejected():
 # ── CONFLICT-01: keyword detection unit tests ────────────────────────────────
 
 def test_conflict_detection_keywords():
-    """
-    CONFLICT-01: is_conflict_query returns True for each of the 7 required keywords.
-    Tests: 'conflict', 'contradict', 'mâu thuẫn', 'so sánh', 'khác nhau', 'differ',
-    'both documents' — all case-insensitive per D-01/D-02.
-    Pure function test — no mocks or HTTP needed.
-    """
-    pytest.skip("stub")
+    """CONFLICT-01: is_conflict_query returns True for each of the 7 required keywords."""
+    assert is_conflict_query("conflict of interest") is True
+    assert is_conflict_query("these policies contradict each other") is True
+    assert is_conflict_query("mâu thuẫn về lưu trữ dữ liệu") is True
+    assert is_conflict_query("so sánh hai tài liệu") is True
+    assert is_conflict_query("khác nhau giữa hai chính sách") is True
+    assert is_conflict_query("policies differ in this area") is True
+    assert is_conflict_query("both documents address retention") is True
+    # Case-insensitive (D-01)
+    assert is_conflict_query("CONFLICT") is True
+    assert is_conflict_query("Differ") is True
 
 
 def test_standard_query_not_detected():
-    """
-    CONFLICT-01: is_conflict_query returns False for a standard single-document query
-    that contains none of the 7 keywords.
-    Pure function test.
-    """
-    pytest.skip("stub")
+    """CONFLICT-01: is_conflict_query returns False for a standard single-document query."""
+    assert is_conflict_query("what is the data retention policy?") is False
+    assert is_conflict_query("how long is data stored?") is False
+    assert is_conflict_query("tell me about GDPR compliance") is False
 
 
 def test_false_positive_graceful():
     """
-    CONFLICT-01 / D-03: 'indifferent' contains 'differ' — is_conflict_query returns True
-    (false positive). This is accepted behaviour per D-03; the test documents it as
-    intentional, not a bug.
-    Pure function test.
+    CONFLICT-01 / D-03: 'indifferent' contains 'differ' — is_conflict_query returns True.
+    This is intentional: false positives on the conflict path are acceptable per D-03
+    because running the conflict path on a standard query degrades gracefully.
     """
-    pytest.skip("stub")
+    assert is_conflict_query("I am indifferent about this policy") is True
 
 
 # ── CONFLICT-01+02: HTTP routing dispatches to correct generator ─────────────
@@ -125,8 +126,24 @@ def test_false_positive_graceful():
 @pytest.mark.asyncio
 async def test_conflict_route_dispatches_conflict_generator():
     """
-    CONFLICT-01+02: POST /api/chat with a message containing 'mâu thuẫn' calls
-    rag.stream_conflict_answer (not rag.stream_answer).
-    Integration test — patches both generators; checks call counts after request.
+    CONFLICT-01+02: POST /api/chat with a conflict keyword calls rag.stream_conflict_answer,
+    not rag.stream_answer. Verifies the routing branch in chat_endpoint (D-06).
     """
-    pytest.skip("stub")
+    app = create_app()
+    app.dependency_overrides[get_current_user] = _stub_current_user
+    try:
+        with patch("backend.app.services.rag.stream_conflict_answer", side_effect=_minimal_done_stream) as mock_conflict, \
+             patch("backend.app.services.rag.stream_answer", side_effect=_minimal_done_stream) as mock_standard:
+            async with httpx.AsyncClient(
+                transport=httpx.ASGITransport(app=app),
+                base_url="http://test",
+            ) as client:
+                response = await client.post(
+                    "/api/chat",
+                    json={"message": "mâu thuẫn về chính sách lưu trữ dữ liệu", "history": []},
+                )
+    finally:
+        app.dependency_overrides.clear()
+    assert response.status_code == 200
+    mock_conflict.assert_called_once()
+    mock_standard.assert_not_called()
