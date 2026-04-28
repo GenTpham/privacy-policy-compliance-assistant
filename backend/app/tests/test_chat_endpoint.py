@@ -12,6 +12,7 @@ from unittest.mock import patch, AsyncMock
 from backend.app.db.models import User
 from backend.app.main import create_app
 from backend.app.services.auth import get_current_user
+from backend.app.api.chat import is_conflict_query
 
 
 # ── Shared helpers ────────────────────────────────────────────────────────────
@@ -86,3 +87,46 @@ async def test_system_role_rejected():
         f"Expected 422 for role='system', got {response.status_code}. "
         f"Body: {response.text[:300]}"
     )
+
+
+# ── CONFLICT-01: keyword detection unit tests ────────────────────────────────
+
+def test_conflict_detection_keywords():
+    """
+    CONFLICT-01: is_conflict_query returns True for each of the 7 required keywords.
+    Tests: 'conflict', 'contradict', 'mâu thuẫn', 'so sánh', 'khác nhau', 'differ',
+    'both documents' — all case-insensitive per D-01/D-02.
+    Pure function test — no mocks or HTTP needed.
+    """
+    pytest.skip("stub")
+
+
+def test_standard_query_not_detected():
+    """
+    CONFLICT-01: is_conflict_query returns False for a standard single-document query
+    that contains none of the 7 keywords.
+    Pure function test.
+    """
+    pytest.skip("stub")
+
+
+def test_false_positive_graceful():
+    """
+    CONFLICT-01 / D-03: 'indifferent' contains 'differ' — is_conflict_query returns True
+    (false positive). This is accepted behaviour per D-03; the test documents it as
+    intentional, not a bug.
+    Pure function test.
+    """
+    pytest.skip("stub")
+
+
+# ── CONFLICT-01+02: HTTP routing dispatches to correct generator ─────────────
+
+@pytest.mark.asyncio
+async def test_conflict_route_dispatches_conflict_generator():
+    """
+    CONFLICT-01+02: POST /api/chat with a message containing 'mâu thuẫn' calls
+    rag.stream_conflict_answer (not rag.stream_answer).
+    Integration test — patches both generators; checks call counts after request.
+    """
+    pytest.skip("stub")
