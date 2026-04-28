@@ -127,8 +127,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [x] 05-01-PLAN.md — Wave 0: test stubs (conftest fixture + 6 test_rag stubs + 3 test_chat_endpoint stubs)
-- [x] 05-02-PLAN.md — Wave 1: is_conflict_query + routing branch (chat.py) + stream_conflict_answer + _build_conflict_messages (rag.py)
+- [ ] 06-01-PLAN.md — Wave 1: docker-compose.yml (backend healthcheck + frontend service + phoenix observability profile) + frontend/Dockerfile (node:20-alpine → nginx:alpine) + frontend/nginx.conf (SSE proxy + SPA routing)
+- [ ] 06-02-PLAN.md — Wave 2: Makefile smoke-test target + VERIFICATION.md (E2E browser checklist) + frontend/src/lib/api.ts BASE_URL constant
 
 ---
 
@@ -187,8 +187,8 @@ Plans:
 | 3. Authentication | 0/3 | Planned | - |
 | 4. Web Frontend | 0/6 | Planned | - |
 | 5. Cross-Document Conflict Detection | 0/2 | Planned | - |
-| 6. Integration & Docker Compose Finalization | 0/? | Not started | - |
+| 6. Integration & Docker Compose Finalization | 0/2 | Planned | - |
 
 ---
 *Roadmap created: 2026-04-22*
-*Last updated: 2026-04-28 — Phase 5 plans created (2 plans, 2 waves)*
+*Last updated: 2026-04-28 — Phase 6 plans created (2 plans, 2 waves)*
