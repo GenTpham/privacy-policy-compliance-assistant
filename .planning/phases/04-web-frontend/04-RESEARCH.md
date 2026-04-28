@@ -589,22 +589,22 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **"No match" detection signal**
    - What we know: Backend yields `{type: "done", answer: "No matching policy found for your question.", citations: []}` when no chunks exceed threshold (rag.py line 154)
    - What's unclear: Should the frontend detect no-match by `citations.length === 0`, by matching the answer string, or both?
-   - Recommendation: Use `citations.length === 0` as primary signal (robust to answer text changes). Optionally also check if answer contains "No matching policy" as secondary confirmation.
+   > RESOLVED: Use `citations.length === 0` as primary signal (robust to answer text changes). Optionally also check if answer contains "No matching policy" as secondary confirmation. Implemented in useSSEChat.ts `isNoMatch` flag.
 
 2. **Conversation history scroll behavior**
    - What we know: UI-SPEC says "scroll-to-bottom on new message"
    - What's unclear: Should auto-scroll be disabled if the user has manually scrolled up?
-   - Recommendation: Use `useRef` + `useEffect` to scroll to bottom on message append. If user scroll-interrupt tracking is needed, add it as a future enhancement — keep Wave 0 simple.
+   > RESOLVED: Use `useRef` + `useEffect` to scroll to bottom on message append. Scroll-interrupt tracking deferred as future enhancement — Wave 0 implementation uses unconditional scroll-to-bottom.
 
 3. **Empty chat initial state**
    - What we know: UI-SPEC copywriting contract specifies "Ask a policy question" heading and example prompt text
    - What's unclear: Should the empty state be a separate component or inline in MessageList?
-   - Recommendation: Inline in MessageList when `messages.length === 0` — no separate component needed.
+   > RESOLVED: Inline in MessageList when `messages.length === 0` — no separate component needed. Confirmed in ChatPage.test.tsx assertion against "Ask a policy question" heading.
 
 ---
 

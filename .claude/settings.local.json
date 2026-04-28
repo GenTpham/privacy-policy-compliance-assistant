@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:openrouter.ai)",
+      "WebFetch(domain:www.tensorlake.ai)",
+      "WebFetch(domain:towardsagenticai.com)",
+      "WebFetch(domain:www.nb-data.com)",
+      "WebFetch(domain:qdrant.tech)",
+      "WebFetch(domain:pypi.org)",
+      "WebFetch(domain:arxiv.org)",
+      "WebFetch(domain:customgpt.ai)",
+      "WebFetch(domain:weaviate.io)",
+      "WebFetch(domain:mljourney.com)",
+      "Bash(node __TRACKED_VAR__/.claude/get-shit-done/bin/gsd-tools.cjs commit 'docs: add project research \\(stack, features, architecture, pitfalls, summary\\)' --files .planning/research/STACK.md .planning/research/FEATURES.md .planning/research/ARCHITECTURE.md .planning/research/PITFALLS.md .planning/research/SUMMARY.md)",
+      "Bash(node __TRACKED_VAR__/.claude/get-shit-done/bin/gsd-tools.cjs commit 'docs: define v1 requirements' --files .planning/REQUIREMENTS.md)",
+      "Bash(node __TRACKED_VAR__/.claude/get-shit-done/bin/gsd-tools.cjs generate-claude-md --output CLAUDE.md)",
+      "Bash(node __TRACKED_VAR__/.claude/get-shit-done/bin/gsd-tools.cjs commit 'docs: create roadmap \\(6 phases\\)' --files .planning/ROADMAP.md .planning/STATE.md .planning/REQUIREMENTS.md CLAUDE.md)",
+      "Skill(gsd-execute-phase)",
+      "Skill(gsd-execute-phase:*)",
+      "Bash(node __TRACKED_VAR__/.claude/get-shit-done/bin/gsd-tools.cjs roadmap update-plan-progress 01 01-01 complete)",
+      "Bash(node __TRACKED_VAR__/.claude/get-shit-done/bin/gsd-tools.cjs roadmap update-plan-progress 01 01-02 complete)",
+      "Bash(git reset *)",
+      "Bash(node \"C:/Users/Admin/.claude/get-shit-done/bin/gsd-tools.cjs\" init plan-phase 1)",
+      "Bash(printf '.PHONY: venv install install-dev qdrant-up qdrant-down ingest eval-ingest eval-ingest-fast dev up down health\\\\n\\\\n# ── Environment setup ─────────────────────────────────────────────────────────\\\\nvenv:\\\\n\\\\tpython3.11 -m venv .venv\\\\n\\\\ninstall:\\\\n\\\\t.venv/bin/pip install -r requirements.txt\\\\n\\\\ninstall-dev:\\\\n\\\\t.venv/bin/pip install -r requirements.txt -r requirements-dev.txt\\\\n\\\\n# ── Local dev: Qdrant only \\(D-05 workflow\\) ────────────────────────────────────\\\\nqdrant-up:\\\\n\\\\tdocker compose up qdrant -d\\\\n\\\\nqdrant-down:\\\\n\\\\tdocker compose down\\\\n\\\\n# ── Data ingestion ────────────────────────────────────────────────────────────\\\\ningest:\\\\n\\\\t.venv/bin/python -m backend.ingestion.ingest\\\\n\\\\n# ── Eval targets \\(from AI-SPEC §5\\) ───────────────────────────────────────────\\\\neval-ingest:\\\\n\\\\t.venv/bin/pytest backend/ingestion/tests/test_ingestion_evals.py -v --tb=short\\\\n\\\\neval-ingest-fast:\\\\n\\\\t.venv/bin/pytest backend/ingestion/tests/test_ingestion_evals.py -v --tb=short \\\\\\\\\\\\n\\\\t  -k \"not rank1 and not embedding_dim and not resumability and not persistence\"\\\\n\\\\n# ── Local backend dev ─────────────────────────────────────────────────────────\\\\ndev:\\\\n\\\\t.venv/bin/uvicorn backend.app.main:app --reload --host 127.0.0.1 --port 8000\\\\n\\\\n# ── Docker full stack ─────────────────────────────────────────────────────────\\\\nup:\\\\n\\\\tdocker compose up\\\\n\\\\ndown:\\\\n\\\\tdocker compose down\\\\n\\\\n# ── Health check ──────────────────────────────────────────────────────────────\\\\nhealth:\\\\n\\\\tcurl -f http://localhost:8000/health && curl -f http://localhost:6333/readyz\\\\n')",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(node \"C:/Users/Admin/.claude/get-shit-done/bin/gsd-tools.cjs\" state planned-phase --phase \"02\" --name \"Core RAG Pipeline\" --plans 3)",
+      "Bash(node __TRACKED_VAR__/.claude/get-shit-done/bin/gsd-tools.cjs config-get workflow.code_review)",
+      "Skill(gsd-code-review)",
+      "Skill(gsd-code-review:*)",
+      "Bash(docker compose *)",
+      "Bash(.venv/Scripts/python -c ' *)",
+      "Bash(.venv/Scripts/python -c \"import openai; print\\('openai version:', openai.__version__\\)\")",
+      "Bash(node __TRACKED_VAR__/.claude/get-shit-done/bin/gsd-tools.cjs phase complete 02)",
+      "Bash(node __TRACKED_VAR__/.claude/get-shit-done/bin/gsd-tools.cjs commit 'docs\\(phase-02\\): complete phase execution' --files .planning/ROADMAP.md .planning/STATE.md .planning/phases/02-core-rag-pipeline/02-VERIFICATION.md)",
+      "Bash(python -c \"from qdrant_client import AsyncQdrantClient; print\\(dir\\(AsyncQdrantClient\\)\\)\")",
+      "Bash(\"D:/data/code/privacy-policy-compliance-assistant/.venv/Scripts/python.exe\" -c \"from qdrant_client import AsyncQdrantClient; print\\([m for m in dir\\(AsyncQdrantClient\\) if 'search' in m.lower\\(\\) or 'query' in m.lower\\(\\)]\\)\")"
+    ]
+  }
+}

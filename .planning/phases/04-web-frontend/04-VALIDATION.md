@@ -2,7 +2,7 @@
 phase: 4
 slug: web-frontend
 status: draft
-nyquist_compliant: false
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-04-27
 ---
@@ -18,7 +18,7 @@ created: 2026-04-27
 | Property | Value |
 |----------|-------|
 | **Framework** | vitest 4.1.5 + happy-dom |
-| **Config file** | `frontend/vite.config.ts` (test block) — Wave 0 installs |
+| **Config file** | `frontend/vitest.config.ts` (Wave 0 installs) |
 | **Quick run command** | `cd frontend && npx vitest run --reporter=verbose` |
 | **Full suite command** | `cd frontend && npx vitest run --reporter=verbose --coverage` |
 | **Estimated runtime** | ~15 seconds |
@@ -39,12 +39,12 @@ created: 2026-04-27
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
 | 4-01-01 | 01 | 0 | UI-01 | — | N/A | scaffold | `cd frontend && npm run build` | ❌ W0 | ⬜ pending |
-| 4-02-01 | 02 | 1 | UI-02 | T-4-01 | JWT stored in memory (not localStorage) | unit | `cd frontend && npx vitest run src/__tests__/auth.test.tsx` | ❌ W0 | ⬜ pending |
-| 4-02-02 | 02 | 1 | UI-03 | T-4-02 | Unauthenticated routes redirect to /login | unit | `cd frontend && npx vitest run src/__tests__/routing.test.tsx` | ❌ W0 | ⬜ pending |
-| 4-03-01 | 03 | 2 | UI-04 | — | N/A | unit | `cd frontend && npx vitest run src/__tests__/chat.test.tsx` | ❌ W0 | ⬜ pending |
-| 4-03-02 | 03 | 2 | UI-05 | — | SSE stream parsed correctly; no auth header leakage | unit | `cd frontend && npx vitest run src/__tests__/streaming.test.tsx` | ❌ W0 | ⬜ pending |
-| 4-04-01 | 04 | 2 | CITE-04 | — | N/A | unit | `cd frontend && npx vitest run src/__tests__/citations.test.tsx` | ❌ W0 | ⬜ pending |
-| 4-04-02 | 04 | 2 | UI-06 | — | N/A | unit | `cd frontend && npx vitest run src/__tests__/no-match.test.tsx` | ❌ W0 | ⬜ pending |
+| 4-02-01 | 02 | 1 | UI-02 | T-4-01 | JWT stored in localStorage (D-08) | unit | `cd frontend && npx vitest run src/components/layout/ProtectedRoute.test.tsx` | ❌ W0 | ⬜ pending |
+| 4-02-02 | 02 | 1 | UI-03 | T-4-02 | Unauthenticated routes redirect to /login | unit | `cd frontend && npx vitest run src/components/chat/ChatPage.test.tsx` | ❌ W0 | ⬜ pending |
+| 4-03-01 | 03 | 2 | UI-04 | — | N/A | unit | `cd frontend && npx vitest run src/hooks/useSSEChat.test.ts` | ❌ W0 | ⬜ pending |
+| 4-03-02 | 03 | 2 | UI-05 | — | SSE stream parsed correctly; no auth header leakage | unit | `cd frontend && npx vitest run src/components/chat/CitationCard.test.tsx` | ❌ W0 | ⬜ pending |
+| 4-04-01 | 04 | 2 | CITE-04 | — | N/A | unit | `cd frontend && npx vitest run src/components/chat/NoMatchMessage.test.tsx` | ❌ W0 | ⬜ pending |
+| 4-04-02 | 04 | 2 | UI-06 | — | N/A | unit | `cd frontend && npx vitest run src/hooks/useAuth.test.ts` | ❌ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -52,13 +52,13 @@ created: 2026-04-27
 
 ## Wave 0 Requirements
 
-- [ ] `frontend/src/__tests__/auth.test.tsx` — stubs for UI-02 (login flow, JWT handling)
-- [ ] `frontend/src/__tests__/routing.test.tsx` — stubs for UI-03 (protected route redirect)
-- [ ] `frontend/src/__tests__/chat.test.tsx` — stubs for UI-04 (chat interface render)
-- [ ] `frontend/src/__tests__/streaming.test.tsx` — stubs for UI-05 (SSE stream parsing)
-- [ ] `frontend/src/__tests__/citations.test.tsx` — stubs for CITE-04 (citation card render/expand)
-- [ ] `frontend/src/__tests__/no-match.test.tsx` — stubs for UI-06 (no-match message display)
-- [ ] `frontend/vite.config.ts` — vitest config block with happy-dom environment
+- [ ] `frontend/src/components/layout/ProtectedRoute.test.tsx` — stubs for UI-01 (protected route redirect)
+- [ ] `frontend/src/components/chat/ChatPage.test.tsx` — stubs for UI-02 (chat interface render)
+- [ ] `frontend/src/hooks/useSSEChat.test.ts` — stubs for UI-03 (SSE stream parsing)
+- [ ] `frontend/src/components/chat/CitationCard.test.tsx` — stubs for UI-04, CITE-04 (citation card render/expand)
+- [ ] `frontend/src/components/chat/NoMatchMessage.test.tsx` — stubs for UI-05 (no-match message display)
+- [ ] `frontend/src/hooks/useAuth.test.ts` — stubs for UI-06 (login flow, JWT handling)
+- [ ] `frontend/vitest.config.ts` — vitest config with happy-dom environment
 - [ ] `npx shadcn@latest init` — Wave 0 blocker; components.json does not exist
 
 ---
