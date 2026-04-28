@@ -24,7 +24,12 @@ COLLECTION_NAME = "policies"
 BATCH_SIZE = 50              # D-04: conservative for OpenRouter free-tier
 MAX_TOKENS_WARN = 400        # C6 guard: warn before embedding over-long passages
 CHECKPOINT_PATH = Path("ingestion_checkpoint.json")   # D-03
-DATASET_PATH = Path("dataset/json/train/policy_qa_train.json")  # D-01 train split only
+# All three splits — ingest full corpus for maximum retrieval coverage
+DATASET_PATHS = [
+    Path("dataset/json/train/policy_qa_train.json"),
+    Path("dataset/json/test_valid/policy_qa_test.json"),
+    Path("dataset/json/test_valid/policy_qa_validation.json"),
+]
 EMBED_MODEL = "nvidia/llama-nemotron-embed-vl-1b-v2"
 BATCH_SLEEP_SECONDS = 3      # polite delay — respects free-tier 20 req/min
 
@@ -57,9 +62,8 @@ openrouter = AsyncOpenAI(
 )
 
 qdrant = AsyncQdrantClient(
-    host=settings.qdrant_host,
-    port=settings.qdrant_port,
-    api_key=settings.qdrant_api_key,
+    url=f"http://{settings.qdrant_host}:{settings.qdrant_port}",
+    api_key=settings.qdrant_api_key or None,
 )
 
 
@@ -170,7 +174,7 @@ async def sanity_check() -> None:
     Embeds the first corpus passage and asserts it ranks #1 with score > 0.99.
     """
     print("[sanity_check] Running rank-1 sanity check...")
-    raw = json.loads(DATASET_PATH.read_text())
+    raw = json.loads(DATASET_PATHS[0].read_text())
     first_text = raw[0]["context"].strip()
 
     vecs = await embed_batch([first_text])
@@ -205,23 +209,24 @@ async def ingest() -> None:
     await ensure_collection(dim)
 
     # 3. Load and validate corpus
-    print(f"[ingest] Loading corpus from {DATASET_PATH}...")
-    raw_records = json.loads(DATASET_PATH.read_text())
     passages: list[PolicyPassage] = []
     skipped_empty = 0
-    for raw in raw_records:
-        try:
-            passages.append(PolicyPassage(**raw))
-        except Exception:
-            skipped_empty += 1
+    for dataset_path in DATASET_PATHS:
+        print(f"[ingest] Loading corpus from {dataset_path}...")
+        raw_records = json.loads(dataset_path.read_text())
+        for raw in raw_records:
+            try:
+                passages.append(PolicyPassage(**raw))
+            except Exception:
+                skipped_empty += 1
 
-    print(f"[ingest] Loaded {len(passages)} valid passages ({skipped_empty} skipped).")
+    print(f"[ingest] Loaded {len(passages)} valid passages ({skipped_empty} skipped) across {len(DATASET_PATHS)} splits.")
 
     # 4. Empty corpus guard
     if not passages:
         raise ValueError(
             "No valid passages found after Pydantic validation. "
-            f"Check that {DATASET_PATH} exists and contains 'id', 'title', 'context' fields."
+            f"Check that dataset files exist and contain 'id', 'title', 'context' fields. Paths: {DATASET_PATHS}"
         )
 
     # 5. Load checkpoint for resumability (D-03)

@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 # ── Constants ──────────────────────────────────────────────────────────────────
 COLLECTION_NAME = "policies"
 EMBEDDING_MODEL = "nvidia/llama-nemotron-embed-vl-1b-v2"
-CHAT_MODEL = "google/gemma-4-26b-a4b"
+CHAT_MODEL = "google/gemma-4-26b-a4b-it"
 
 # D-05: Hard abstain instruction — exact wording locked in CONTEXT.md
 ABSTAIN_INSTRUCTION = (
@@ -42,9 +42,8 @@ openrouter = AsyncOpenAI(
 )
 
 qdrant = AsyncQdrantClient(
-    host=_settings.qdrant_host,
-    port=_settings.qdrant_port,
-    api_key=_settings.qdrant_api_key,
+    url=f"http://{_settings.qdrant_host}:{_settings.qdrant_port}",
+    api_key=_settings.qdrant_api_key or None,
 )
 
 
@@ -185,4 +184,19 @@ async def stream_answer(
 
     # Step 6: Verify citations, emit done event (CITE-03, D-07, D-08)
     citations = _build_verified_citations(full_answer, results)
+
+    # If LLM abstained (no [N] refs) but chunks were retrieved, include all retrieved
+    # chunks as citations so the frontend shows which sources were checked.
+    # This distinguishes "abstain with sources" from "no retrieval at all".
+    if not citations and results:
+        citations = [
+            {
+                "id": i + 1,
+                "qdrant_id": str(c.id),
+                "title": c.payload.get("title", ""),
+                "text": c.payload.get("text", ""),
+            }
+            for i, c in enumerate(results)
+        ]
+
     yield {"type": "done", "answer": full_answer, "citations": citations}

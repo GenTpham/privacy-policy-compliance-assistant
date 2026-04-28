@@ -136,9 +136,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         },
     )
     qdrant = AsyncQdrantClient(
-        host=settings.qdrant_host,
-        port=settings.qdrant_port,
-        api_key=settings.qdrant_api_key,
+        url=f"http://{settings.qdrant_host}:{settings.qdrant_port}",
+        api_key=settings.qdrant_api_key or None,
     )
 
     dim = await _probe_embedding_dim(

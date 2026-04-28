@@ -89,12 +89,12 @@ Plans:
 **Plans**: 6 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — Wave 1: Vite+React scaffold, shadcn/ui init (new-york), vitest+happy-dom config, 6 test stub files
-- [ ] 04-02-PLAN.md — Wave 2: tokens.ts, api.ts (fetchWithAuth + silent refresh), vite.config.ts proxy, App.tsx routes, ProtectedRoute
-- [ ] 04-03-PLAN.md — Wave 3: useAuth hook (login/logout/forceLogout), LoginForm (all states), LoginPage layout
-- [ ] 04-04-PLAN.md — Wave 3: useSSEChat hook (SSE parser), StreamingCursor, CitationCard, NoMatchMessage (parallel with plan 03)
-- [ ] 04-05-PLAN.md — Wave 4: MessageBubble, MessageList, ChatInput, Header, ChatPage composition
-- [ ] 04-06-PLAN.md — Wave 5: All 6 test stubs replaced with passing implementations
+- [x] 04-01-PLAN.md — Wave 1: Vite+React scaffold, shadcn/ui init (new-york), vitest+happy-dom config, 6 test stub files
+- [x] 04-02-PLAN.md — Wave 2: tokens.ts, api.ts (fetchWithAuth + silent refresh), vite.config.ts proxy, App.tsx routes, ProtectedRoute
+- [x] 04-03-PLAN.md — Wave 3: useAuth hook (login/logout/forceLogout), LoginForm (all states), LoginPage layout
+- [x] 04-04-PLAN.md — Wave 3: useSSEChat hook (SSE parser), StreamingCursor, CitationCard, NoMatchMessage (parallel with plan 03)
+- [x] 04-05-PLAN.md — Wave 4: MessageBubble, MessageList, ChatInput, Header, ChatPage composition
+- [x] 04-06-PLAN.md — Wave 5: All 6 test stubs replaced with passing implementations
 
 ---
 
