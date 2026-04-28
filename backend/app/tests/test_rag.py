@@ -15,7 +15,13 @@ Run one test:   pytest backend/app/tests/test_rag.py::test_fabricated_citation_s
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from backend.app.services.rag import _build_messages, _build_verified_citations, stream_answer
+from backend.app.services.rag import (
+    _build_messages,
+    _build_verified_citations,
+    stream_answer,
+    _build_conflict_messages,
+    stream_conflict_answer,
+)
 from backend.app.services import rag
 
 
@@ -194,3 +200,66 @@ def test_fabricated_citation_stripped(sample_scored_point):
     ids = [c["id"] for c in citations]
     assert 1 in ids
     assert 3 not in ids
+
+
+# ── CONFLICT-02: conflict retrieval uses limit=10 ────────────────────────────
+
+@pytest.mark.asyncio
+async def test_conflict_retrieve_params(mock_openrouter, mock_qdrant, sample_scored_points_multi):
+    """
+    CONFLICT-02: stream_conflict_answer calls query_points with limit=10, score_threshold=0.55,
+    with_payload=True — only limit differs from the standard path.
+    """
+    pytest.skip("stub")
+
+
+# ── CONFLICT-03: conflict prompt contains verdict format ─────────────────────
+
+def test_conflict_prompt_contains_verdict_format(sample_scored_points_multi):
+    """
+    CONFLICT-03: _build_conflict_messages system content contains 'Verdict:' instruction
+    with classification format per D-11.
+    Pure function test — no mocks needed.
+    """
+    pytest.skip("stub")
+
+
+def test_conflict_prompt_contains_classifications(sample_scored_points_multi):
+    """
+    CONFLICT-03: _build_conflict_messages system content contains all three classification
+    terms: 'Contradictory', 'Consistent', 'One-Silent' — per D-12.
+    Pure function test — no mocks needed.
+    """
+    pytest.skip("stub")
+
+
+def test_conflict_prompt_abstain_wording(sample_scored_points_multi):
+    """
+    CONFLICT-03: _build_conflict_messages system content contains the ABSTAIN_INSTRUCTION
+    wording — 'The provided policies do not contain sufficient information' — per D-13.
+    Pure function test — no mocks needed.
+    """
+    pytest.skip("stub")
+
+
+# ── CONFLICT-04: conflict done event shape unchanged ─────────────────────────
+
+@pytest.mark.asyncio
+async def test_conflict_done_event_shape(mock_openrouter, mock_qdrant, sample_scored_points_multi):
+    """
+    CONFLICT-04: done event from stream_conflict_answer has shape
+    {type: 'done', answer: str, citations: [{id, qdrant_id, title, text}]}
+    — identical to standard path (D-14).
+    """
+    pytest.skip("stub")
+
+
+# ── CONFLICT-03 / Pitfall 3: history slice identical to standard path ─────────
+
+def test_conflict_history_sliced_to_6(sample_scored_points_multi):
+    """
+    CONFLICT-03 / Pitfall 3: _build_conflict_messages produces at most 8 messages
+    (system + 6 history + user) when history is longer than 6 items.
+    Pure function test — no mocks needed.
+    """
+    pytest.skip("stub")
