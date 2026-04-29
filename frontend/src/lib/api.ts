@@ -50,8 +50,13 @@ export async function fetchWithAuth(
       onUnauthorized();
       throw new Error("Refresh failed — force logout");
     }
-    const { access_token } = await refreshResp.json();
-    tokens.setAccess(access_token);
+    const { access_token, refresh_token: new_refresh } = await refreshResp.json();
+    if (new_refresh) {
+      // Store rotated refresh token if backend implements refresh token rotation
+      tokens.setBoth(access_token, new_refresh);
+    } else {
+      tokens.setAccess(access_token);
+    }
   } finally {
     isRefreshing = false;
   }
