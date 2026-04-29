@@ -1,4 +1,4 @@
-.PHONY: venv install install-dev qdrant-up qdrant-down ingest eval-ingest eval-ingest-fast dev up down health
+.PHONY: venv install install-dev qdrant-up qdrant-down ingest eval-ingest eval-ingest-fast dev up down health smoke-test
 
 # ── Environment setup ─────────────────────────────────────────────────────────
 venv:
@@ -42,3 +42,14 @@ down:
 # ── Health check ──────────────────────────────────────────────────────────────
 health:
 	curl -f http://localhost:8000/health && curl -f http://localhost:6333/readyz
+
+# ── Smoke test: start full stack and verify health ────────────────────────────
+smoke-test:
+	docker compose up -d --build
+	@echo "Waiting for backend /health (up to 60s)..."
+	curl -f --retry 12 --retry-delay 5 --retry-connrefused http://localhost:8000/health \
+	  && echo "PASS: backend healthy" || (echo "FAIL: backend unhealthy" && exit 1)
+	@echo "Waiting for frontend (up to 60s)..."
+	curl -f --retry 12 --retry-delay 5 --retry-connrefused http://localhost:80 \
+	  && echo "PASS: frontend healthy" || (echo "FAIL: frontend unhealthy" && exit 1)
+	@echo "smoke-test PASSED"
