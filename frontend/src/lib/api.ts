@@ -37,6 +37,10 @@ export async function fetchWithAuth(
   isRefreshing = true;
   try {
     const refreshToken = tokens.getRefresh();
+    if (!refreshToken) {
+      onUnauthorized();
+      throw new Error("No refresh token stored — force logout");
+    }
     const refreshResp = await fetch("/auth/refresh", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
