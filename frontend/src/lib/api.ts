@@ -1,3 +1,4 @@
+export const BASE_URL = import.meta.env.VITE_API_URL ?? "";
 import { tokens } from "./tokens";
 
 // Module-level flag prevents concurrent refresh storms (D-10).
@@ -36,6 +37,10 @@ export async function fetchWithAuth(
   isRefreshing = true;
   try {
     const refreshToken = tokens.getRefresh();
+    if (!refreshToken) {
+      onUnauthorized();
+      throw new Error("No refresh token stored — force logout");
+    }
     const refreshResp = await fetch("/auth/refresh", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -45,8 +50,13 @@ export async function fetchWithAuth(
       onUnauthorized();
       throw new Error("Refresh failed — force logout");
     }
-    const { access_token } = await refreshResp.json();
-    tokens.setAccess(access_token);
+    const { access_token, refresh_token: new_refresh } = await refreshResp.json();
+    if (new_refresh) {
+      // Store rotated refresh token if backend implements refresh token rotation
+      tokens.setBoth(access_token, new_refresh);
+    } else {
+      tokens.setAccess(access_token);
+    }
   } finally {
     isRefreshing = false;
   }

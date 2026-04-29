@@ -1,13 +1,13 @@
 services:
   qdrant:
-    image: qdrant/qdrant:latest
+    image: qdrant/qdrant:v1.17.1
     ports:
       - "127.0.0.1:6333:6333"
       - "127.0.0.1:6334:6334"
     volumes:
       - qdrant_storage:/qdrant/storage
     healthcheck:
-      test: ["CMD-SHELL", "timeout 1 bash -c ':> /dev/tcp/localhost/6333' || exit 1"]
+      test: ["CMD", "bash", "-c", ":> /dev/tcp/localhost/6333"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -26,11 +26,35 @@ services:
     depends_on:
       qdrant:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
     restart: on-failure
     command: uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
 
+  frontend:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost/index.html || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: on-failure
+
   phoenix:
-    image: arizephoenix/phoenix:latest
+    image: arizephoenix/phoenix:version-10.7.1
+    profiles: [observability]
     ports:
       - "127.0.0.1:6006:6006"
       - "127.0.0.1:4317:4317"

@@ -15,7 +15,13 @@ Run one test:   pytest backend/app/tests/test_rag.py::test_fabricated_citation_s
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from backend.app.services.rag import _build_messages, _build_verified_citations, stream_answer
+from backend.app.services.rag import (
+    _build_messages,
+    _build_verified_citations,
+    stream_answer,
+    _build_conflict_messages,
+    stream_conflict_answer,
+)
 from backend.app.services import rag
 
 
@@ -194,3 +200,94 @@ def test_fabricated_citation_stripped(sample_scored_point):
     ids = [c["id"] for c in citations]
     assert 1 in ids
     assert 3 not in ids
+
+
+# ── CONFLICT-02: conflict retrieval uses limit=10 ────────────────────────────
+
+@pytest.mark.asyncio
+async def test_conflict_retrieve_params(mock_openrouter, mock_qdrant, sample_scored_points_multi):
+    """CONFLICT-02: stream_conflict_answer calls query_points with limit=10, score_threshold=0.55, with_payload=True."""
+    mock_resp = MagicMock()
+    mock_resp.points = sample_scored_points_multi
+    mock_qdrant.query_points = AsyncMock(return_value=mock_resp)
+    mock_openrouter.chat.completions.create = AsyncMock(return_value=_fake_stream("answer"))
+
+    with patch.object(rag, "openrouter", mock_openrouter), \
+         patch.object(rag, "qdrant", mock_qdrant):
+        events = [e async for e in stream_conflict_answer("mâu thuẫn về dữ liệu", [])]
+
+    mock_qdrant.query_points.assert_called_once()
+    call_kwargs = mock_qdrant.query_points.call_args.kwargs
+    assert call_kwargs.get("limit") == 10
+    assert call_kwargs.get("score_threshold") == 0.55
+    assert call_kwargs.get("with_payload") is True
+
+
+# ── CONFLICT-03: conflict prompt contains verdict format ─────────────────────
+
+def test_conflict_prompt_contains_verdict_format(sample_scored_points_multi):
+    """CONFLICT-03: _build_conflict_messages system content contains 'Verdict:' instruction per D-11."""
+    messages = _build_conflict_messages("so sánh hai tài liệu", sample_scored_points_multi, [])
+    system_content = messages[0]["content"]
+    assert "Verdict:" in system_content
+    assert "<classification>" in system_content or "Contradictory" in system_content
+
+
+def test_conflict_prompt_contains_classifications(sample_scored_points_multi):
+    """CONFLICT-03: _build_conflict_messages system content contains all three classification terms per D-12."""
+    messages = _build_conflict_messages("khác nhau giữa hai chính sách", sample_scored_points_multi, [])
+    system_content = messages[0]["content"]
+    assert "Contradictory" in system_content
+    assert "Consistent" in system_content
+    assert "One-Silent" in system_content
+
+
+def test_conflict_prompt_abstain_wording(sample_scored_points_multi):
+    """CONFLICT-03: _build_conflict_messages retains ABSTAIN_INSTRUCTION text per D-13."""
+    messages = _build_conflict_messages("conflict on retention", sample_scored_points_multi, [])
+    system_content = messages[0]["content"]
+    assert "The provided policies do not contain sufficient information to answer this question." in system_content
+    assert "Do not infer, guess, or use outside knowledge." in system_content
+
+
+# ── CONFLICT-04: conflict done event shape unchanged ─────────────────────────
+
+@pytest.mark.asyncio
+async def test_conflict_done_event_shape(mock_openrouter, mock_qdrant, sample_scored_points_multi):
+    """CONFLICT-04: done event from stream_conflict_answer has identical shape to standard path (D-14)."""
+    mock_resp = MagicMock()
+    mock_resp.points = sample_scored_points_multi
+    mock_qdrant.query_points = AsyncMock(return_value=mock_resp)
+    mock_openrouter.chat.completions.create = AsyncMock(
+        return_value=_fake_stream("Policy A says [1]. Policy B says [2].")
+    )
+
+    with patch.object(rag, "openrouter", mock_openrouter), \
+         patch.object(rag, "qdrant", mock_qdrant):
+        events = [e async for e in stream_conflict_answer("differ in retention", [])]
+
+    done = events[-1]
+    assert done["type"] == "done"
+    assert isinstance(done["answer"], str)
+    assert isinstance(done["citations"], list)
+    if done["citations"]:
+        c = done["citations"][0]
+        assert set(c.keys()) >= {"id", "qdrant_id", "title", "text"}
+
+
+# ── CONFLICT-03 / Pitfall 3: history slice identical to standard path ─────────
+
+def test_conflict_history_sliced_to_6(sample_scored_points_multi):
+    """
+    CONFLICT-03 / Pitfall 3: _build_conflict_messages produces at most 8 messages
+    (system + 6 history + user) when history is longer than 6 items.
+    Ensures conflict path uses same slicing as standard path.
+    """
+    long_history = [
+        {"role": "user" if i % 2 == 0 else "assistant", "content": f"message {i}"}
+        for i in range(20)
+    ]
+    messages = _build_conflict_messages("conflict query", sample_scored_points_multi, long_history)
+    assert len(messages) == 8
+    assert messages[0]["role"] == "system"
+    assert messages[-1]["content"] == "conflict query"

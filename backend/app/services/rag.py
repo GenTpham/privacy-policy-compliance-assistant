@@ -200,3 +200,145 @@ async def stream_answer(
         ]
 
     yield {"type": "done", "answer": full_answer, "citations": citations}
+
+
+# ── Conflict-detection helpers and async generator ────────────────────────────
+
+def _build_conflict_messages(
+    user_question: str,
+    retrieved_chunks: list,
+    history: list[dict],
+) -> list[dict]:
+    """
+    Build the OpenAI messages array for the conflict-detection LLM call.
+    - Same numbered chunk injection format as _build_messages() (D-09)
+    - Organizes answer document-by-document (D-10)
+    - Concludes with Verdict line (D-11)
+    - Classification taxonomy: Contradictory / Consistent / One-Silent (D-12)
+    - Retains ABSTAIN_INSTRUCTION (D-13)
+    - Same history slicing as _build_messages() — 6 messages max (RAG-06 / Pitfall 3)
+    """
+    context_lines = [
+        f"[{i}] source: {c.payload.get('title', 'Unknown')}\n{c.payload.get('text', '')}"
+        for i, c in enumerate(retrieved_chunks, start=1)
+    ]
+    system_content = (
+        "You are a privacy policy compliance assistant specializing in cross-document comparison.\n"
+        "Answer using ONLY the policy passages below. Cite each passage you use by its numeric ID: [1], [2], etc.\n"
+        "Do not cite any source not listed in the numbered passages.\n\n"
+        "Organize your answer document-by-document: for each document involved, describe what it says "
+        "about the topic and cite the relevant passages with [N] references.\n\n"
+        "Conclude your answer with a verdict on the last line, using exactly this format:\n"
+        "Verdict: <classification> — <one-sentence reason>\n\n"
+        "Classification must be exactly one of:\n"
+        "- Contradictory — the documents make directly conflicting statements on this topic\n"
+        "- Consistent — both documents address the topic and are in agreement\n"
+        "- One-Silent — one document addresses the topic; the other does not mention it "
+        "(absence of a statement is not a conflict)\n\n"
+        f"{ABSTAIN_INSTRUCTION}\n\n"
+        "Context passages:\n" + "\n\n".join(context_lines)
+    )
+    # Same history slice as _build_messages() — last 6 messages = last 3 turns (RAG-06 / Pitfall 3)
+    recent_history = history[-6:] if len(history) > 6 else history
+    messages: list[dict] = [{"role": "system", "content": system_content}]
+    messages.extend(recent_history)
+    messages.append({"role": "user", "content": user_question})
+    return messages
+
+
+async def stream_conflict_answer(
+    message: str,
+    history: list[dict],
+    temperature: float = 0.0,
+    max_tokens: int = 1024,
+) -> AsyncGenerator[dict, None]:
+    """
+    Conflict-detection RAG pipeline as an async generator.
+
+    Mirrors stream_answer() with two differences:
+      - limit=10 (not 5) for cross-document retrieval (CONFLICT-02, D-07)
+      - Uses _build_conflict_messages() with conflict-classification prompt (CONFLICT-03, D-09–D-13)
+
+    Payload shape is IDENTICAL to stream_answer() (CONFLICT-04, D-14):
+      {"type": "delta", "content": token}
+      {"type": "done", "answer": str, "citations": [{id, qdrant_id, title, text}]}
+      {"type": "error", "message": str}
+
+    On zero retrieval results (D-16 — same as RAG-07):
+      {"type": "done", "answer": "No matching policy found for your question.", "citations": []}
+    """
+    # Step 1: Embed query (identical to stream_answer — same model)
+    embed_resp = await openrouter.embeddings.create(
+        model=EMBEDDING_MODEL,
+        input=message,
+        encoding_format="float",
+    )
+    query_vector = embed_resp.data[0].embedding
+
+    # Step 2: Retrieve top-10 across all source documents (CONFLICT-02, D-07, D-08)
+    response = await qdrant.query_points(
+        collection_name=COLLECTION_NAME,
+        query=query_vector,
+        limit=10,
+        score_threshold=0.55,
+        with_payload=True,
+    )
+    results = response.points
+
+    # Step 3: Early return if no chunks meet threshold (D-16 — same as RAG-07)
+    if not results:
+        yield {
+            "type": "done",
+            "answer": "No matching policy found for your question.",
+            "citations": [],
+        }
+        return
+
+    # Step 4: Build conflict-detection messages (D-09–D-13)
+    messages = _build_conflict_messages(message, results, history)
+
+    # Step 5: Stream LLM tokens (identical loop to stream_answer — Pitfall 5: None guard)
+    full_answer = ""
+    try:
+        stream = await openrouter.chat.completions.create(
+            model=CHAT_MODEL,
+            messages=messages,
+            stream=True,
+            temperature=temperature,
+            max_tokens=max_tokens,
+        )
+        async for chunk in stream:
+            # Guard: first and last chunks have delta.content = None (Pitfall 5)
+            if chunk.choices and chunk.choices[0].delta.content:
+                token = chunk.choices[0].delta.content
+                full_answer += token
+                yield {"type": "delta", "content": token}
+    except Exception as exc:
+        # Cannot change HTTP status after first byte sent — yield error event
+        logger.error("LLM stream error (conflict path): %s", exc)
+        yield {"type": "error", "message": "LLM service temporarily unavailable"}
+        return
+
+    # Step 6: Verify citations (reuses _build_verified_citations — no changes needed, CONFLICT-04)
+    citations = _build_verified_citations(full_answer, results)
+
+    # Abstain fallback (Pitfall 4): if LLM abstained (no [N] refs) but chunks were retrieved,
+    # include all retrieved chunks so the frontend shows which sources were checked.
+    if not citations and results:
+        citations = [
+            {
+                "id": i + 1,
+                "qdrant_id": str(c.id),
+                "title": c.payload.get("title", ""),
+                "text": c.payload.get("text", ""),
+            }
+            for i, c in enumerate(results)
+        ]
+
+    # Optional: log a warning if model did not produce the expected Verdict line
+    if "Verdict:" not in full_answer:
+        logger.warning(
+            "Conflict response does not contain 'Verdict:' line — model may have omitted it"
+        )
+
+    yield {"type": "done", "answer": full_answer, "citations": citations}

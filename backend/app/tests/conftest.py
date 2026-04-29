@@ -127,3 +127,28 @@ async def auth_client(db_engine):
     ) as client:
         yield client
     app.dependency_overrides.clear()
+
+
+@pytest.fixture
+def sample_scored_points_multi():
+    """
+    Two fake ScoredPoints from different source documents — for conflict path tests.
+    Simulates a top-10 retrieval returning chunks from Policy A and Policy B.
+    Function-scoped: each test receives a fresh list.
+    """
+    def _make(idx, title, text):
+        point = MagicMock()
+        point.id = f"id-{idx}"
+        point.score = 0.80
+        point.payload = {
+            "text": text,
+            "title": title,
+            "source_doc": f"doc_{idx}",
+            "chunk_index": 0,
+        }
+        return point
+
+    return [
+        _make(1, "Policy A", "Data is retained for 30 days."),
+        _make(2, "Policy B", "Data is retained indefinitely."),
+    ]

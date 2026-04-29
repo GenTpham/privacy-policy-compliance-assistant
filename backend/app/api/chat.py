@@ -7,6 +7,7 @@ Phase 3 note: add `current_user: User = Depends(get_current_user)` to chat_endpo
 when JWT auth is implemented.
 """
 import json
+import re
 from collections.abc import AsyncGenerator
 from typing import Literal
 
@@ -17,6 +18,23 @@ from pydantic import BaseModel, Field
 from backend.app.db.models import User
 from backend.app.services import rag
 from backend.app.services.auth import get_current_user
+
+# CONFLICT-01: compiled once at module level — avoids recompilation on every request (D-01/D-02)
+# Note: "differ" matches "different"/"indifferent" — false positives are accepted per D-03.
+_CONFLICT_PATTERN = re.compile(
+    r"conflict|contradict|mâu thuẫn|so sánh|khác nhau|differ|both documents",
+    re.IGNORECASE,
+)
+
+
+def is_conflict_query(message: str) -> bool:
+    """
+    Return True when message implies cross-document comparison.
+    Keywords (D-02): conflict, contradict, mâu thuẫn, so sánh, khác nhau, differ, both documents.
+    Case-insensitive substring match (D-01). False positives degrade gracefully (D-03).
+    """
+    return bool(_CONFLICT_PATTERN.search(message))
+
 
 router = APIRouter()
 
@@ -69,13 +87,18 @@ async def chat_endpoint(
       data: {"type": "done", "answer": "...", "citations": [...]}\n\n  ← final event
       data: {"type": "error", "message": "..."}\n\n  ← on LLM failure only
 
-    Auth: unauthenticated in Phase 2. Phase 3 adds JWT via Depends(get_current_user).
+    Routing (CONFLICT-01/D-04/D-06):
+      Conflict query → rag.stream_conflict_answer (limit=10, conflict prompt)
+      Standard query → rag.stream_answer (limit=5, standard prompt)
     """
+    history = [h.model_dump() for h in request.history]
+
     async def _generate() -> AsyncGenerator[str, None]:
-        async for event in rag.stream_answer(
-            message=request.message,
-            history=[h.model_dump() for h in request.history],
-        ):
+        if is_conflict_query(request.message):
+            generator = rag.stream_conflict_answer(request.message, history)
+        else:
+            generator = rag.stream_answer(request.message, history)
+        async for event in generator:
             yield f"data: {json.dumps(event)}\n\n"
 
     return StreamingResponse(_generate(), media_type="text/event-stream")
