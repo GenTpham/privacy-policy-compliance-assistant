@@ -1,13 +1,13 @@
 services:
   qdrant:
-    image: qdrant/qdrant:latest
+    image: qdrant/qdrant:v1.13.4
     ports:
       - "127.0.0.1:6333:6333"
       - "127.0.0.1:6334:6334"
     volumes:
       - qdrant_storage:/qdrant/storage
     healthcheck:
-      test: ["CMD-SHELL", "timeout 1 bash -c ':> /dev/tcp/localhost/6333' || exit 1"]
+      test: ["CMD-SHELL", "curl -sf http://localhost:6333/readyz || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -44,10 +44,16 @@ services:
     depends_on:
       backend:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost/index.html || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     restart: on-failure
 
   phoenix:
-    image: arizephoenix/phoenix:latest
+    image: arizephoenix/phoenix:version-10.7.1
     profiles: [observability]
     ports:
       - "127.0.0.1:6006:6006"
