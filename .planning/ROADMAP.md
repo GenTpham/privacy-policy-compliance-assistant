@@ -127,7 +127,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 06-01-PLAN.md — Wave 1: docker-compose.yml (backend healthcheck + frontend service + phoenix observability profile) + frontend/Dockerfile (node:20-alpine → nginx:alpine) + frontend/nginx.conf (SSE proxy + SPA routing)
+- [x] 06-01-PLAN.md — Wave 1: docker-compose.yml (backend healthcheck + frontend service + phoenix observability profile) + frontend/Dockerfile (node:20-alpine → nginx:alpine) + frontend/nginx.conf (SSE proxy + SPA routing)
 - [ ] 06-02-PLAN.md — Wave 2: Makefile smoke-test target + VERIFICATION.md (E2E browser checklist) + frontend/src/lib/api.ts BASE_URL constant
 
 ---
