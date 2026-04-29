@@ -143,7 +143,7 @@ async def stream_answer(
         collection_name=COLLECTION_NAME,
         query=query_vector,
         limit=5,
-        score_threshold=0.55,
+        score_threshold=0.25,
         with_payload=True,
     )
     results = response.points
@@ -280,7 +280,7 @@ async def stream_conflict_answer(
         collection_name=COLLECTION_NAME,
         query=query_vector,
         limit=10,
-        score_threshold=0.55,
+        score_threshold=0.25,
         with_payload=True,
     )
     results = response.points
