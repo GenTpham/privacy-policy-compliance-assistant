@@ -26,11 +26,29 @@ services:
     depends_on:
       qdrant:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 30s
     restart: on-failure
     command: uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
 
+  frontend:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: on-failure
+
   phoenix:
     image: arizephoenix/phoenix:latest
+    profiles: [observability]
     ports:
       - "127.0.0.1:6006:6006"
       - "127.0.0.1:4317:4317"
