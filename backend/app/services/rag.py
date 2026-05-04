@@ -7,11 +7,19 @@ No HTTP concerns here (see backend/app/api/chat.py for the router).
 import logging
 import re
 from collections.abc import AsyncGenerator
+from contextlib import nullcontext
 
 from openai import AsyncOpenAI
 from qdrant_client import AsyncQdrantClient
 
 from backend.app.core.config import get_settings
+
+# OTel tracer — None when opentelemetry-sdk is not installed (safe fallback)
+try:
+    from opentelemetry import trace as _otel_trace
+    _tracer = _otel_trace.get_tracer(__name__)
+except ImportError:
+    _tracer = None
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +53,26 @@ qdrant = AsyncQdrantClient(
     url=f"http://{_settings.qdrant_host}:{_settings.qdrant_port}",
     api_key=_settings.qdrant_api_key or None,
 )
+
+
+# ── OTel retrieval span helper ─────────────────────────────────────────────────
+
+def _retrieval_span(query: str, limit: int, threshold: float):
+    """Return an OTel span context manager for the Qdrant retrieval step.
+
+    Yields the live span so callers can set result attributes after the query.
+    Falls back to nullcontext(None) when opentelemetry-sdk is not installed.
+    """
+    if _tracer is None:
+        return nullcontext(None)
+    return _tracer.start_as_current_span(
+        "qdrant.retrieve",
+        attributes={
+            "retrieval.query": query,
+            "retrieval.limit": limit,
+            "retrieval.score_threshold": threshold,
+        },
+    )
 
 
 # ── Pure helper functions ──────────────────────────────────────────────────────
@@ -139,14 +167,19 @@ async def stream_answer(
 
     # Step 2: Retrieve from Qdrant (RAG-02, D-12, D-13)
     # qdrant-client 1.13+ replaced search() with query_points() — returns QueryResponse with .points
-    response = await qdrant.query_points(
-        collection_name=COLLECTION_NAME,
-        query=query_vector,
-        limit=5,
-        score_threshold=0.25,
-        with_payload=True,
-    )
-    results = response.points
+    with _retrieval_span(message, limit=5, threshold=0.25) as span:
+        response = await qdrant.query_points(
+            collection_name=COLLECTION_NAME,
+            query=query_vector,
+            limit=5,
+            score_threshold=0.25,
+            with_payload=True,
+        )
+        results = response.points
+        if span is not None:
+            span.set_attribute("retrieval.results_count", len(results))
+            span.set_attribute("retrieval.scores", str([round(r.score, 4) for r in results]))
+            span.set_attribute("retrieval.titles", str([r.payload.get("title", "") for r in results]))
 
     # Step 3: Early return if no chunks meet threshold (RAG-07, D-14)
     if not results:
@@ -276,14 +309,19 @@ async def stream_conflict_answer(
     query_vector = embed_resp.data[0].embedding
 
     # Step 2: Retrieve top-10 across all source documents (CONFLICT-02, D-07, D-08)
-    response = await qdrant.query_points(
-        collection_name=COLLECTION_NAME,
-        query=query_vector,
-        limit=10,
-        score_threshold=0.25,
-        with_payload=True,
-    )
-    results = response.points
+    with _retrieval_span(message, limit=10, threshold=0.25) as span:
+        response = await qdrant.query_points(
+            collection_name=COLLECTION_NAME,
+            query=query_vector,
+            limit=10,
+            score_threshold=0.25,
+            with_payload=True,
+        )
+        results = response.points
+        if span is not None:
+            span.set_attribute("retrieval.results_count", len(results))
+            span.set_attribute("retrieval.scores", str([round(r.score, 4) for r in results]))
+            span.set_attribute("retrieval.titles", str([r.payload.get("title", "") for r in results]))
 
     # Step 3: Early return if no chunks meet threshold (D-16 — same as RAG-07)
     if not results:
