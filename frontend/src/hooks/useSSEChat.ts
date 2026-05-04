@@ -16,7 +16,7 @@ export interface Message {
   isError?: boolean;
 }
 
-interface UseSSEChatReturn {
+export interface UseSSEChatReturn {
   messages: Message[];
   isStreaming: boolean;
   submit: (message: string, onUnauthorized: () => void) => Promise<void>;
