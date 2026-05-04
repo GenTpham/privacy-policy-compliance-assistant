@@ -1,27 +1,21 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
-import { Loader2 } from "lucide-react";
+import { useTheme } from "@/lib/theme";
 import { tokens } from "@/lib/tokens";
+import { Loader2 } from "lucide-react";
 
 type ErrorKind = "credentials" | "network" | null;
 
-/**
- * Login form with 4 states: default, loading, error-credentials, error-network.
- * Copywriting from UI-SPEC.md Copywriting Contract.
- */
 export function LoginForm() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorKind, setErrorKind] = useState<ErrorKind>(null);
   const { login } = useAuth();
+  const { t, accent } = useTheme();
   const navigate = useNavigate();
 
-  // If already authenticated, redirect to chat (UI-01: authenticated visit to /login)
   if (tokens.getAccess()) {
     navigate("/", { replace: true });
     return null;
@@ -33,31 +27,41 @@ export function LoginForm() {
     setIsLoading(true);
     try {
       await login(username, password);
-      // login() navigates to / on success — no further action needed
     } catch (err) {
-      if (err instanceof TypeError) {
-        // Network failure (fetch throws TypeError on connection errors)
-        setErrorKind("network");
-      } else {
-        // API returned non-OK status (401 from backend)
-        setErrorKind("credentials");
-      }
+      setErrorKind(err instanceof TypeError ? "network" : "credentials");
     } finally {
       setIsLoading(false);
     }
   };
 
-  return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-      {/* Heading — 20px semibold per UI-SPEC typography */}
-      <h1 className="text-xl font-semibold text-zinc-950">Sign in to continue</h1>
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    padding: "9px 12px",
+    fontSize: 13,
+    border: `1px solid ${t.border}`,
+    borderRadius: 6,
+    background: t.surface2,
+    color: t.text,
+    outline: "none",
+    fontFamily: "inherit",
+    boxSizing: "border-box",
+  };
 
-      {/* Username field */}
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="username" className="text-sm font-semibold text-zinc-950">
-          Username
-        </Label>
-        <Input
+  const labelStyle: React.CSSProperties = {
+    fontSize: 12,
+    fontWeight: 600,
+    color: t.text2,
+    display: "block",
+    marginBottom: 6,
+  };
+
+  return (
+    <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      <h1 style={{ fontSize: 18, fontWeight: 600, color: t.text, margin: 0 }}>Sign in to continue</h1>
+
+      <div>
+        <label htmlFor="username" style={labelStyle}>Username</label>
+        <input
           id="username"
           type="text"
           autoComplete="username"
@@ -65,15 +69,13 @@ export function LoginForm() {
           onChange={(e) => setUsername(e.target.value)}
           disabled={isLoading}
           required
+          style={inputStyle}
         />
       </div>
 
-      {/* Password field */}
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="password" className="text-sm font-semibold text-zinc-950">
-          Password
-        </Label>
-        <Input
+      <div>
+        <label htmlFor="password" style={labelStyle}>Password</label>
+        <input
           id="password"
           type="password"
           autoComplete="current-password"
@@ -81,36 +83,45 @@ export function LoginForm() {
           onChange={(e) => setPassword(e.target.value)}
           disabled={isLoading}
           required
+          style={inputStyle}
         />
       </div>
 
-      {/* Error messages — text-destructive per UI-SPEC */}
       {errorKind === "credentials" && (
-        <p className="text-sm text-destructive" role="alert">
+        <p role="alert" style={{ fontSize: 12, color: "#EF4444", margin: 0 }}>
           Invalid username or password. Please try again.
         </p>
       )}
       {errorKind === "network" && (
-        <p className="text-sm text-destructive" role="alert">
+        <p role="alert" style={{ fontSize: 12, color: "#EF4444", margin: 0 }}>
           Unable to connect. Check your connection and try again.
         </p>
       )}
 
-      {/* Submit button — full width, accent (#18181b) background per UI-SPEC */}
-      <Button
+      <button
         type="submit"
         disabled={isLoading}
-        className="w-full bg-zinc-950 text-white hover:bg-zinc-800"
+        style={{
+          width: "100%",
+          padding: "10px",
+          background: accent,
+          color: "#fff",
+          border: "none",
+          borderRadius: 6,
+          fontSize: 14,
+          fontWeight: 600,
+          cursor: isLoading ? "not-allowed" : "pointer",
+          opacity: isLoading ? 0.7 : 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 8,
+          fontFamily: "inherit",
+        }}
       >
-        {isLoading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Signing in...
-          </>
-        ) : (
-          "Sign In"
-        )}
-      </Button>
+        {isLoading && <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} />}
+        {isLoading ? "Signing in..." : "Sign In"}
+      </button>
     </form>
   );
 }
