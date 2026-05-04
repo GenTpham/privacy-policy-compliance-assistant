@@ -167,12 +167,13 @@ async def stream_answer(
 
     # Step 2: Retrieve from Qdrant (RAG-02, D-12, D-13)
     # qdrant-client 1.13+ replaced search() with query_points() — returns QueryResponse with .points
-    with _retrieval_span(message, limit=5, threshold=0.25) as span:
+    _threshold = get_settings().score_threshold
+    with _retrieval_span(message, limit=5, threshold=_threshold) as span:
         response = await qdrant.query_points(
             collection_name=COLLECTION_NAME,
             query=query_vector,
             limit=5,
-            score_threshold=0.25,
+            score_threshold=_threshold,
             with_payload=True,
         )
         results = response.points
@@ -309,12 +310,13 @@ async def stream_conflict_answer(
     query_vector = embed_resp.data[0].embedding
 
     # Step 2: Retrieve top-10 across all source documents (CONFLICT-02, D-07, D-08)
-    with _retrieval_span(message, limit=10, threshold=0.25) as span:
+    _threshold = get_settings().score_threshold
+    with _retrieval_span(message, limit=10, threshold=_threshold) as span:
         response = await qdrant.query_points(
             collection_name=COLLECTION_NAME,
             query=query_vector,
             limit=10,
-            score_threshold=0.25,
+            score_threshold=_threshold,
             with_payload=True,
         )
         results = response.points
