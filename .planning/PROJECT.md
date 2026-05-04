@@ -20,10 +20,10 @@ Users can ask any compliance question and immediately get an answer with exact q
 
 ### Active
 
-- [ ] Cross-document comparison: identify and surface contradictions/conflicts between policies across multiple documents in a single query
-- [ ] Web UI: chat interface with message history, input box, and citation display panel
-- [ ] Docker Compose: all services (API backend, Qdrant, frontend) packaged and runnable with `docker compose up`
-- [ ] Environment config: API keys loaded from `.env`, Python 3.11 virtualenv for local dev
+- [x] Cross-document comparison: identify and surface contradictions/conflicts between policies across multiple documents in a single query — *Validated in Phase 5: Cross-Document Conflict Detection*
+- [x] Web UI: chat interface with message history, input box, and citation display panel — *Validated in Phase 4: Web Frontend*
+- [x] Docker Compose: all services (API backend, Qdrant, frontend) packaged and runnable with `docker compose up` — *Validated in Phase 6: Integration & Docker Compose Finalization*
+- [x] Environment config: API keys loaded from `.env`, Python 3.11 virtualenv for local dev — *Validated in Phase 6: Integration & Docker Compose Finalization*
 
 ### Out of Scope
 
