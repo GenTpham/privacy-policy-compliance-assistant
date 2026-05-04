@@ -8,6 +8,16 @@ A RAG-based chatbot that lets users ask natural-language questions about privacy
 
 Users can ask any compliance question and immediately get an answer with exact quotes from the authoritative policy documents — no guessing, no hallucination, traceable to source.
 
+## Current Milestone: v2.0 Production-Quality RAG
+
+**Goal:** Nâng RAG từ prototype lên production-ready — retrieval được calibrate, corpus mở rộng, UX rõ ràng hơn, và hỗ trợ multi-user.
+
+**Target features:**
+- Eval & calibration: chạy experiment đầy đủ, tune score_threshold, fix test suite
+- Corpus expansion: admin script ingest PDF/TXT thêm; UI upload trong milestone sau
+- Source filter + score display: user filter theo policy, hiển thị retrieval score trên citation cards
+- Rate limiting + multi-user: per-user rate limit, admin quản lý users
+
 ## Current State
 
 **v1.0 shipped: 2026-05-04**
@@ -32,20 +42,23 @@ Users can ask any compliance question and immediately get an answer with exact q
 - [x] Docker Compose: qdrant + backend + frontend all healthy, nginx SSE proxy, phoenix optional via `--profile observability` — *Phase 6*
 - [x] Environment config: API keys loaded from `.env`, Python 3.11 virtualenv for local dev — *Phase 6*
 
-### Active (v2.0 candidates)
+### Active (v2.0)
 
-- [ ] Score threshold calibration: run formal eval on scored benchmark to tune retrieval threshold per query type
-- [ ] Test suite alignment: `test_rag.py` asserts `score_threshold == 0.55` but production uses `0.25` — update tests
-- [ ] Corpus expansion: ingest additional privacy policy documents beyond the bundled dataset
-- [ ] User-facing source filter: allow users to query a specific policy document by name
+- [ ] Eval & calibration: run full experiment on validation set, analyze context_hit, tune score_threshold to optimal value
+- [ ] Test suite alignment: `test_rag.py` asserts `score_threshold == 0.55` but production uses `0.25` — fix assertions
+- [ ] Corpus expansion (admin): script to ingest additional PDF/TXT policy documents with dedup
+- [ ] Source filter: user selects specific policy source via UI dropdown; Qdrant payload filter on backend
+- [ ] Score display: show retrieval score on each citation card in the React UI
+- [ ] Rate limiting: per-user request rate limit on the API
+- [ ] Multi-user: admin creates/manages users, role-based access control
 
 ### Out of Scope
 
-- File upload by end-users — corpus is fixed from the dataset; no user-uploaded documents in v1
+- End-user file upload via UI — deferred to v2.1; admin script covers corpus expansion in v2.0
 - Real-time policy monitoring / alerts — static corpus only
 - Multi-language UI — responses may be in Vietnamese but UI labels are English
 - Fine-tuning or retraining models — inference only via OpenRouter
-- Rate limiting / multi-tenancy — single-user dev/demo deployment in v1
+- OAuth / SSO — username+password sufficient; multi-user means admin-managed accounts, not federated login
 
 ## Context
 
@@ -102,4 +115,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-04 — v1.0 milestone complete: all 6 phases shipped, Docker Compose stack verified E2E*
+*Last updated: 2026-05-04 — v2.0 milestone started: eval infrastructure added, Phoenix fixed, corpus upload script added*
