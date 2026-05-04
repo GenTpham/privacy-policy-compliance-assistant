@@ -23,6 +23,7 @@ from backend.app.services.rag import (
     stream_conflict_answer,
 )
 from backend.app.services import rag
+from backend.app.core.config import get_settings
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -60,7 +61,7 @@ async def test_embed_calls_correct_model(mock_openrouter, mock_qdrant):
 
 @pytest.mark.asyncio
 async def test_retrieve_params(mock_openrouter, mock_qdrant):
-    """RAG-02: qdrant.search called with limit=5, score_threshold=0.55, with_payload=True."""
+    """RAG-02: qdrant.search called with limit=5, score_threshold=get_settings().score_threshold, with_payload=True."""
     with patch.object(rag, "openrouter", mock_openrouter), \
          patch.object(rag, "qdrant", mock_qdrant):
         events = [e async for e in stream_answer("test query", [])]
@@ -68,7 +69,7 @@ async def test_retrieve_params(mock_openrouter, mock_qdrant):
     mock_qdrant.query_points.assert_called_once()
     call_kwargs = mock_qdrant.query_points.call_args.kwargs
     assert call_kwargs.get("limit") == 5
-    assert call_kwargs.get("score_threshold") == 0.55
+    assert call_kwargs.get("score_threshold") == get_settings().score_threshold
     assert call_kwargs.get("with_payload") is True
 
 
@@ -206,7 +207,7 @@ def test_fabricated_citation_stripped(sample_scored_point):
 
 @pytest.mark.asyncio
 async def test_conflict_retrieve_params(mock_openrouter, mock_qdrant, sample_scored_points_multi):
-    """CONFLICT-02: stream_conflict_answer calls query_points with limit=10, score_threshold=0.55, with_payload=True."""
+    """CONFLICT-02: stream_conflict_answer calls query_points with limit=10, score_threshold=get_settings().score_threshold, with_payload=True."""
     mock_resp = MagicMock()
     mock_resp.points = sample_scored_points_multi
     mock_qdrant.query_points = AsyncMock(return_value=mock_resp)
@@ -219,7 +220,7 @@ async def test_conflict_retrieve_params(mock_openrouter, mock_qdrant, sample_sco
     mock_qdrant.query_points.assert_called_once()
     call_kwargs = mock_qdrant.query_points.call_args.kwargs
     assert call_kwargs.get("limit") == 10
-    assert call_kwargs.get("score_threshold") == 0.55
+    assert call_kwargs.get("score_threshold") == get_settings().score_threshold
     assert call_kwargs.get("with_payload") is True
 
 

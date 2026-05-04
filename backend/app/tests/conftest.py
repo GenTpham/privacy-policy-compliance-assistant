@@ -3,6 +3,13 @@ backend/app/tests/conftest.py
 Shared pytest fixtures for Phase 2 unit tests and Phase 3 auth tests.
 All fixtures are function-scoped — each test receives a fresh mock instance.
 """
+import os
+
+# Set required env vars so get_settings() is callable in test assertions.
+# setdefault is safe: real .env values are not overridden during local dev runs.
+os.environ.setdefault("OPENROUTER_API_KEY", "test-key")
+os.environ.setdefault("JWT_SECRET", "a" * 32)
+
 from unittest.mock import AsyncMock, MagicMock
 
 import httpx
