@@ -1,10 +1,10 @@
 ---
 gsd_state_version: 1.0
-milestone: v2.0
-milestone_name: Production-Quality RAG
-current_phase: 7
-status: roadmap_ready
-last_updated: "2026-05-04T00:00:00.000Z"
+milestone: v1.0
+milestone_name: milestone
+current_phase: 7 — Eval & Calibration (not started)
+status: planning
+last_updated: "2026-05-04T09:38:05.382Z"
 progress:
   total_phases: 4
   completed_phases: 0
