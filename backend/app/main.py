@@ -124,8 +124,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     # Phase 3: Initialize DB and seed admin user
     await _init_db_and_seed(settings)
 
-    # Telemetry (gracefully skips if Phoenix is not running)
-    setup_tracing()
+    # Telemetry — pass endpoint from settings so PHOENIX_COLLECTOR_ENDPOINT env var works
+    # Gracefully skips if Phoenix is not running or packages are not installed
+    setup_tracing(endpoint=settings.phoenix_collector_endpoint)
 
     openrouter = AsyncOpenAI(
         base_url="https://openrouter.ai/api/v1",

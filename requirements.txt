@@ -9,3 +9,6 @@ pwdlib[argon2]
 sqlalchemy[asyncio]
 aiosqlite
 python-multipart
+opentelemetry-sdk
+opentelemetry-exporter-otlp-proto-grpc
+openinference-instrumentation-openai
