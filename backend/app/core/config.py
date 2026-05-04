@@ -42,6 +42,11 @@ class Settings(BaseSettings):
     # Override via PHOENIX_COLLECTOR_ENDPOINT env var when using --profile observability
     phoenix_collector_endpoint: str = "http://phoenix:4317"
 
+    # RAG retrieval threshold — overridable via SCORE_THRESHOLD env var.
+    # Default 0.25: Nemotron cosine scores for relevant matches range 0.25–0.45.
+    # Calibrated empirically in Phase 7; update default after running run_experiment.py.
+    score_threshold: float = 0.25
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 
