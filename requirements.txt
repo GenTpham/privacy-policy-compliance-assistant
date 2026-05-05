@@ -12,3 +12,4 @@ python-multipart
 opentelemetry-sdk
 opentelemetry-exporter-otlp-proto-grpc
 openinference-instrumentation-openai
+pypdf
