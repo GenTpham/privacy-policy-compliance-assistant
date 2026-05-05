@@ -87,6 +87,9 @@ def extract_txt(filepath: Path) -> str:
 
 # ── Embedding (local copy — does NOT import from ingest.py) ───────────────────
 
+RETRYABLE_STATUS_CODES = {"429", "500", "502", "503", "504"}
+
+
 async def embed_batch(
     openrouter: AsyncOpenAI,
     texts: list[str],
@@ -94,7 +97,7 @@ async def embed_batch(
 ) -> list[list[float]]:
     """
     Embed a batch of texts via Nemotron on OpenRouter.
-    Exponential backoff on 429 (T-08-02: caps at retries=5, prevents infinite loops).
+    Exponential backoff on rate limit and other transient errors (T-08-02: caps at retries=5).
     """
     for attempt in range(retries):
         try:
@@ -104,13 +107,16 @@ async def embed_batch(
             return [item.embedding for item in sorted(resp.data, key=lambda x: x.index)]
         except Exception as exc:
             err_str = str(exc).lower()
-            is_rate_limit = "429" in err_str or "rate limit" in err_str
-            if is_rate_limit and attempt < retries - 1:
+            is_retryable = (
+                any(code in err_str for code in RETRYABLE_STATUS_CODES)
+                or "rate limit" in err_str
+            )
+            if is_retryable and attempt < retries - 1:
                 wait = 2 ** attempt
-                print(f"[rate_limit] 429 on attempt {attempt + 1}/{retries} — sleeping {wait}s")
+                print(f"[rate_limit] retryable error on attempt {attempt + 1}/{retries} — sleeping {wait}s")
                 await asyncio.sleep(wait)
                 continue
-            raise RuntimeError(f"embed_batch failed after {retries} retries: {exc}") from exc
+            raise  # re-raise original exception, preserving type and traceback
     raise RuntimeError(f"embed_batch failed after {retries} retries")
 
 
