@@ -11,6 +11,7 @@ import asyncio
 from collections import Counter
 
 from qdrant_client import AsyncQdrantClient
+from qdrant_client.http.exceptions import UnexpectedResponse
 
 from backend.app.core.config import get_settings
 
@@ -32,7 +33,13 @@ async def validate_corpus() -> None:
     )
 
     # Step 1 — Total count
-    count_result = await qdrant.count(collection_name=COLLECTION_NAME, exact=True)
+    try:
+        count_result = await qdrant.count(collection_name=COLLECTION_NAME, exact=True)
+    except UnexpectedResponse as exc:
+        if "404" in str(exc) or "not found" in str(exc).lower():
+            print(f"[error] Collection '{COLLECTION_NAME}' does not exist. Run ingestion first.")
+            return
+        raise
     total = count_result.count
     print(f"[total] {total} passages in '{COLLECTION_NAME}'")
 
