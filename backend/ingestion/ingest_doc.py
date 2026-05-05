@@ -207,7 +207,11 @@ async def ingest_doc(filepath: Path, title: str, dry_run: bool = False) -> None:
     # 5. Initialize clients
     openrouter, qdrant = _make_clients()
 
-    # 6. Retrieve existing IDs from Qdrant (dedup check)
+    # 6. Probe dim and ensure collection exists FIRST (collection must exist before retrieve)
+    dim = await probe_embedding_dim(openrouter)
+    await ensure_collection(qdrant, dim)
+
+    # 7. Retrieve existing IDs from Qdrant (dedup check — collection now guaranteed to exist)
     found = await qdrant.retrieve(
         collection_name=COLLECTION_NAME,
         ids=all_ids,
@@ -216,7 +220,7 @@ async def ingest_doc(filepath: Path, title: str, dry_run: bool = False) -> None:
     )
     existing = {str(r.id) for r in found}
 
-    # 7. Dry-run path — no writes
+    # 8. Dry-run path — no writes
     if dry_run:
         new_count = len(all_ids) - len(existing)
         print(
@@ -225,18 +229,14 @@ async def ingest_doc(filepath: Path, title: str, dry_run: bool = False) -> None:
         )
         return
 
-    # 8. Filter to new-only chunks
+    # 9. Filter to new-only chunks
     new_pairs = [(c, uid) for c, uid in zip(chunks, all_ids) if uid not in existing]
 
     if not new_pairs:
         print("[ingest_doc] All chunks already indexed — nothing to do.")
         return
 
-    # 9. Probe dim and ensure collection exists
-    dim = await probe_embedding_dim(openrouter)
-    await ensure_collection(qdrant, dim)
-
-    # 10. Batch embed and upsert
+    # 10. Batch embed and upsert (collection already ensured above)
     total = len(new_pairs)
     for batch_start in range(0, total, BATCH_SIZE):
         batch = new_pairs[batch_start: batch_start + BATCH_SIZE]
