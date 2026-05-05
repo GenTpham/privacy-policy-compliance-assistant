@@ -95,7 +95,7 @@ Users can ask any compliance question and immediately get an answer with exact q
 | OpenRouter for both LLM and embeddings | Single API key, unified billing, specified models available | ✓ Good — one SDK covers both chat and embeddings |
 | Cross-doc comparison in v1 | User explicitly requested conflict detection between documents from the start | ✓ Good — keyword-triggered routing works cleanly |
 | Dataset contexts as corpus | 17K passages from real privacy policies provide immediate corpus without manual document collection | ⚠ Revisit — 3,204 unique after dedup; coverage gaps exist for specific sites |
-| score_threshold=0.25 (not 0.55) | Nemotron embeddings are non-deterministic; cosine scores range 0.25–0.45 for relevant matches | ✓ Good — queries return results; threshold needs formal calibration in v2 |
+| score_threshold=0.20 (calibrated Phase 7, 2026-05-05) | Empirically determined from 100-example validation set experiment. Score distribution analysis (see phases/07-eval-calibration/ANALYSIS.md): min retrieved score was 0.32, no scores in 0.20–0.32 range, meaning 0.25 was not filtering anything. Root cause of 23% context_hit is ranking mismatch, not threshold filtering. Hard floor >= 0.20 enforced per D-06. Overridable via SCORE_THRESHOLD env var. | ✓ Calibrated — threshold at D-06 floor maximizes recall headroom; ranking improvement deferred to v2.1 |
 | qdrant:v1.17.1 pin | qdrant-client==1.17.1 requires server minor version within 1; v1.13.4 caused incompatibility | ✓ Good — pin server to match client version |
 
 ## Evolution
