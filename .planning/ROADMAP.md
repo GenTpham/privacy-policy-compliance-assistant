@@ -24,7 +24,7 @@ Full archive: `.planning/milestones/v1.0-ROADMAP.md`
 **v2.0 Production-Quality RAG**
 
 - [x] **Phase 7: Eval & Calibration** — Run full experiment, analyze retrieval quality, tune score_threshold, align test suite (completed 2026-05-05)
-- [ ] **Phase 8: Corpus Expansion** — Admin CLI to ingest PDF/TXT policy documents with dedup and validation
+- [x] **Phase 8: Corpus Expansion** — Admin CLI to ingest PDF/TXT policy documents with dedup and validation (completed 2026-05-05)
 - [ ] **Phase 9: UX Enhancements** — Source filter dropdown + retrieval score display on citation cards
 - [ ] **Phase 10: Multi-user & Rate Limiting** — Admin user management API + per-user rate limiting
 
@@ -58,8 +58,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 08-01-PLAN.md — ingest_doc.py: single-document PDF/TXT ingest CLI with UUID5 dedup (Wave 1)
-- [ ] 08-02-PLAN.md — validate_corpus.py: corpus health CLI with per-source breakdown and anomaly flags (Wave 1)
+- [x] 08-01-PLAN.md — ingest_doc.py: single-document PDF/TXT ingest CLI with UUID5 dedup (Wave 1)
+- [x] 08-02-PLAN.md — validate_corpus.py: corpus health CLI with per-source breakdown and anomaly flags (Wave 1)
 
 ### Phase 9: UX Enhancements
 **Goal**: Users have clearer control over query scope and can assess retrieval confidence — source filter scopes search to a single policy, and every citation card shows its cosine similarity score.
