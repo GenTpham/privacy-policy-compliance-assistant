@@ -9,8 +9,8 @@
 
 - [x] **EVAL-01**: User (admin) can run a full experiment on the validation dataset and see context_hit / answer_match / retrieved metrics in Phoenix
 - [x] **EVAL-02**: System documents root cause analysis of context_hit metric and retrieval quality findings
-- [ ] **EVAL-03**: score_threshold is updated to the calibrated optimal value with documented reasoning in code and decision log
-- [ ] **EVAL-04**: test_rag.py assertions reflect the actual production score_threshold (no divergence between test and prod)
+- [x] **EVAL-03**: score_threshold is updated to the calibrated optimal value with documented reasoning in code and decision log
+- [x] **EVAL-04**: test_rag.py assertions reflect the actual production score_threshold (no divergence between test and prod)
 
 ### Corpus
 
@@ -57,8 +57,8 @@
 |-------------|-------|--------|
 | EVAL-01 | Phase 7 | Complete (07-03) |
 | EVAL-02 | Phase 7 | Complete (07-03) |
-| EVAL-03 | Phase 7 | Pending |
-| EVAL-04 | Phase 7 | Pending |
+| EVAL-03 | Phase 7 | Complete |
+| EVAL-04 | Phase 7 | Complete |
 | CORP-01 | Phase 8 | Pending |
 | CORP-02 | Phase 8 | Pending |
 | UX-01 | Phase 9 | Pending |

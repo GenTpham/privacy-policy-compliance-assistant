@@ -41,11 +41,11 @@ Users can ask any compliance question and immediately get an answer with exact q
 - [x] Cross-document comparison: CONTRADICTORY/CONSISTENT/ONE-SILENT verdict classification with cited passages from each document — *Phase 5*
 - [x] Docker Compose: qdrant + backend + frontend all healthy, nginx SSE proxy, phoenix optional via `--profile observability` — *Phase 6*
 - [x] Environment config: API keys loaded from `.env`, Python 3.11 virtualenv for local dev — *Phase 6*
+- [x] Eval & calibration: formal experiment run, 23% context_hit, root cause = ranking mismatch, score_threshold calibrated to 0.20 — *Phase 7*
+- [x] Test suite alignment: test_rag.py assertions use get_settings().score_threshold (no hardcoded values) — *Phase 7*
 
 ### Active (v2.0)
 
-- [ ] Eval & calibration: run full experiment on validation set, analyze context_hit, tune score_threshold to optimal value
-- [ ] Test suite alignment: `test_rag.py` asserts `score_threshold == 0.55` but production uses `0.25` — fix assertions
 - [ ] Corpus expansion (admin): script to ingest additional PDF/TXT policy documents with dedup
 - [ ] Source filter: user selects specific policy source via UI dropdown; Qdrant payload filter on backend
 - [ ] Score display: show retrieval score on each citation card in the React UI
@@ -115,4 +115,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-04 — v2.0 milestone started: eval infrastructure added, Phoenix fixed, corpus upload script added*
+*Last updated: 2026-05-05 — Phase 7 complete: RAG pipeline calibrated, score_threshold=0.20, test suite aligned*
