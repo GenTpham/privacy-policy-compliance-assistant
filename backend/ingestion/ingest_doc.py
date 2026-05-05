@@ -139,7 +139,16 @@ async def ensure_collection(qdrant: AsyncQdrantClient, dim: int) -> None:
 
     if COLLECTION_NAME in existing_names:
         info = await qdrant.get_collection(COLLECTION_NAME)
-        existing_dim = info.config.params.vectors.size
+        vectors_config = info.config.params.vectors
+        # Guard against named-vector collections: vectors is a dict when the collection
+        # was created with named vectors. Accessing .size on a dict raises AttributeError.
+        if isinstance(vectors_config, dict):
+            raise RuntimeError(
+                f"[ensure_collection] Collection '{COLLECTION_NAME}' uses named vectors, "
+                "but this pipeline expects a single unnamed vector config. "
+                "Delete and recreate the collection."
+            )
+        existing_dim = vectors_config.size
         if existing_dim != dim:
             raise RuntimeError(
                 f"[ensure_collection] Dimension mismatch: existing collection has dim={existing_dim}, "
@@ -147,7 +156,7 @@ async def ensure_collection(qdrant: AsyncQdrantClient, dim: int) -> None:
                 "Delete the collection and re-ingest to fix: "
                 f"docker exec <qdrant> curl -X DELETE http://localhost:6333/collections/{COLLECTION_NAME}"
             )
-        if info.config.params.vectors.distance != Distance.COSINE:
+        if vectors_config.distance != Distance.COSINE:
             raise RuntimeError(
                 "[ensure_collection] Distance metric is not COSINE. "
                 "Delete the collection and re-ingest to fix distance metric."
