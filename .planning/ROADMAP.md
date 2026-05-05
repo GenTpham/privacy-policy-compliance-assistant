@@ -44,7 +44,7 @@ Full archive: `.planning/milestones/v1.0-ROADMAP.md`
 Plans:
 - [x] 07-01-PLAN.md — Move score_threshold to Settings and wire both RAG pipelines (Wave 1)
 - [x] 07-02-PLAN.md — Fix test_rag.py assertions to use get_settings().score_threshold (Wave 1)
-- [ ] 07-03-PLAN.md — Run baseline experiment, score distribution analysis, write ANALYSIS.md (Wave 2)
+- [x] 07-03-PLAN.md — Run baseline experiment, score distribution analysis, write ANALYSIS.md (Wave 2)
 - [ ] 07-04-PLAN.md — Apply calibrated threshold to Settings default, update PROJECT.md, confirm pytest (Wave 3)
 
 ### Phase 8: Corpus Expansion
@@ -90,7 +90,7 @@ Plans:
 | 4. Web Frontend | v1.0 | 6/6 | Complete | 2026-04-28 |
 | 5. Cross-Document Conflict Detection | v1.0 | 2/2 | Complete | 2026-04-29 |
 | 6. Integration & Docker Compose Finalization | v1.0 | 2/2 | Complete | 2026-05-04 |
-| 7. Eval & Calibration | v2.0 | 2/4 | In Progress|  |
+| 7. Eval & Calibration | v2.0 | 3/4 | In Progress|  |
 | 8. Corpus Expansion | v2.0 | 0/? | Not started | - |
 | 9. UX Enhancements | v2.0 | 0/? | Not started | - |
 | 10. Multi-user & Rate Limiting | v2.0 | 0/? | Not started | - |

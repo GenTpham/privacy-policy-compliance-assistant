@@ -1,23 +1,23 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.0
-milestone_name: milestone
-current_phase: 7 — Eval & Calibration (not started)
+milestone_name: Production-Quality RAG
+current_phase: 7 — Eval & Calibration (in progress)
 status: executing
-last_updated: "2026-05-04T10:02:30.902Z"
+last_updated: "2026-05-05T03:40:00Z"
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 4
-  completed_plans: 0
-  percent: 0
+  completed_plans: 3
+  percent: 75
 ---
 
 # Project State
 
 **Project:** Privacy Policy Compliance Assistant
 **Milestone:** v2.0 — Production-Quality RAG
-**Current Phase:** 7 — Eval & Calibration (not started)
+**Current Phase:** 7 — Eval & Calibration (in progress — Plan 3 of 4 complete)
 
 ---
 
@@ -35,9 +35,9 @@ progress:
 ## Current Position
 
 Phase: 7 — Eval & Calibration
-Plan: —
-**Status:** Ready to execute
-**Progress:** [          ] 0%
+Plan: 3 of 4 (07-03 complete — analysis and threshold recommendation)
+**Status:** Executing — Plan 4 next (implement score_threshold=0.20 in Settings)
+**Progress:** [###       ] 75%
 
 ---
 
@@ -79,10 +79,11 @@ See: `.planning/PROJECT.md`
 - HistoryItem.role: Literal[user, assistant] is the security control — never widen (D-03 / Pitfall 3, Phase 2 Plan 03)
 - Deferred opentelemetry imports inside setup_tracing() body — telemetry.py safe to import without opentelemetry installed (Phase 2 Plan 03)
 - score_threshold=0.25 (not 0.55) — Nemotron embeddings are non-deterministic; cosine scores range 0.25–0.45 for relevant matches; needs formal calibration in Phase 7
+- score_threshold recommended: 0.20 — Phase 7 calibration (07-03) shows threshold=0.25 is not filtering (min observed score=0.32); root cause of 23% context_hit is ranking mismatch; setting to floor 0.20 maximizes recall headroom (ANALYSIS.md)
 
 ### Open Questions (resolve during implementation)
 
-- Optimal score_threshold — Phase 7 will produce empirical answer from full validation set experiment
+- Optimal score_threshold — RESOLVED: 0.20 (see ANALYSIS.md). Root cause is ranking mismatch; threshold change alone does not improve context_hit
 - Source filter implementation — Qdrant payload filter via `must` conditions on source field; confirm field name in existing collection metadata
 - Rate limiting library — slowapi (FastAPI-compatible) or manual token bucket in middleware; decide in Phase 10
 - Role field migration — existing user records in SQLite have no role column; Phase 10 needs a migration strategy
@@ -107,8 +108,8 @@ See: `.planning/PROJECT.md`
 
 ## Session Continuity
 
-*Last session: 2026-05-04 — v2.0 roadmap created (Phases 7–10)*
-*Stopped at: Roadmap written, ready for `/gsd-plan-phase 7`*
+*Last session: 2026-05-05 — Phase 7 Plans 1–3 executed; Plans 01 (config), 02 (test fix), 03 (analysis) complete*
+*Stopped at: 07-03-PLAN.md complete; ready for 07-04 (implement score_threshold=0.20 in production)*
 
 ### v1.0 Deliverables Summary
 
