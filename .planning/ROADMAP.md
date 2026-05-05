@@ -55,7 +55,11 @@ Plans:
   1. Admin can run the ingest script pointing at a PDF or TXT file and have its passages embedded and stored in Qdrant
   2. Re-running the script on a document that is already indexed adds zero duplicate passages (content-hash dedup enforced)
   3. Admin can run a validation command that prints total passage count, sample metadata rows, and flags any anomalies (missing fields, zero-length passages, etc.)
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 08-01-PLAN.md — ingest_doc.py: single-document PDF/TXT ingest CLI with UUID5 dedup (Wave 1)
+- [ ] 08-02-PLAN.md — validate_corpus.py: corpus health CLI with per-source breakdown and anomaly flags (Wave 1)
 
 ### Phase 9: UX Enhancements
 **Goal**: Users have clearer control over query scope and can assess retrieval confidence — source filter scopes search to a single policy, and every citation card shows its cosine similarity score.
@@ -91,7 +95,7 @@ Plans:
 | 5. Cross-Document Conflict Detection | v1.0 | 2/2 | Complete | 2026-04-29 |
 | 6. Integration & Docker Compose Finalization | v1.0 | 2/2 | Complete | 2026-05-04 |
 | 7. Eval & Calibration | v2.0 | 4/4 | Complete    | 2026-05-05 |
-| 8. Corpus Expansion | v2.0 | 0/? | Not started | - |
+| 8. Corpus Expansion | v2.0 | 0/2 | Not started | - |
 | 9. UX Enhancements | v2.0 | 0/? | Not started | - |
 | 10. Multi-user & Rate Limiting | v2.0 | 0/? | Not started | - |
 
