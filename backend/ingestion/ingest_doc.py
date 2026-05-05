@@ -289,7 +289,10 @@ async def ingest_doc(filepath: Path, title: str, dry_run: bool = False) -> None:
                 "Re-run to retry failed batch."
             )
 
-        await asyncio.sleep(BATCH_SLEEP_SECONDS)
+        # Sleep only between batches — skip after the last one to avoid
+        # an unnecessary delay when all work is done.
+        if batch_start + BATCH_SIZE < total:
+            await asyncio.sleep(BATCH_SLEEP_SECONDS)
 
     print(
         f"[ingest_doc] Done. Upserted {len(new_pairs)} new chunks "
