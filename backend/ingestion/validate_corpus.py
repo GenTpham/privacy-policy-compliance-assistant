@@ -20,16 +20,17 @@ REQUIRED_FIELDS = {"title", "source_doc", "text", "passage_id", "chunk_index", "
 SCROLL_PAGE_SIZE = 256   # records per scroll page
 TOKEN_COUNT_HIGH_THRESHOLD = 500
 
-# ── Client initialization ─────────────────────────────────────────────────────
-settings = get_settings()
-qdrant = AsyncQdrantClient(
-    url=f"http://{settings.qdrant_host}:{settings.qdrant_port}",
-    api_key=settings.qdrant_api_key or None,
-)
-
-
 # ── Main validation function ──────────────────────────────────────────────────
 async def validate_corpus() -> None:
+    # Initialize clients inside the async function — not at module level.
+    # Module-level initialization would crash on import if env vars are missing
+    # and creates an async client outside an event loop (incorrect for AsyncQdrantClient).
+    settings = get_settings()
+    qdrant = AsyncQdrantClient(
+        url=f"http://{settings.qdrant_host}:{settings.qdrant_port}",
+        api_key=settings.qdrant_api_key or None,
+    )
+
     # Step 1 — Total count
     count_result = await qdrant.count(collection_name=COLLECTION_NAME, exact=True)
     total = count_result.count
