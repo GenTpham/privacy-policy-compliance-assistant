@@ -12,4 +12,4 @@ python-multipart
 opentelemetry-sdk
 opentelemetry-exporter-otlp-proto-grpc
 openinference-instrumentation-openai
-pypdf
+pypdf>=4.0,<5
