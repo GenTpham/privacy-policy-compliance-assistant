@@ -548,17 +548,19 @@ Step 2.5 SKIPPED — Phase 9 is a feature addition (new endpoint, wiring existin
 
 ---
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **`facet()` hit attribute name on `FacetValueHit`**
    - What we know: The REST API response has `hits[].value` and `hits[].count`. The Python `FacetValueHit` model mirrors this.
    - What's unclear: Whether `.value` returns the raw string or a wrapped type (e.g., `StringValue`).
    - Recommendation: Add a smoke test or print statement in Wave 0 to inspect `hit.value` type before using it in production.
+   - **RESOLVED:** `.value` returns a raw string per REST API reference (api.qdrant.tech/api-reference/points/facet — VERIFIED). Documented as Assumption A2 (low risk) — qdrant-client 1.17.1 Python model mirrors the REST schema directly.
 
 2. **Conflict path + source filter interaction**
    - What we know: `stream_conflict_answer()` uses `limit=10` and retrieves across all sources to find conflicts.
    - What's unclear: Whether the source filter should be applied to conflict queries (filtering to one source defeats cross-document comparison).
    - Recommendation: Apply source_filter consistently to both paths (UI-SPEC does not exclude conflict path from filtering). If user selects a source filter and asks a conflict query, they get passages from only that source — which may produce empty/degenerate results. This is acceptable behavior for Phase 9; it is not a bug.
+   - **RESOLVED:** source_filter applied to both `stream_answer` and `stream_conflict_answer` per plan design (09-01-PLAN.md). Scoped single-source conflict queries are accepted behavior in Phase 9.
 
 ---
 
