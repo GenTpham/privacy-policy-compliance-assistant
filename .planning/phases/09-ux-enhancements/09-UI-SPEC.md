@@ -116,6 +116,8 @@ Note: Nemotron cosine scores for relevant matches range 0.25–0.45 (from Phase 
 
 ## Component Interaction Contracts
 
+**Primary visual anchor:** The primary visual anchor is unchanged from Phase 4 (chat input area). Score badges are secondary visual elements in the Evidence panel and citation card rows.
+
 ### Feature 1: Source Filter Dropdown / Sidebar
 
 #### Current state (Phase 8 baseline)
@@ -164,7 +166,7 @@ fontWeight: 600
 color: t.faint
 letterSpacing: "0.06em"
 textTransform: "uppercase"
-marginBottom: 10
+marginBottom: 8
 ```
 
 **Source name display:** Strip " Privacy Policy" and " Privacy Statement" suffixes from title for display (existing logic in `AskAssistantScreen` — keep). Show full title as `title` attribute on the button for accessibility.
@@ -428,6 +430,7 @@ frontend/
 | 11px eliminated — scale is 12/14/16/20 | Checker revision 2026-05-06: max 4 type sizes; 11px merged to 12px/600 |
 | Score badge padding 4px 8px | Checker revision 2026-05-06: 2px 6px replaced with 4px grid values |
 | Source filter error copy includes actionable path | Checker revision 2026-05-06: added "Try refreshing the page." |
+| Section label marginBottom: 10 → 8 | Checker revision 2026-05-06: non-4-multiple replaced with 8px (sm token) |
 
 ---
 
