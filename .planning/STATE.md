@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 8 of 4 (corpus expansion)
+current_phase: 9 of 4 (ux enhancements)
 status: planning
-last_updated: "2026-05-05T03:57:35.645Z"
+last_updated: "2026-05-06T00:00:00.000Z"
 progress:
   total_phases: 4
-  completed_phases: 1
-  total_plans: 4
-  completed_plans: 4
+  completed_phases: 2
+  total_plans: 6
+  completed_plans: 6
   percent: 100
 ---
 
@@ -25,8 +25,8 @@ progress:
 
 | Phase | Name | Status |
 |-------|------|--------|
-| 7 | Eval & Calibration | Not started |
-| 8 | Corpus Expansion | Not started |
+| 7 | Eval & Calibration | ✅ Complete (2026-05-05) |
+| 8 | Corpus Expansion | ✅ Complete (2026-05-06) |
 | 9 | UX Enhancements | Not started |
 | 10 | Multi-user & Rate Limiting | Not started |
 
@@ -34,10 +34,10 @@ progress:
 
 ## Current Position
 
-Phase: 7 — Eval & Calibration
+Phase: 9 — UX Enhancements
 Plan: Not started
-**Status:** Ready to plan
-**Progress:** [###       ] 75%
+**Status:** Ready to discuss/plan
+**Progress:** [#####     ] 50% (2 of 4 v2.0 phases complete)
 
 ---
 
@@ -45,7 +45,7 @@ Plan: Not started
 
 See: `.planning/PROJECT.md`
 **Core value:** Users can ask any compliance question and immediately get an answer with exact quotes from the authoritative policy documents — no guessing, no hallucination, traceable to source.
-**Current focus:** Phase 7 — Eval & Calibration
+**Current focus:** Phase 9 — UX Enhancements
 
 ---
 
@@ -54,9 +54,9 @@ See: `.planning/PROJECT.md`
 | Metric | Value |
 |--------|-------|
 | v1.0 phases complete | 6 / 6 |
-| v2.0 phases complete | 0 / 4 |
+| v2.0 phases complete | 2 / 4 |
 | v2.0 requirements mapped | 12 / 12 |
-| Plans complete (v2.0) | 0 / TBD |
+| Plans complete (v2.0) | 6 / TBD |
 
 ---
 
@@ -108,8 +108,8 @@ See: `.planning/PROJECT.md`
 
 ## Session Continuity
 
-*Last session: 2026-05-05 — Phase 7 Plans 1–3 executed; Plans 01 (config), 02 (test fix), 03 (analysis) complete*
-*Stopped at: 07-03-PLAN.md complete; ready for 07-04 (implement score_threshold=0.20 in production)*
+*Last session: 2026-05-06 — Phase 8 complete; ingest_doc.py + validate_corpus.py delivered and verified*
+*Stopped at: Phase 8 complete; ready to discuss/plan Phase 9 (UX Enhancements)*
 
 ### v1.0 Deliverables Summary
 
