@@ -56,9 +56,11 @@ class ChatRequest(BaseModel):
     Request body for POST /api/chat.
     message: the user's current question (D-01).
     history: optional prior turns — client owns state (D-09, D-11).
+    source_filter: optional payload.title match — null = all sources; non-null scopes Qdrant retrieval.
     """
     message: str = Field(..., min_length=1, max_length=4000)
     history: list[HistoryItem] = Field(default_factory=list)
+    source_filter: str | None = Field(default=None)  # null = all sources; non-null scopes Qdrant to payload.title match
 
 
 class Citation(BaseModel):
@@ -95,9 +97,9 @@ async def chat_endpoint(
 
     async def _generate() -> AsyncGenerator[str, None]:
         if is_conflict_query(request.message):
-            generator = rag.stream_conflict_answer(request.message, history)
+            generator = rag.stream_conflict_answer(request.message, history, source_filter=request.source_filter)
         else:
-            generator = rag.stream_answer(request.message, history)
+            generator = rag.stream_answer(request.message, history, source_filter=request.source_filter)
         async for event in generator:
             yield f"data: {json.dumps(event)}\n\n"
 

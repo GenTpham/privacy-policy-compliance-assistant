@@ -51,15 +51,28 @@ async def test_sources_authenticated_returns_200():
 
 
 @pytest.mark.asyncio
-async def test_sources_unauthenticated_returns_401():
+async def test_sources_unauthenticated_returns_401(db_engine):
     """GET /api/sources returns HTTP 401 when no bearer token provided."""
+    from backend.app.db.session import get_db
+    from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+
     app = create_app()
-    # No override — real get_current_user which requires a valid token
-    async with httpx.AsyncClient(
-        transport=httpx.ASGITransport(app=app),
-        base_url="http://test",
-    ) as client:
-        response = await client.get("/api/sources")
+    factory = async_sessionmaker(db_engine, class_=AsyncSession, expire_on_commit=False)
+
+    async def _override_get_db():
+        async with factory() as session:
+            yield session
+
+    app.dependency_overrides[get_db] = _override_get_db
+    try:
+        async with httpx.AsyncClient(
+            transport=httpx.ASGITransport(app=app),
+            base_url="http://test",
+        ) as client:
+            # No Authorization header — should return 401
+            response = await client.get("/api/sources")
+    finally:
+        app.dependency_overrides.clear()
 
     assert response.status_code == 401
 

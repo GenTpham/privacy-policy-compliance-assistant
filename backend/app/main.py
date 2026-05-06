@@ -15,6 +15,7 @@ from sqlalchemy import select
 
 from backend.app.api.auth import router as auth_router
 from backend.app.api.chat import router as chat_router
+from backend.app.api.sources import router as sources_router
 from backend.app.core.config import get_settings
 from backend.app.core.telemetry import setup_tracing
 from backend.app.db.models import Base, User
@@ -160,6 +161,7 @@ def create_app() -> FastAPI:
     )
     app.include_router(chat_router, prefix="/api")
     app.include_router(auth_router, prefix="/auth")
+    app.include_router(sources_router, prefix="/api")
     return app
 
 
