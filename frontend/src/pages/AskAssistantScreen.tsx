@@ -2,7 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { useTheme } from "@/lib/theme";
 import { ConfidenceBar } from "@/components/ui/ConfidenceBar";
 import { StreamingCursor } from "@/components/chat/StreamingCursor";
-import { POLICIES, SUGGESTED_PROMPTS } from "@/lib/mockData";
+import { SUGGESTED_PROMPTS } from "@/lib/mockData";
+import { fetchWithAuth } from "@/lib/api";
 import type { UseSSEChatReturn, Citation } from "@/hooks/useSSEChat";
 
 interface Props {
@@ -15,7 +16,10 @@ export function AskAssistantScreen({ chat, forceLogout }: Props) {
   const { messages, isStreaming, submit } = chat;
 
   const [input, setInput] = useState("");
-  const [activeFilter, setActiveFilter] = useState(POLICIES[0].name);
+  const [sources, setSources] = useState<string[]>([]);
+  const [sourcesLoading, setSourcesLoading] = useState(true);
+  const [sourcesError, setSourcesError] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState("All Sources");
   const [topicFilter, setTopicFilter] = useState("All Topics");
   const [activeEvidence, setActiveEvidence] = useState<Citation[]>([]);
 
@@ -30,13 +34,25 @@ export function AskAssistantScreen({ chat, forceLogout }: Props) {
     }
   }, [messages]);
 
+  useEffect(() => {
+    fetchWithAuth("/api/sources", { method: "GET" }, forceLogout)
+      .then((r) => r.json())
+      .then((data: { sources: string[] }) => {
+        setSources(data.sources ?? []);
+        setSourcesLoading(false);
+      })
+      .catch(() => {
+        setSourcesError("Could not load sources. Try refreshing the page.");
+        setSourcesLoading(false);
+      });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // mount only — forceLogout identity changes on each render; adding it would re-fetch continuously
+
   const handleSend = () => {
     if (!input.trim() || isStreaming) return;
-    submit(input, forceLogout);
+    submit(input, forceLogout, activeFilter === "All Sources" ? null : activeFilter);
     setInput("");
   };
-
-  const indexedPolicies = POLICIES.filter((p) => p.status === "indexed");
 
   return (
     <div style={{ display: "flex", height: "100%", overflow: "hidden" }}>
