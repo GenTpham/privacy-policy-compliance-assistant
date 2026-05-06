@@ -70,8 +70,13 @@ Plans:
   2. When a source is selected, only passages from that policy appear in citations — no results from other sources leak through
   3. Each citation card in the UI displays the retrieval score as a numeric value (e.g. 0.38) so users can judge match confidence
   4. Selecting "All sources" restores the default multi-source retrieval behavior with no backend change required
-**Plans**: TBD
-**UI hint**: yes
+**Plans**: 4 plans
+
+Plans:
+- [ ] 09-01-PLAN.md — Backend data layer: GET /api/sources, source_filter in RAG pipeline, score in citation dicts (Wave 1)
+- [ ] 09-02-PLAN.md — Backend tests: test_sources_endpoint.py, extended test_rag.py + test_chat_endpoint.py (Wave 2)
+- [ ] 09-03-PLAN.md — Frontend types + CitationCard: Citation.score, submit sourceFilter param, score badge (Wave 2)
+- [ ] 09-04-PLAN.md — AskAssistantScreen: real sources fetch, source_filter wiring, real ConfidenceBar scores (Wave 2)
 
 ### Phase 10: Multi-user & Rate Limiting
 **Goal**: The system supports multiple managed user accounts with role-based access control, and the API enforces per-user rate limits to prevent abuse.
@@ -96,7 +101,7 @@ Plans:
 | 6. Integration & Docker Compose Finalization | v1.0 | 2/2 | Complete | 2026-05-04 |
 | 7. Eval & Calibration | v2.0 | 4/4 | Complete    | 2026-05-05 |
 | 8. Corpus Expansion | v2.0 | 0/2 | Not started | - |
-| 9. UX Enhancements | v2.0 | 0/? | Not started | - |
+| 9. UX Enhancements | v2.0 | 0/4 | Not started | - |
 | 10. Multi-user & Rate Limiting | v2.0 | 0/? | Not started | - |
 
 ---
