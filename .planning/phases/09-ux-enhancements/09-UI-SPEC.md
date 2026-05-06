@@ -42,7 +42,7 @@ Inherited from Phase 4 UI-SPEC (approved 2026-04-27). Declared values (multiples
 | Token | Value | Usage |
 |-------|-------|-------|
 | xs | 4px | Icon gaps, inline badge padding, score badge padding |
-| sm | 8px | Gap between citation cards, gap between filter items |
+| sm | 8px | Gap between citation cards, gap between filter items, score badge horizontal padding |
 | md | 16px | Sidebar section padding, card body padding |
 | lg | 24px | Chat message area horizontal padding |
 | xl | 32px | Layout region gaps |
@@ -71,11 +71,13 @@ Inherited from Phase 4 UI-SPEC (approved 2026-04-27).
 
 | Role | Size | Weight | Usage |
 |------|------|--------|-------|
-| Score numeral | 11px | 600 (semibold) | Retrieval score display in citation card — e.g. "0.38" |
-| Filter section label | 11px | 600 (semibold) | Section headers in source filter sidebar ("POLICY SOURCE") |
+| Score numeral | 12px | 600 (semibold) | Retrieval score display in citation card — e.g. "0.38". Differentiated from Caption by weight (600 vs 400), not size. |
+| Filter section label | 12px | 600 (semibold) | Section headers in source filter sidebar ("POLICY SOURCE"). Differentiated from Caption by weight (600 vs 400), not size. |
 | Filter option text | 12px | 400 / 600 | Inactive / active source filter buttons |
 
-No new weights introduced. Score numeral uses existing semibold (600) weight — same as filter section labels already in `AskAssistantScreen`.
+No new weights introduced. Score numeral and filter section labels use existing semibold (600) weight — distinguished from Caption (12px/400) by weight only.
+
+**Final declared type scale: 12px, 14px, 16px, 20px — exactly 4 sizes.**
 
 ---
 
@@ -129,7 +131,7 @@ The source filter MUST actually scope the backend query. Two sub-tasks:
 - On `AskAssistantScreen` mount: fetch `/api/sources` with auth header. Store in local state as `sources: string[]`.
 - Prepend the fixed option `"All Sources"` at index 0.
 - While loading: show skeleton rows (3 placeholder lines, same height as filter buttons, `t.border` background).
-- On fetch error: show inline error text — "Could not load sources." — in `t.faint` color, 11px. Keep "All Sources" as the only selectable option.
+- On fetch error: show inline error text — "Could not load sources. Try refreshing the page." — in `t.faint` color, 12px. Keep "All Sources" as the only selectable option.
 
 **Sub-task B: Pass source filter to backend**
 - `ChatRequest` body gains optional field: `source_filter?: string | null`
@@ -157,7 +159,7 @@ Filter buttons are `<button>` elements. No dropdown overlay — the existing lef
 
 **Section label format (no change from existing):**
 ```
-fontSize: 11
+fontSize: 12
 fontWeight: 600
 color: t.faint
 letterSpacing: "0.06em"
@@ -207,7 +209,7 @@ Display format in Evidence panel (per existing card layout):
 ```
 [Relevance label]  [ConfidenceBar with real score]  [numeric "0.38"]
 ```
-The numeric value is rendered as `score.toFixed(2)` (2 decimal places) — e.g. "0.38", "0.32", "0.44". Font: 11px / 600 / semantic traffic-light color.
+The numeric value is rendered as `score.toFixed(2)` (2 decimal places) — e.g. "0.38", "0.32", "0.44". Font: 12px / 600 / semantic traffic-light color.
 
 #### Score display: Chat message citation card (collapsed row)
 In the chat message area, each citation card shows a compact score badge on the right side of the collapsed trigger row, between the preview text and the ChevronDown icon.
@@ -217,9 +219,9 @@ In the chat message area, each citation card shows a compact score badge on the 
 ```
 
 Score badge format:
-- Container: inline-flex, border-radius 4px, padding 2px 6px
+- Container: inline-flex, border-radius 4px, padding 4px 8px
 - Background: 15% opacity of the semantic traffic-light color
-- Text: `score.toFixed(2)`, 11px, 600, semantic traffic-light color
+- Text: `score.toFixed(2)`, 12px, 600, semantic traffic-light color
 
 Example rendered output for score=0.38: `0.38` in `#EF4444` on `rgba(239,68,68,0.12)` background.
 
@@ -264,12 +266,12 @@ When a user selects a source filter AND submits a query:
 | Source filter section label | "POLICY SOURCE" (uppercase via CSS — store as "Policy Source") |
 | "All sources" option label | "All Sources" |
 | Source filter loading state | (skeleton rows — no text) |
-| Source filter error state | "Could not load sources." |
+| Source filter error state | "Could not load sources. Try refreshing the page." |
 | Score label in Evidence panel | "Relevance" (existing — keep) |
 | Score aria-label on badge | `"Retrieval score: {score}"` — e.g. "Retrieval score: 0.38" |
 | Score tooltip (hover) | `"Cosine similarity: {score.toFixed(4)}"` — e.g. "Cosine similarity: 0.3841" — shown on badge hover via `title` attribute |
 | GET /api/sources error (API) | HTTP 500: `{"detail": "Failed to retrieve source list"}` |
-| Empty sources list | If Qdrant returns zero distinct titles: show "No policies indexed." in faint text, 11px |
+| Empty sources list | If Qdrant returns zero distinct titles: show "No policies indexed." in faint text, 12px |
 
 **No destructive actions in Phase 9.** No confirmation dialogs required.
 
@@ -423,6 +425,9 @@ frontend/
 | Inline theme tokens (not Tailwind classes) | AskAssistantScreen.tsx + AppShell.tsx — matching existing screen pattern |
 | Source name suffix stripping | AskAssistantScreen.tsx existing `.replace(" Privacy Policy", "")` logic |
 | Dropdown = sidebar buttons (not `<select>`) | AskAssistantScreen.tsx existing sidebar pattern — preserve UI consistency |
+| 11px eliminated — scale is 12/14/16/20 | Checker revision 2026-05-06: max 4 type sizes; 11px merged to 12px/600 |
+| Score badge padding 4px 8px | Checker revision 2026-05-06: 2px 6px replaced with 4px grid values |
+| Source filter error copy includes actionable path | Checker revision 2026-05-06: added "Try refreshing the page." |
 
 ---
 
