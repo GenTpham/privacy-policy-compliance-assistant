@@ -28,6 +28,12 @@ export function CitationCard({ citation }: CitationCardProps) {
       ? citation.text.slice(0, 50) + "…"
       : citation.text;
 
+  // Traffic-light color thresholds — green >= 0.8, amber >= 0.5, red otherwise
+  const scoreColor =
+    citation.score >= 0.8 ? "#22C55E" :
+    citation.score >= 0.5 ? "#F59E0B" :
+    "#EF4444";
+
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <CollapsibleTrigger
@@ -54,6 +60,24 @@ export function CitationCard({ citation }: CitationCardProps) {
             <p className="text-xs text-zinc-500 truncate">{preview}</p>
           </div>
         </div>
+        {/* Score badge — UI-SPEC score numeral: 12px/600, traffic-light color, ~12% opacity bg */}
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            borderRadius: 4,
+            padding: "4px 8px",
+            background: `${scoreColor}1F`,
+            fontSize: 12,
+            fontWeight: 600,
+            color: scoreColor,
+            flexShrink: 0,
+          }}
+          aria-label={`Retrieval score: ${citation.score.toFixed(2)}`}
+          title={`Cosine similarity: ${citation.score.toFixed(4)}`}
+        >
+          {citation.score.toFixed(2)}
+        </span>
         {/* ChevronDown rotates 180deg on open — 150ms ease-in-out per UI-SPEC Animation Contract */}
         <ChevronDown
           className={cn(
