@@ -6,6 +6,7 @@ export interface Citation {
   qdrant_id: string;
   title: string;
   text: string;
+  score: number;  // cosine similarity from Qdrant, 0–1, 4 decimal places max
 }
 
 export interface Message {
@@ -19,7 +20,7 @@ export interface Message {
 export interface UseSSEChatReturn {
   messages: Message[];
   isStreaming: boolean;
-  submit: (message: string, onUnauthorized: () => void) => Promise<void>;
+  submit: (message: string, onUnauthorized: () => void, sourceFilter?: string | null) => Promise<void>;
 }
 
 /**
@@ -66,7 +67,7 @@ export function useSSEChat(): UseSSEChatReturn {
   const [isStreaming, setIsStreaming] = useState(false);
 
   const submit = useCallback(
-    async (message: string, onUnauthorized: () => void): Promise<void> => {
+    async (message: string, onUnauthorized: () => void, sourceFilter?: string | null): Promise<void> => {
       if (isStreaming) return; // prevent concurrent submits
 
       // Build history from current messages (exclude the user message we're about to add)
@@ -94,7 +95,11 @@ export function useSSEChat(): UseSSEChatReturn {
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message, history }),
+            body: JSON.stringify({
+              message,
+              history,
+              source_filter: sourceFilter ?? null,  // null when "All Sources" or omitted; backend ignores null
+            }),
           },
           onUnauthorized
         );
