@@ -292,3 +292,79 @@ def test_conflict_history_sliced_to_6(sample_scored_points_multi):
     assert len(messages) == 8
     assert messages[0]["role"] == "system"
     assert messages[-1]["content"] == "conflict query"
+
+
+# ── Phase 9: UX-03 score field tests ─────────────────────────────────────────
+
+def test_score_in_citations(sample_scored_point):
+    """UX-03: _build_verified_citations includes 'score' field as float rounded to 4 decimals."""
+    # sample_scored_point.score = 0.82 (from conftest)
+    citations = _build_verified_citations("[1]", [sample_scored_point])
+    assert len(citations) == 1
+    assert "score" in citations[0], "score key missing from citation dict"
+    assert isinstance(citations[0]["score"], float), "score must be float"
+    assert citations[0]["score"] == round(sample_scored_point.score, 4)
+
+
+@pytest.mark.asyncio
+async def test_score_in_abstain_fallback(mock_openrouter, mock_qdrant, sample_scored_point):
+    """UX-03: abstain fallback citations (LLM returns no [N] refs) also include score field."""
+    # Configure: qdrant returns one point; LLM returns answer with no [N] refs
+    mock_resp = MagicMock()
+    mock_resp.points = [sample_scored_point]
+    mock_qdrant.query_points = AsyncMock(return_value=mock_resp)
+
+    # LLM returns content with no citation references — triggers abstain fallback
+    async def _no_ref_stream(*args, **kwargs):
+        chunk = MagicMock()
+        chunk.choices = [MagicMock()]
+        chunk.choices[0].delta.content = "I cannot find specific references."
+        yield chunk
+        chunk2 = MagicMock()
+        chunk2.choices = [MagicMock()]
+        chunk2.choices[0].delta.content = None
+        yield chunk2
+
+    mock_openrouter.chat.completions.create = AsyncMock(return_value=_no_ref_stream())
+
+    with patch.object(rag, "openrouter", mock_openrouter), \
+         patch.object(rag, "qdrant", mock_qdrant):
+        events = [e async for e in stream_answer("test query", [])]
+
+    done = events[-1]
+    assert done["type"] == "done"
+    assert len(done["citations"]) > 0, "abstain fallback should have citations when results exist"
+    assert "score" in done["citations"][0], "score missing from abstain fallback citation"
+    assert isinstance(done["citations"][0]["score"], float)
+
+
+# ── Phase 9: UX-02 source_filter propagation tests ───────────────────────────
+
+@pytest.mark.asyncio
+async def test_source_filter_applied(mock_openrouter, mock_qdrant):
+    """UX-02: stream_answer with source_filter passes query_filter to query_points."""
+    with patch.object(rag, "openrouter", mock_openrouter), \
+         patch.object(rag, "qdrant", mock_qdrant):
+        events = [
+            e async for e in stream_answer(
+                "test query", [], source_filter="Google Privacy Policy"
+            )
+        ]
+
+    call_kwargs = mock_qdrant.query_points.call_args.kwargs
+    assert call_kwargs.get("query_filter") is not None, (
+        "query_filter should be set when source_filter is provided"
+    )
+
+
+@pytest.mark.asyncio
+async def test_no_filter_when_none(mock_openrouter, mock_qdrant):
+    """UX-02: stream_answer with source_filter=None passes query_filter=None to query_points."""
+    with patch.object(rag, "openrouter", mock_openrouter), \
+         patch.object(rag, "qdrant", mock_qdrant):
+        events = [e async for e in stream_answer("test query", [], source_filter=None)]
+
+    call_kwargs = mock_qdrant.query_points.call_args.kwargs
+    assert call_kwargs.get("query_filter") is None, (
+        "query_filter must be None when source_filter is None"
+    )
