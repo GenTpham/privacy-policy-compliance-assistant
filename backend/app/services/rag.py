@@ -11,6 +11,7 @@ from contextlib import nullcontext
 
 from openai import AsyncOpenAI
 from qdrant_client import AsyncQdrantClient
+from qdrant_client.models import Filter, FieldCondition, MatchValue
 
 from backend.app.core.config import get_settings
 
@@ -53,6 +54,21 @@ qdrant = AsyncQdrantClient(
     url=f"http://{_settings.qdrant_host}:{_settings.qdrant_port}",
     api_key=_settings.qdrant_api_key or None,
 )
+
+
+# ── Source enumeration ────────────────────────────────────────────────────────
+
+async def get_distinct_sources() -> list[str]:
+    """Return sorted list of distinct payload.title values from the policies collection.
+    Uses Qdrant facet API (available since Qdrant 1.12; pinned to 1.17.1).
+    limit=200: corpus has <50 distinct titles; safe upper bound.
+    """
+    response = await qdrant.facet(
+        collection_name=COLLECTION_NAME,
+        key="title",
+        limit=200,
+    )
+    return sorted(hit.value for hit in response.hits)
 
 
 # ── OTel retrieval span helper ─────────────────────────────────────────────────
@@ -126,6 +142,7 @@ def _build_verified_citations(answer: str, retrieved_chunks: list) -> list[dict]
                 "qdrant_id": str(chunk.id),
                 "title": chunk.payload.get("title", ""),
                 "text": chunk.payload.get("text", ""),
+                "score": round(chunk.score, 4),
             })
         else:
             logger.warning(
@@ -143,6 +160,7 @@ async def stream_answer(
     history: list[dict],
     temperature: float = 0.0,
     max_tokens: int = 1024,
+    source_filter: str | None = None,
 ) -> AsyncGenerator[dict, None]:
     """
     Core RAG pipeline as an async generator.
@@ -175,6 +193,9 @@ async def stream_answer(
             limit=5,
             score_threshold=_threshold,
             with_payload=True,
+            query_filter=Filter(
+                must=[FieldCondition(key="title", match=MatchValue(value=source_filter))]
+            ) if source_filter else None,
         )
         results = response.points
         if span is not None:
@@ -229,6 +250,7 @@ async def stream_answer(
                 "qdrant_id": str(c.id),
                 "title": c.payload.get("title", ""),
                 "text": c.payload.get("text", ""),
+                "score": round(c.score, 4),
             }
             for i, c in enumerate(results)
         ]
@@ -285,6 +307,7 @@ async def stream_conflict_answer(
     history: list[dict],
     temperature: float = 0.0,
     max_tokens: int = 1024,
+    source_filter: str | None = None,
 ) -> AsyncGenerator[dict, None]:
     """
     Conflict-detection RAG pipeline as an async generator.
@@ -318,6 +341,9 @@ async def stream_conflict_answer(
             limit=10,
             score_threshold=_threshold,
             with_payload=True,
+            query_filter=Filter(
+                must=[FieldCondition(key="title", match=MatchValue(value=source_filter))]
+            ) if source_filter else None,
         )
         results = response.points
         if span is not None:
@@ -371,6 +397,7 @@ async def stream_conflict_answer(
                 "qdrant_id": str(c.id),
                 "title": c.payload.get("title", ""),
                 "text": c.payload.get("text", ""),
+                "score": round(c.score, 4),
             }
             for i, c in enumerate(results)
         ]
