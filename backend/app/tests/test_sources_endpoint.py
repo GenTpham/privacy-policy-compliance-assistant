@@ -1,7 +1,7 @@
 """
 backend/app/tests/test_sources_endpoint.py
-Phase 9 Plan 01 HTTP-level tests for GET /api/sources endpoint and
-ChatRequest.source_filter propagation in POST /api/chat.
+HTTP-level tests for GET /api/sources endpoint.
+Uses httpx.AsyncClient with ASGITransport — no live server needed.
 
 Run: pytest backend/app/tests/test_sources_endpoint.py -x -v
 """
@@ -17,7 +17,7 @@ from backend.app.services.auth import get_current_user
 # ── Shared helpers ────────────────────────────────────────────────────────────
 
 def _stub_current_user():
-    """Override get_current_user — returns a dummy User without DB/JWT checks."""
+    """Override for get_current_user — returns a dummy User without DB/JWT checks."""
     return User(id=1, username="test", hashed_password="$argon2id$stub")
 
 
@@ -29,12 +29,16 @@ async def _minimal_done_stream(*args, **kwargs):
 # ── GET /api/sources ──────────────────────────────────────────────────────────
 
 @pytest.mark.asyncio
-async def test_sources_authenticated_returns_200():
-    """GET /api/sources returns HTTP 200 with {sources: list} when authenticated."""
+async def test_sources_returns_list():
+    """UX-01: GET /api/sources with auth returns {"sources": [...]} with HTTP 200."""
     app = create_app()
     app.dependency_overrides[get_current_user] = _stub_current_user
     try:
-        with patch("backend.app.services.rag.get_distinct_sources", new=AsyncMock(return_value=["Policy A", "Policy B"])):
+        with patch(
+            "backend.app.services.rag.get_distinct_sources",
+            new_callable=AsyncMock,
+            return_value=["Google Privacy Policy", "OpenAI Privacy Policy"],
+        ):
             async with httpx.AsyncClient(
                 transport=httpx.ASGITransport(app=app),
                 base_url="http://test",
@@ -47,12 +51,12 @@ async def test_sources_authenticated_returns_200():
     data = response.json()
     assert "sources" in data
     assert isinstance(data["sources"], list)
-    assert data["sources"] == ["Policy A", "Policy B"]
+    assert data["sources"] == ["Google Privacy Policy", "OpenAI Privacy Policy"]
 
 
 @pytest.mark.asyncio
-async def test_sources_unauthenticated_returns_401(db_engine):
-    """GET /api/sources returns HTTP 401 when no bearer token provided."""
+async def test_sources_requires_auth(db_engine):
+    """UX-01: GET /api/sources without bearer token returns HTTP 401."""
     from backend.app.db.session import get_db
     from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
@@ -63,29 +67,28 @@ async def test_sources_unauthenticated_returns_401(db_engine):
         async with factory() as session:
             yield session
 
+    # Override get_db so the app can init, but no auth override — real JWT check applied
     app.dependency_overrides[get_db] = _override_get_db
     try:
         async with httpx.AsyncClient(
             transport=httpx.ASGITransport(app=app),
             base_url="http://test",
         ) as client:
-            # No Authorization header — should return 401
-            response = await client.get("/api/sources")
+            response = await client.get("/api/sources")  # no Authorization header
     finally:
         app.dependency_overrides.clear()
-
     assert response.status_code == 401
 
 
 @pytest.mark.asyncio
-async def test_sources_qdrant_exception_returns_500():
-    """GET /api/sources returns HTTP 500 with detail when Qdrant raises an exception."""
+async def test_sources_returns_500_on_qdrant_error():
+    """UX-01: GET /api/sources returns HTTP 500 when Qdrant raises an exception."""
     app = create_app()
     app.dependency_overrides[get_current_user] = _stub_current_user
     try:
         with patch(
             "backend.app.services.rag.get_distinct_sources",
-            new=AsyncMock(side_effect=Exception("Qdrant connection error")),
+            side_effect=Exception("Qdrant down"),
         ):
             async with httpx.AsyncClient(
                 transport=httpx.ASGITransport(app=app),
@@ -148,7 +151,11 @@ async def test_chat_source_filter_passed_to_stream_answer():
             ) as client:
                 response = await client.post(
                     "/api/chat",
-                    json={"message": "what is the policy?", "history": [], "source_filter": "Google Privacy Policy"},
+                    json={
+                        "message": "what is the policy?",
+                        "history": [],
+                        "source_filter": "Google Privacy Policy",
+                    },
                 )
     finally:
         app.dependency_overrides.clear()

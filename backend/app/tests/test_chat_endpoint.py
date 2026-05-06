@@ -147,3 +147,32 @@ async def test_conflict_route_dispatches_conflict_generator():
     assert response.status_code == 200
     mock_conflict.assert_called_once()
     mock_standard.assert_not_called()
+
+
+# ── Phase 9: UX-02 source_filter field accepted ───────────────────────────────
+
+@pytest.mark.asyncio
+async def test_source_filter_accepted():
+    """UX-02: POST /api/chat accepts source_filter field in request body (HTTP 200)."""
+    app = create_app()
+    app.dependency_overrides[get_current_user] = _stub_current_user
+    try:
+        with patch("backend.app.services.rag.stream_answer", side_effect=_minimal_done_stream):
+            async with httpx.AsyncClient(
+                transport=httpx.ASGITransport(app=app),
+                base_url="http://test",
+            ) as client:
+                response = await client.post(
+                    "/api/chat",
+                    json={
+                        "message": "what is the data retention policy?",
+                        "history": [],
+                        "source_filter": "Google Privacy Policy",
+                    },
+                )
+    finally:
+        app.dependency_overrides.clear()
+
+    assert response.status_code == 200, (
+        f"Expected 200 with source_filter, got {response.status_code}. Body: {response.text[:200]}"
+    )
