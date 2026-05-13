@@ -87,7 +87,13 @@ Plans:
   2. A non-admin user calling user management endpoints receives HTTP 403
   3. When a user exceeds the configured requests-per-minute limit on POST /api/chat, the API returns HTTP 429 with a clear error message
   4. The rate limit is configurable per deployment (via environment variable or config) without code changes
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 10-01-PLAN.md — Foundation: slowapi in requirements, User.is_admin, Settings.rate_limit_per_minute, core/limiter.py, require_admin (Wave 1)
+- [ ] 10-02-PLAN.md — Startup migration + admin router: _migrate_add_is_admin_column, _patch_admin_is_admin, api/admin.py, login update (Wave 2)
+- [ ] 10-03-PLAN.md — Chat rate limiting: @limiter.limit on POST /api/chat, request: Request param, body rename (Wave 2)
+- [ ] 10-04-PLAN.md — Tests: conftest fixtures, test_admin.py (AUTH-05/07), test_rate_limit.py (AUTH-06) (Wave 3)
 
 ## Progress
 
@@ -102,7 +108,7 @@ Plans:
 | 7. Eval & Calibration | v2.0 | 4/4 | Complete    | 2026-05-05 |
 | 8. Corpus Expansion | v2.0 | 0/2 | Not started | - |
 | 9. UX Enhancements | v2.0 | 0/4 | Not started | - |
-| 10. Multi-user & Rate Limiting | v2.0 | 0/? | Not started | - |
+| 10. Multi-user & Rate Limiting | v2.0 | 0/4 | Not started | - |
 
 ---
 *v1.0 shipped: 2026-05-04*
