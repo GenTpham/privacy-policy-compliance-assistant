@@ -123,16 +123,19 @@ export function AskAssistantScreen({ chat, forceLogout }: Props) {
         </div>
         <div style={{ padding: "16px 16px 12px" }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: t.faint, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 8 }}>Topic Filter</div>
+          {/* TODO(Phase 10+): wire topicFilter to submit() — currently non-functional affordance */}
           {allTopics.map((tp) => (
             <button
               key={tp}
               onClick={() => setTopicFilter(tp)}
               style={{
                 display: "block", width: "100%", textAlign: "left",
-                padding: "7px 10px", borderRadius: 5, fontSize: 12, border: "none", cursor: "pointer", marginBottom: 2,
-                background: topicFilter === tp ? accent : "transparent",
-                color: topicFilter === tp ? "#fff" : t.text3,
-                fontWeight: topicFilter === tp ? 600 : 400,
+                padding: "7px 10px", borderRadius: 5, fontSize: 12, border: "none", cursor: "not-allowed", marginBottom: 2,
+                background: "transparent",
+                color: t.faint,
+                fontWeight: 400,
+                opacity: 0.5,
+                pointerEvents: "none" as const,
               }}
             >
               {tp}
