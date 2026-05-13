@@ -2,7 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { useTheme } from "@/lib/theme";
 import { ConfidenceBar } from "@/components/ui/ConfidenceBar";
 import { StreamingCursor } from "@/components/chat/StreamingCursor";
-import { POLICIES, SUGGESTED_PROMPTS } from "@/lib/mockData";
+import { SUGGESTED_PROMPTS } from "@/lib/mockData";
+import { fetchWithAuth } from "@/lib/api";
 import type { UseSSEChatReturn, Citation } from "@/hooks/useSSEChat";
 
 interface Props {
@@ -15,7 +16,10 @@ export function AskAssistantScreen({ chat, forceLogout }: Props) {
   const { messages, isStreaming, submit } = chat;
 
   const [input, setInput] = useState("");
-  const [activeFilter, setActiveFilter] = useState(POLICIES[0].name);
+  const [sources, setSources] = useState<string[]>([]);
+  const [sourcesLoading, setSourcesLoading] = useState(true);
+  const [sourcesError, setSourcesError] = useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = useState("All Sources");
   const [topicFilter, setTopicFilter] = useState("All Topics");
   const [activeEvidence, setActiveEvidence] = useState<Citation[]>([]);
 
@@ -30,38 +34,92 @@ export function AskAssistantScreen({ chat, forceLogout }: Props) {
     }
   }, [messages]);
 
+  useEffect(() => {
+    fetchWithAuth("/api/sources", { method: "GET" }, forceLogout)
+      .then((r) => r.json())
+      .then((data: { sources: string[] }) => {
+        setSources(data.sources ?? []);
+        setSourcesLoading(false);
+      })
+      .catch(() => {
+        setSourcesError("Could not load sources. Try refreshing the page.");
+        setSourcesLoading(false);
+      });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // mount only — forceLogout identity changes on each render; adding it would re-fetch continuously
+
   const handleSend = () => {
     if (!input.trim() || isStreaming) return;
-    submit(input, forceLogout);
+    submit(input, forceLogout, activeFilter === "All Sources" ? null : activeFilter);
     setInput("");
   };
-
-  const indexedPolicies = POLICIES.filter((p) => p.status === "indexed");
 
   return (
     <div style={{ display: "flex", height: "100%", overflow: "hidden" }}>
       {/* Left filter sidebar */}
       <div style={{ width: 220, borderRight: `1px solid ${t.border}`, background: t.surface2, display: "flex", flexDirection: "column", flexShrink: 0 }}>
         <div style={{ padding: "20px 16px 12px", borderBottom: `1px solid ${t.border2}` }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: t.faint, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 10 }}>Policy Source</div>
-          {indexedPolicies.map((p) => (
-            <button
-              key={p.id}
-              onClick={() => setActiveFilter(p.name)}
-              style={{
-                display: "block", width: "100%", textAlign: "left",
-                padding: "7px 10px", borderRadius: 5, fontSize: 12, border: "none", cursor: "pointer", marginBottom: 2,
-                background: activeFilter === p.name ? accent : "transparent",
-                color: activeFilter === p.name ? "#fff" : t.text3,
-                fontWeight: activeFilter === p.name ? 600 : 400,
-              }}
-            >
-              {p.name.replace(" Privacy Policy", "").replace(" Privacy Statement", "")}
-            </button>
-          ))}
+          {/* Section label — UI-SPEC: 12px/600, marginBottom 8, letterSpacing 0.06em, uppercase */}
+          <div style={{ fontSize: 12, fontWeight: 600, color: t.faint, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 8 }}>Policy Source</div>
+          {sourcesLoading ? (
+            /* Skeleton rows — 3 placeholders with loading state, same height as filter buttons */
+            <div aria-busy="true">
+              {[0, 1, 2].map((i) => (
+                <div
+                  key={i}
+                  style={{
+                    height: 32,
+                    borderRadius: 5,
+                    background: t.border,
+                    marginBottom: 2,
+                    animation: "pulse 1s ease-in-out infinite",
+                  }}
+                />
+              ))}
+            </div>
+          ) : sourcesError ? (
+            /* Error state — screen reader alert for accessibility per UI-SPEC */
+            <div role="alert" style={{ fontSize: 12, color: t.faint }}>
+              {sourcesError}
+            </div>
+          ) : (
+            /* Real source list — "All Sources" prepended, then sorted API results */
+            <nav aria-label="Policy source filter">
+              {sources.length === 0 ? (
+                <div style={{ fontSize: 12, color: t.faint }}>No policies indexed.</div>
+              ) : (
+                ["All Sources", ...sources].map((name) => (
+                  <button
+                    key={name}
+                    onClick={() => setActiveFilter(name)}
+                    title={name}
+                    style={{
+                      display: "block",
+                      width: "100%",
+                      textAlign: "left",
+                      padding: "7px 10px",
+                      borderRadius: 5,
+                      fontSize: 12,
+                      border: "none",
+                      cursor: "pointer",
+                      marginBottom: 2,
+                      background: activeFilter === name ? accent : "transparent",
+                      color: activeFilter === name ? "#fff" : t.text3,
+                      fontWeight: activeFilter === name ? 600 : 400,
+                      transition: "background 0.1s",
+                    }}
+                  >
+                    {name === "All Sources"
+                      ? name
+                      : name.replace(" Privacy Policy", "").replace(" Privacy Statement", "")}
+                  </button>
+                ))
+              )}
+            </nav>
+          )}
         </div>
         <div style={{ padding: "16px 16px 12px" }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: t.faint, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 10 }}>Topic Filter</div>
+          <div style={{ fontSize: 12, fontWeight: 600, color: t.faint, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 8 }}>Topic Filter</div>
           {allTopics.map((tp) => (
             <button
               key={tp}
@@ -84,13 +142,13 @@ export function AskAssistantScreen({ chat, forceLogout }: Props) {
       <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0, background: t.bg }}>
         <div style={{ padding: "14px 20px", borderBottom: `1px solid ${t.border}`, background: t.surface, display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 13, fontWeight: 600, color: t.text }}>Ask Assistant</span>
-          <span style={{ fontSize: 11, color: t.faint }}>·</span>
+          <span style={{ fontSize: 12, color: t.faint }}>·</span>
           <span style={{ fontSize: 12, color: accent, fontWeight: 500 }}>
             {activeFilter.replace(" Privacy Policy", "").replace(" Privacy Statement", "")}
           </span>
           {topicFilter !== "All Topics" && (
             <>
-              <span style={{ fontSize: 11, color: t.faint }}>·</span>
+              <span style={{ fontSize: 12, color: t.faint }}>·</span>
               <span style={{ fontSize: 12, color: accent }}>{topicFilter}</span>
             </>
           )}
@@ -127,13 +185,13 @@ export function AskAssistantScreen({ chat, forceLogout }: Props) {
                   </p>
                   {msg.citations && msg.citations.length > 0 && !isStreaming && (
                     <div style={{ borderTop: `1px solid ${t.border2}`, paddingTop: 10, display: "flex", alignItems: "center", gap: 12 }}>
-                      <span style={{ fontSize: 11, color: t.faint }}>Confidence</span>
+                      <span style={{ fontSize: 12, color: t.faint }}>Confidence</span>
                       <div style={{ width: 120 }}>
-                        <ConfidenceBar score={0.88} />
+                        <ConfidenceBar score={msg.citations[0]?.score ?? 0} />
                       </div>
                       <button
                         onClick={() => setActiveEvidence(msg.citations!)}
-                        style={{ marginLeft: "auto", fontSize: 11, color: accent, background: "none", border: `1px solid ${accent}`, borderRadius: 4, padding: "3px 8px", cursor: "pointer", fontWeight: 600 }}
+                        style={{ marginLeft: "auto", fontSize: 12, color: accent, background: "none", border: `1px solid ${accent}`, borderRadius: 4, padding: "3px 8px", cursor: "pointer", fontWeight: 600 }}
                       >
                         {msg.citations.length} citation{msg.citations.length > 1 ? "s" : ""}
                       </button>
@@ -167,7 +225,7 @@ export function AskAssistantScreen({ chat, forceLogout }: Props) {
             <button
               key={i}
               onClick={() => setInput(p)}
-              style={{ whiteSpace: "nowrap", fontSize: 11, padding: "4px 10px", border: `1px solid ${t.border}`, borderRadius: 4, background: t.surface2, color: t.text3, cursor: "pointer", flexShrink: 0 }}
+              style={{ whiteSpace: "nowrap", fontSize: 12, padding: "4px 10px", border: `1px solid ${t.border}`, borderRadius: 4, background: t.surface2, color: t.text3, cursor: "pointer", flexShrink: 0 }}
             >
               {p}
             </button>
@@ -199,16 +257,16 @@ export function AskAssistantScreen({ chat, forceLogout }: Props) {
       {/* Right evidence panel */}
       <div style={{ width: 300, borderLeft: `1px solid ${t.border}`, background: t.surface2, display: "flex", flexDirection: "column", flexShrink: 0 }}>
         <div style={{ padding: "14px 16px", borderBottom: `1px solid ${t.border2}` }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: t.text, letterSpacing: "0.04em", textTransform: "uppercase" }}>Evidence</span>
-          <span style={{ fontSize: 11, color: t.faint, marginLeft: 6 }}>{activeEvidence.length} sources</span>
+          <span style={{ fontSize: 12, fontWeight: 700, color: t.text, letterSpacing: "0.04em", textTransform: "uppercase" }}>Evidence</span>
+          <span style={{ fontSize: 12, color: t.faint, marginLeft: 6 }}>{activeEvidence.length} sources</span>
         </div>
         <div style={{ flex: 1, overflowY: "auto", padding: 12 }}>
           {activeEvidence.length > 0 ? activeEvidence.map((c) => (
-            <div key={c.id} style={{ background: t.surface, border: `1px solid ${t.border}`, borderRadius: 6, padding: 12, marginBottom: 10 }}>
+            <div key={c.id} style={{ background: t.surface, border: `1px solid ${t.border}`, borderRadius: 6, padding: 12, marginBottom: 8 }}>
               <div style={{ fontSize: 10, fontWeight: 700, color: accent, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>
                 {activeFilter.replace(" Privacy Policy", "").replace(" Privacy Statement", "")}
               </div>
-              <div style={{ fontSize: 11, fontWeight: 600, color: t.text2, marginBottom: 6 }}>{c.title}</div>
+              <div style={{ fontSize: 12, fontWeight: 600, color: t.text2, marginBottom: 6 }}>{c.title}</div>
               <p style={{ fontSize: 12, color: t.text3, lineHeight: 1.55, margin: "0 0 10px", background: t.surface2, borderLeft: `3px solid ${accent}`, padding: "6px 8px", borderRadius: "0 4px 4px 0" }}>
                 "{c.text.slice(0, 160)}{c.text.length > 160 ? "…" : ""}"
               </p>
@@ -216,7 +274,7 @@ export function AskAssistantScreen({ chat, forceLogout }: Props) {
                 <span style={{ fontSize: 10, color: t.faint }}>Source #{c.id}</span>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <span style={{ fontSize: 10, color: t.faint }}>Relevance</span>
-                  <div style={{ width: 80 }}><ConfidenceBar score={0.85} /></div>
+                  <div style={{ width: 80 }}><ConfidenceBar score={c.score ?? 0} /></div>
                 </div>
               </div>
             </div>
