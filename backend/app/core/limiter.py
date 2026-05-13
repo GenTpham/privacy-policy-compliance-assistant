@@ -49,11 +49,14 @@ def _get_rate_limit_key(request: Request) -> str:
     return f"ip:{host}"
 
 
-def _get_chat_rate_limit(request: Request) -> str:
+def _get_chat_rate_limit() -> str:
     """
     Dynamic limit string — reads RATE_LIMIT_PER_MINUTE from Settings (D-08).
     Passed as a callable to @limiter.limit() so changing the env var takes effect
     without a code change.
+
+    No parameters: slowapi calls this with zero args when the parameter name is
+    not 'key'. Settings are read at request time, not at decoration time.
     """
     return f"{get_settings().rate_limit_per_minute}/minute"
 
