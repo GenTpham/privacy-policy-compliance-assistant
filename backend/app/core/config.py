@@ -49,6 +49,7 @@ class Settings(BaseSettings):
     # in 150-sample distribution; no scores observed in 0.20–0.32 range (threshold not
     # filtering). Root cause of 23% context_hit is ranking mismatch, not threshold.
     score_threshold: float = 0.20  # calibrated; was 0.25
+    rate_limit_per_minute: int = 60  # D-08: overridable via RATE_LIMIT_PER_MINUTE env var
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
