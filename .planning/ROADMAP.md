@@ -90,9 +90,14 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
+**Wave 1**
 - [ ] 10-01-PLAN.md — Foundation: slowapi in requirements, User.is_admin, Settings.rate_limit_per_minute, core/limiter.py, require_admin (Wave 1)
+
+**Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 10-02-PLAN.md — Startup migration + admin router: _migrate_add_is_admin_column, _patch_admin_is_admin, api/admin.py, login update (Wave 2)
 - [ ] 10-03-PLAN.md — Chat rate limiting: @limiter.limit on POST /api/chat, request: Request param, body rename (Wave 2)
+
+**Wave 3** *(blocked on Wave 2 completion)*
 - [ ] 10-04-PLAN.md — Tests: conftest fixtures, test_admin.py (AUTH-05/07), test_rate_limit.py (AUTH-06) (Wave 3)
 
 ## Progress
