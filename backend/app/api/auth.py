@@ -89,7 +89,10 @@ async def login(
 
     return TokenResponse(
         access_token=create_access_token(
-            user.username, settings.jwt_secret, settings.access_token_expire_minutes
+            user.username,
+            settings.jwt_secret,
+            settings.access_token_expire_minutes,
+            is_admin=user.is_admin,   # D-04: embed is_admin claim in access token
         ),
         refresh_token=create_refresh_token(
             user.username, settings.jwt_secret, settings.refresh_token_expire_days
