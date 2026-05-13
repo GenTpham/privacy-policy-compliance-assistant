@@ -31,7 +31,10 @@ export interface UseSSEChatReturn {
 async function* parseSSEStream(
   response: Response
 ): AsyncGenerator<Record<string, unknown>> {
-  const reader = response.body!.getReader();
+  if (!response.body) {
+    throw new Error('Response body is null — streaming not supported in this environment');
+  }
+  const reader = response.body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
 
