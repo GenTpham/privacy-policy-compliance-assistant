@@ -13,6 +13,7 @@ Anti-patterns avoided:
   - Never catch jwt.ExpiredSignatureError alone — catch jwt.InvalidTokenError (base class).
   - Never use PasswordHash() without arguments — use PasswordHash.recommended() for Argon2id.
   - Never use OAuth2PasswordBearer (forces form data; D-05 requires JSON body).
+  - Never re-query DB in require_admin — read is_admin from JWT payload (D-04).
 """
 from datetime import datetime, timedelta, timezone
 
@@ -51,10 +52,11 @@ def verify_password(plain: str, hashed: str) -> bool:
 
 # ── JWT token creation ──────────────────────────────────────────────────────────
 
-def create_access_token(sub: str, secret: str, expire_minutes: int) -> str:
+def create_access_token(sub: str, secret: str, expire_minutes: int,
+                        is_admin: bool = False) -> str:
     """
     Encode a short-lived access token.
-    Payload: sub, type='access', iat, exp (now + expire_minutes).
+    Payload: sub, type='access', iat, exp (now + expire_minutes), is_admin (D-04).
     """
     now = datetime.now(timezone.utc)
     payload = {
@@ -62,6 +64,7 @@ def create_access_token(sub: str, secret: str, expire_minutes: int) -> str:
         "type": "access",
         "iat": now,
         "exp": now + timedelta(minutes=expire_minutes),
+        "is_admin": is_admin,     # D-04: embedded for stateless admin check
     }
     return jwt.encode(payload, secret, algorithm="HS256")
 
@@ -158,3 +161,34 @@ async def get_current_user(
             headers={"WWW-Authenticate": "Bearer"},
         )
     return user
+
+
+async def require_admin(
+    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
+    settings: Settings = Depends(get_settings),
+) -> dict:
+    """
+    FastAPI dependency — raises HTTP 403 if the JWT token does not carry is_admin=True.
+
+    D-04: reads is_admin from token payload — no DB query on every admin request.
+    The is_admin claim is embedded at login time via create_access_token.
+
+    Usage: _admin: dict = Depends(require_admin) on every admin endpoint.
+
+    Anti-patterns avoided:
+      - Never re-query DB here — read is_admin from JWT payload (D-04).
+    """
+    if credentials is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    payload = decode_token(credentials.credentials, settings.jwt_secret,
+                           expected_type="access")
+    if not payload.get("is_admin", False):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required",
+        )
+    return payload
