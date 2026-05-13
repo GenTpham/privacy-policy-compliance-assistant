@@ -25,7 +25,7 @@ Full archive: `.planning/milestones/v1.0-ROADMAP.md`
 
 - [x] **Phase 7: Eval & Calibration** — Run full experiment, analyze retrieval quality, tune score_threshold, align test suite (completed 2026-05-05)
 - [x] **Phase 8: Corpus Expansion** — Admin CLI to ingest PDF/TXT policy documents with dedup and validation (completed 2026-05-05)
-- [ ] **Phase 9: UX Enhancements** — Source filter dropdown + retrieval score display on citation cards
+- [x] **Phase 9: UX Enhancements** — Source filter dropdown + retrieval score display on citation cards (completed 2026-05-06)
 - [ ] **Phase 10: Multi-user & Rate Limiting** — Admin user management API + per-user rate limiting
 
 ## Phase Details
@@ -73,10 +73,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 09-01-PLAN.md — Backend data layer: GET /api/sources, source_filter in RAG pipeline, score in citation dicts (Wave 1)
-- [ ] 09-02-PLAN.md — Backend tests: test_sources_endpoint.py, extended test_rag.py + test_chat_endpoint.py (Wave 2)
-- [ ] 09-03-PLAN.md — Frontend types + CitationCard: Citation.score, submit sourceFilter param, score badge (Wave 2)
-- [ ] 09-04-PLAN.md — AskAssistantScreen: real sources fetch, source_filter wiring, real ConfidenceBar scores (Wave 2)
+- [x] 09-01-PLAN.md — Backend data layer: GET /api/sources, source_filter in RAG pipeline, score in citation dicts (Wave 1)
+- [x] 09-02-PLAN.md — Backend tests: test_sources_endpoint.py, extended test_rag.py + test_chat_endpoint.py (Wave 2)
+- [x] 09-03-PLAN.md — Frontend types + CitationCard: Citation.score, submit sourceFilter param, score badge (Wave 2)
+- [x] 09-04-PLAN.md — AskAssistantScreen: real sources fetch, source_filter wiring, real ConfidenceBar scores (Wave 2)
 
 ### Phase 10: Multi-user & Rate Limiting
 **Goal**: The system supports multiple managed user accounts with role-based access control, and the API enforces per-user rate limits to prevent abuse.
