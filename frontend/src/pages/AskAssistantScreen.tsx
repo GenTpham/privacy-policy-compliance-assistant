@@ -36,7 +36,10 @@ export function AskAssistantScreen({ chat, forceLogout }: Props) {
 
   useEffect(() => {
     fetchWithAuth("/api/sources", { method: "GET" }, forceLogout)
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`Sources fetch failed: ${r.status}`);
+        return r.json();
+      })
       .then((data: { sources: string[] }) => {
         setSources(data.sources ?? []);
         setSourcesLoading(false);
