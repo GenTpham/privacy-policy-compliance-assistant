@@ -60,7 +60,7 @@ class ChatRequest(BaseModel):
     """
     message: str = Field(..., min_length=1, max_length=4000)
     history: list[HistoryItem] = Field(default_factory=list)
-    source_filter: str | None = Field(default=None)  # null = all sources; non-null scopes Qdrant to payload.title match
+    source_filter: str | None = Field(default=None, min_length=1)  # null = all sources; non-null scopes Qdrant to payload.title match; empty string rejected (HTTP 422)
 
 
 class Citation(BaseModel):

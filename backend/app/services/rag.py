@@ -195,7 +195,7 @@ async def stream_answer(
             with_payload=True,
             query_filter=Filter(
                 must=[FieldCondition(key="title", match=MatchValue(value=source_filter))]
-            ) if source_filter else None,
+            ) if source_filter is not None else None,
         )
         results = response.points
         if span is not None:
@@ -343,7 +343,7 @@ async def stream_conflict_answer(
             with_payload=True,
             query_filter=Filter(
                 must=[FieldCondition(key="title", match=MatchValue(value=source_filter))]
-            ) if source_filter else None,
+            ) if source_filter is not None else None,
         )
         results = response.points
         if span is not None:
