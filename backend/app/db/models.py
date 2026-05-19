@@ -1,12 +1,13 @@
 """
 backend/app/db/models.py
 SQLAlchemy 2.0 declarative User model.
-Single table: users (id, username, hashed_password, created_at).
+Single table: users (id, username, hashed_password, created_at, is_admin).
+D-01: is_admin bool column — existing rows default to False via ALTER TABLE migration in main.py.
 Decision D-11: SQLite file at backend/data/users.db, no Alembic for v1.
 """
 from datetime import datetime, timezone
 
-from sqlalchemy import DateTime, String
+from sqlalchemy import Boolean, DateTime, String
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -24,3 +25,4 @@ class User(Base):
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),
     )
+    is_admin: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)

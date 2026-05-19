@@ -14,6 +14,20 @@ services:
       start_period: 20s
     restart: unless-stopped
 
+  phoenix:
+    image: arizephoenix/phoenix:version-10.7.1
+    profiles: [observability]
+    ports:
+      - "127.0.0.1:6006:6006"
+      - "127.0.0.1:4317:4317"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:6006 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
   backend:
     build:
       context: .
@@ -23,6 +37,7 @@ services:
     env_file: .env
     environment:
       QDRANT_HOST: qdrant
+      PHOENIX_COLLECTOR_ENDPOINT: http://phoenix:4317
     depends_on:
       qdrant:
         condition: service_healthy
@@ -51,14 +66,6 @@ services:
       retries: 3
       start_period: 10s
     restart: on-failure
-
-  phoenix:
-    image: arizephoenix/phoenix:version-10.7.1
-    profiles: [observability]
-    ports:
-      - "127.0.0.1:6006:6006"
-      - "127.0.0.1:4317:4317"
-    restart: unless-stopped
 
 volumes:
   qdrant_storage:

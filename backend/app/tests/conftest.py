@@ -3,6 +3,13 @@ backend/app/tests/conftest.py
 Shared pytest fixtures for Phase 2 unit tests and Phase 3 auth tests.
 All fixtures are function-scoped — each test receives a fresh mock instance.
 """
+import os
+
+# Set required env vars so get_settings() is callable in test assertions.
+# setdefault is safe: real .env values are not overridden during local dev runs.
+os.environ.setdefault("OPENROUTER_API_KEY", "test-key")
+os.environ.setdefault("JWT_SECRET", "a" * 32)
+
 from unittest.mock import AsyncMock, MagicMock
 
 import httpx
@@ -152,3 +159,70 @@ def sample_scored_points_multi():
         _make(1, "Policy A", "Data is retained for 30 days."),
         _make(2, "Policy B", "Data is retained indefinitely."),
     ]
+
+
+@pytest.fixture
+async def admin_client(db_engine):
+    """
+    httpx.AsyncClient for admin endpoint tests — rate limiting disabled.
+
+    Rate limiting is disabled (Limiter enabled=False) so in-memory counters
+    from other tests do not bleed into admin tests (Pitfall 6 in RESEARCH.md).
+    Follows the same pattern as auth_client but replaces app.state.limiter.
+
+    Function-scoped: each test gets a fresh app instance.
+    """
+    from backend.app.main import create_app
+    from backend.app.db.session import get_db
+    from slowapi import Limiter
+    from slowapi.util import get_remote_address
+
+    app = create_app()
+    # Disable rate limiting in admin tests — not testing rate limits here
+    app.state.limiter = Limiter(key_func=get_remote_address, enabled=False)
+
+    factory = async_sessionmaker(db_engine, class_=AsyncSession, expire_on_commit=False)
+
+    async def _override_get_db():
+        async with factory() as session:
+            yield session
+
+    app.dependency_overrides[get_db] = _override_get_db
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app),
+        base_url="http://test",
+    ) as client:
+        yield client
+    app.dependency_overrides.clear()
+
+
+@pytest.fixture
+async def rate_limited_client(db_engine):
+    """
+    httpx.AsyncClient for rate limit enforcement tests — uses the real Limiter.
+
+    The Limiter is NOT disabled so 429 responses can be observed.
+    Each test gets a fresh app instance (and fresh MemoryStorage) because
+    create_app() is called per-fixture (function-scoped).
+
+    Usage: patch backend.app.api.chat._get_chat_rate_limit to return "1/minute"
+    inside the test to trigger 429 without hitting the real 60/min limit.
+    """
+    from backend.app.main import create_app
+    from backend.app.db.session import get_db
+
+    app = create_app()
+
+    factory = async_sessionmaker(db_engine, class_=AsyncSession, expire_on_commit=False)
+
+    async def _override_get_db():
+        async with factory() as session:
+            yield session
+
+    app.dependency_overrides[get_db] = _override_get_db
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app),
+        base_url="http://test",
+    ) as client:
+        yield client
+    app.dependency_overrides.clear()

@@ -15,6 +15,10 @@ def setup_tracing(endpoint: str = "http://phoenix:4317") -> None:
     Call once at FastAPI startup — not per-request.
 
     All imports are deferred — module is safe to import without opentelemetry installed.
+
+    Args:
+        endpoint: OTLP/gRPC collector endpoint. Pass settings.phoenix_collector_endpoint
+                  so the value is configurable via PHOENIX_COLLECTOR_ENDPOINT env var.
     """
     try:
         from opentelemetry import trace

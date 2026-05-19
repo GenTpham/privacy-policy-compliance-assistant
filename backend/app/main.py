@@ -11,11 +11,16 @@ from fastapi import FastAPI
 from openai import AsyncOpenAI
 from qdrant_client import AsyncQdrantClient
 from qdrant_client.models import Distance, VectorParams
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 from sqlalchemy import select
 
+from backend.app.api.admin import router as admin_router
 from backend.app.api.auth import router as auth_router
 from backend.app.api.chat import router as chat_router
+from backend.app.api.sources import router as sources_router
 from backend.app.core.config import get_settings
+from backend.app.core.limiter import limiter
 from backend.app.core.telemetry import setup_tracing
 from backend.app.db.models import Base, User
 from backend.app.db.session import init_db, get_db
@@ -63,6 +68,46 @@ async def _init_db_and_seed(settings) -> None:
             print(f"[startup] Admin user '{settings.admin_username}' seeded.")
         else:
             print(f"[startup] Admin user '{settings.admin_username}' already exists.")
+
+
+async def _migrate_add_is_admin_column(engine) -> None:
+    """
+    Add is_admin column to users table if not already present (D-02).
+    SQLite's ALTER TABLE has no IF NOT EXISTS — must check PRAGMA table_info first.
+    Safe to call on every startup; skipped if column exists.
+    """
+    from sqlalchemy import text
+
+    async with engine.begin() as conn:
+        result = await conn.execute(text("PRAGMA table_info(users)"))
+        columns = [row[1] for row in result.fetchall()]
+        if "is_admin" not in columns:
+            await conn.execute(
+                text("ALTER TABLE users ADD COLUMN is_admin BOOLEAN NOT NULL DEFAULT 0")
+            )
+            print("[startup] Migration: added is_admin column to users table.")
+        else:
+            print("[startup] Migration: is_admin column already exists — skipping.")
+
+
+async def _patch_admin_is_admin(settings, session_factory) -> None:
+    """
+    Set is_admin=True on the seeded admin user (D-03).
+    Idempotent — running UPDATE to same value is safe.
+    Must run after _migrate_add_is_admin_column so the column exists.
+    """
+    if not settings.admin_username:
+        return
+    from sqlalchemy import update as sa_update
+
+    async with session_factory() as session:
+        await session.execute(
+            sa_update(User)
+            .where(User.username == settings.admin_username)
+            .values(is_admin=True)
+        )
+        await session.commit()
+        print(f"[startup] Admin user '{settings.admin_username}' patched to is_admin=True.")
 
 
 async def _probe_embedding_dim(client: AsyncOpenAI, model: str) -> int:
@@ -124,8 +169,15 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     # Phase 3: Initialize DB and seed admin user
     await _init_db_and_seed(settings)
 
-    # Telemetry (gracefully skips if Phoenix is not running)
-    setup_tracing()
+    # Phase 10: idempotent schema migration + admin user role patch
+    from backend.app.db import session as db_session_mod
+    await _migrate_add_is_admin_column(db_session_mod._engine)
+    from backend.app.db.session import _session_factory
+    await _patch_admin_is_admin(settings, _session_factory)
+
+    # Telemetry — pass endpoint from settings so PHOENIX_COLLECTOR_ENDPOINT env var works
+    # Gracefully skips if Phoenix is not running or packages are not installed
+    setup_tracing(endpoint=settings.phoenix_collector_endpoint)
 
     openrouter = AsyncOpenAI(
         base_url="https://openrouter.ai/api/v1",
@@ -157,8 +209,12 @@ def create_app() -> FastAPI:
         version="0.1.0",
         lifespan=lifespan,
     )
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
     app.include_router(chat_router, prefix="/api")
     app.include_router(auth_router, prefix="/auth")
+    app.include_router(sources_router, prefix="/api")
+    app.include_router(admin_router, prefix="/admin")
     return app
 
 

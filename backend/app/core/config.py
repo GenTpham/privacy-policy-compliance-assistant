@@ -38,6 +38,19 @@ class Settings(BaseSettings):
     admin_username: str | None = None   # Optional — skip seed if not set (D-01)
     admin_password: str | None = None   # Optional — skip seed if not set (D-01)
 
+    # Observability — Phoenix OTLP/gRPC collector endpoint
+    # Override via PHOENIX_COLLECTOR_ENDPOINT env var when using --profile observability
+    phoenix_collector_endpoint: str = "http://phoenix:4317"
+
+    # RAG retrieval threshold — overridable via SCORE_THRESHOLD env var.
+    # Calibrated in Phase 7 (2026-05-05): set to 0.20 based on score distribution
+    # analysis of 100 validation examples. See ANALYSIS.md in phases/07-eval-calibration/.
+    # Hard floor: >= 0.20 (D-06). Nemotron cosine scores for relevant matches: 0.32–0.64
+    # in 150-sample distribution; no scores observed in 0.20–0.32 range (threshold not
+    # filtering). Root cause of 23% context_hit is ranking mismatch, not threshold.
+    score_threshold: float = 0.20  # calibrated; was 0.25
+    rate_limit_per_minute: int = 60  # D-08: overridable via RATE_LIMIT_PER_MINUTE env var
+
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
 

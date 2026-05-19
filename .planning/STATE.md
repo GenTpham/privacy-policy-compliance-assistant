@@ -2,44 +2,42 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 06
-status: completed
-last_updated: "2026-04-29T05:01:49.344Z"
+current_phase: 10
+status: executing
+last_updated: "2026-05-13T09:21:27.847Z"
 progress:
-  total_phases: 6
-  completed_phases: 6
-  total_plans: 21
-  completed_plans: 22
-  percent: 100
+  total_phases: 4
+  completed_phases: 3
+  total_plans: 14
+  completed_plans: 10
+  percent: 71
 ---
 
 # Project State
 
 **Project:** Privacy Policy Compliance Assistant
-**Milestone:** M1 — Initial Build
-**Current Phase:** 06
+**Milestone:** v2.0 — Production-Quality RAG
+**Current Phase:** 10
 
 ---
 
 ## Phase Status
 
-| Phase | Status | Notes |
-|-------|--------|-------|
-| Phase 1: Infrastructure & Data Ingestion | complete | All 5 plans executed — 2026-04-24 |
-| Phase 2: Core RAG Pipeline | pending | |
-| Phase 3: Authentication | pending | |
-| Phase 4: Web Frontend | pending | |
-| Phase 5: Cross-Document Conflict Detection | pending | |
-| Phase 6: Integration & Docker Compose Finalization | pending | |
+| Phase | Name | Status |
+|-------|------|--------|
+| 7 | Eval & Calibration | ✅ Complete (2026-05-05) |
+| 8 | Corpus Expansion | ✅ Complete (2026-05-06) |
+| 9 | UX Enhancements | Complete (2026-05-06) |
+| 10 | Multi-user & Rate Limiting | Not started |
 
 ---
 
 ## Current Position
 
-Phase: 06 (integration-docker-compose-finalization) — EXECUTING
-Plan: Not started
-**Status:** Milestone complete
-**Progress:** [██████████] 100%
+Phase: 10 (Multi-user & Rate Limiting) — EXECUTING
+Plan: 1 of 4
+**Status:** Executing Phase 10
+**Progress:** [##########    ] 75% (3 of 4 v2.0 phases complete)
 
 ---
 
@@ -47,7 +45,7 @@ Plan: Not started
 
 See: `.planning/PROJECT.md`
 **Core value:** Users can ask any compliance question and immediately get an answer with exact quotes from the authoritative policy documents — no guessing, no hallucination, traceable to source.
-**Current focus:** Phase 06 — integration-docker-compose-finalization
+**Current focus:** Phase 10 — Multi-user & Rate Limiting
 
 ---
 
@@ -55,12 +53,12 @@ See: `.planning/PROJECT.md`
 
 | Metric | Value |
 |--------|-------|
-| Phases complete | 1 / 6 |
-| Requirements complete | 10 / 36 |
-| Plans complete | 6 / 8 |
-| Phase 02 P01 duration | 8 min (4 tasks, 5 files) |
-| Phase 02 P02 | 5 min | 3 tasks | 3 files |
-| Phase 02 P03 | 4 min | 3 tasks | 5 files |
+| v1.0 phases complete | 6 / 6 |
+| v2.0 phases complete | 3 / 4 |
+| v2.0 requirements mapped | 12 / 12 |
+| Plans complete (v2.0) | 10 / TBD |
+
+---
 
 ## Accumulated Context
 
@@ -80,19 +78,23 @@ See: `.planning/PROJECT.md`
 - stream_answer yields delta/done/error event types — HTTP SSE routing handled in chat.py (Plan 03), not in the generator itself (Phase 2 Plan 02)
 - HistoryItem.role: Literal[user, assistant] is the security control — never widen (D-03 / Pitfall 3, Phase 2 Plan 03)
 - Deferred opentelemetry imports inside setup_tracing() body — telemetry.py safe to import without opentelemetry installed (Phase 2 Plan 03)
+- score_threshold=0.25 (not 0.55) — Nemotron embeddings are non-deterministic; cosine scores range 0.25–0.45 for relevant matches; needs formal calibration in Phase 7
+- score_threshold recommended: 0.20 — Phase 7 calibration (07-03) shows threshold=0.25 is not filtering (min observed score=0.32); root cause of 23% context_hit is ranking mismatch; setting to floor 0.20 maximizes recall headroom (ANALYSIS.md)
 
 ### Open Questions (resolve during implementation)
 
-- Nemotron embedding dimension — probe at runtime: `len(resp.data[0].embedding)`
-- Score threshold 0.55 is a starting estimate — calibrate from actual score distributions post-ingestion
-- Conflict detection false-positive rate — spike test with ~20 known cross-document questions before committing to Phase 5
-- Confirm OpenRouter billing is configured before bulk ingestion of 17K passages
+- Optimal score_threshold — RESOLVED: 0.20 (see ANALYSIS.md). Root cause is ranking mismatch; threshold change alone does not improve context_hit
+- Source filter implementation — Qdrant payload filter via `must` conditions on source field; confirm field name in existing collection metadata
+- Rate limiting library — slowapi (FastAPI-compatible) or manual token bucket in middleware; decide in Phase 10
+- Role field migration — existing user records in SQLite have no role column; Phase 10 needs a migration strategy
 
 ### Watch-Outs
 
 - Qdrant distance metric is immutable after collection creation — verify Nemotron outputs normalized vectors first
 - OpenRouter embedding truncation returns HTTP 200 with no error — validate token count before every embedding call
 - Citation hallucination risk (17–33% in legal RAG without enforcement) — enforce via "cite or abstain" prompt + programmatic ID verification
+- Nemotron embeddings are non-deterministic — eval results may vary across runs; run experiment multiple times and report mean/stdev
+- test_rag.py currently asserts score_threshold == 0.55 but production uses 0.25 — Phase 7 must fix this divergence
 
 ### Todos
 
@@ -106,23 +108,18 @@ See: `.planning/PROJECT.md`
 
 ## Session Continuity
 
-*Last session: 2026-04-24 — Phase 2 Plan 02 complete (core RAG pipeline service)*
-*Stopped at: Completed 02-02-PLAN.md*
+*Last session: 2026-05-06 — Phase 9 complete; source filter + score badge delivered, 53 backend tests green*
+*Stopped at: Phase 9 complete; ready to discuss/plan Phase 10 (Multi-user & Rate Limiting)*
 
-### Phase 1 Deliverables
+### v1.0 Deliverables Summary
 
-- Plan 01: Docker Compose + Qdrant service + named volume
-- Plan 02: Python package structure (backend/app, backend/ingestion)
-- Plan 03: FastAPI shell — pydantic-settings config, Arize Phoenix telemetry, lifespan with embedding dim probe + COSINE collection bootstrap
-- Plan 04: Text chunker (400T/50T overlap) + full ingestion pipeline (dedup, checkpoint, backoff, sanity check)
-- Plan 05: 10-dimension eval suite (pytest) + Makefile with eval-ingest / eval-ingest-fast targets
-
-### Phase 2 Deliverables (in progress)
-
-- Plan 01: pytest.ini (asyncio_mode=auto) + conftest.py (3 fixtures) + 12 test stubs (10 RAG + 2 HTTP) — Wave 0 complete
-- Plan 02: backend/app/services/rag.py — stream_answer async generator, _build_messages, _build_verified_citations — 10/10 tests passing
-- Plan 03: backend/app/api/chat.py + main.py router wiring — POST /api/chat SSE endpoint, 12/12 tests passing
+- Phase 1: Docker Compose + Qdrant + ingestion pipeline (3,204 unique passages indexed)
+- Phase 2: RAG service (stream_answer, citations) + POST /api/chat SSE endpoint
+- Phase 3: JWT auth + Argon2 password hashing + ProtectedRoute
+- Phase 4: React SPA — streaming chat, expandable citation cards, logout
+- Phase 5: Cross-document conflict detection (CONTRADICTORY/CONSISTENT/ONE-SILENT)
+- Phase 6: Docker Compose finalization — nginx SSE proxy, Phoenix optional profile, env config
 
 ---
 *State initialized: 2026-04-22*
-*Last updated: 2026-04-24 after Phase 2 Plan 03 completion — awaiting human-verify checkpoint*
+*Last updated: 2026-05-04 — v2.0 roadmap created; Phase 7 is next*

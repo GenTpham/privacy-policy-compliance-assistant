@@ -14,7 +14,9 @@ from typing import Literal
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
+from starlette.requests import Request
 
+from backend.app.core.limiter import _get_chat_rate_limit, limiter
 from backend.app.db.models import User
 from backend.app.services import rag
 from backend.app.services.auth import get_current_user
@@ -56,9 +58,11 @@ class ChatRequest(BaseModel):
     Request body for POST /api/chat.
     message: the user's current question (D-01).
     history: optional prior turns — client owns state (D-09, D-11).
+    source_filter: optional payload.title match — null = all sources; non-null scopes Qdrant retrieval.
     """
     message: str = Field(..., min_length=1, max_length=4000)
     history: list[HistoryItem] = Field(default_factory=list)
+    source_filter: str | None = Field(default=None, min_length=1)  # null = all sources; non-null scopes Qdrant to payload.title match; empty string rejected (HTTP 422)
 
 
 class Citation(BaseModel):
@@ -74,8 +78,10 @@ class Citation(BaseModel):
 # ── Route ──────────────────────────────────────────────────────────────────────
 
 @router.post("/chat")
+@limiter.limit(_get_chat_rate_limit)
 async def chat_endpoint(
-    request: ChatRequest,
+    request: Request,
+    body: ChatRequest,
     current_user: User = Depends(get_current_user),
 ) -> StreamingResponse:
     """
@@ -90,14 +96,18 @@ async def chat_endpoint(
     Routing (CONFLICT-01/D-04/D-06):
       Conflict query → rag.stream_conflict_answer (limit=10, conflict prompt)
       Standard query → rag.stream_answer (limit=5, standard prompt)
+
+    Rate limiting (D-05/D-07/D-08):
+      @limiter.limit(_get_chat_rate_limit) enforces per-user RPM from Settings.
+      request: Request is required by slowapi — must be first positional parameter.
     """
-    history = [h.model_dump() for h in request.history]
+    history = [h.model_dump() for h in body.history]
 
     async def _generate() -> AsyncGenerator[str, None]:
-        if is_conflict_query(request.message):
-            generator = rag.stream_conflict_answer(request.message, history)
+        if is_conflict_query(body.message):
+            generator = rag.stream_conflict_answer(body.message, history, source_filter=body.source_filter)
         else:
-            generator = rag.stream_answer(request.message, history)
+            generator = rag.stream_answer(body.message, history, source_filter=body.source_filter)
         async for event in generator:
             yield f"data: {json.dumps(event)}\n\n"
 

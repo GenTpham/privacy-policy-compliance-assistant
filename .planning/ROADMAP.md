@@ -1,194 +1,120 @@
 # Roadmap: Privacy Policy Compliance Assistant
 
-**6 phases** | **36 requirements**
+## Milestones
 
----
+- ✅ **v1.0 MVP** — Phases 1–6 (shipped 2026-05-04)
+- **v2.0 Production-Quality RAG** — Phases 7–10 (current)
 
-## Phase Overview
+## Phases
 
-| # | Phase | Goal | Requirements | Success Criteria |
-|---|-------|------|--------------|-----------------|
-| 1 | Infrastructure & Data Ingestion | Qdrant is running, the full corpus is indexed, and ingestion health checks pass | INFRA-01, INFRA-02, INFRA-03, INFRA-04, INFRA-05, INGEST-01, INGEST-02, INGEST-03, INGEST-04, INGEST-05, INGEST-06 | 4 criteria |
-| 2 | Core RAG Pipeline | 3/3 | Complete   | 2026-04-24 |
-| 3 | Authentication | All chat endpoints are JWT-protected; login, refresh, and logout work end-to-end | AUTH-01, AUTH-02, AUTH-03, AUTH-04, AUTH-05 | 4 criteria |
-| 4 | Web Frontend | A browser user can log in, ask questions, see streamed answers with expandable citation cards, and log out | UI-01, UI-02, UI-03, UI-04, UI-05, UI-06, CITE-04 | 5 criteria |
-| 5 | Cross-Document Conflict Detection | Comparison queries retrieve multi-document chunks and return a classified conflict response with cited passages from each source | CONFLICT-01, CONFLICT-02, CONFLICT-03, CONFLICT-04 | 4 criteria |
-| 6 | Integration & Docker Compose Finalization | The entire system starts with `docker compose up`, all health checks pass, and an end-to-end browser session works without manual intervention | (integration of all prior phases — no new requirements) | 4 criteria |
+<details>
+<summary>✅ v1.0 MVP (Phases 1–6) — SHIPPED 2026-05-04</summary>
 
----
+- [x] Phase 1: Infrastructure & Data Ingestion (5/5 plans) — completed 2026-04-24
+- [x] Phase 2: Core RAG Pipeline (3/3 plans) — completed 2026-04-24
+- [x] Phase 3: Authentication (3/3 plans) — completed 2026-04-25
+- [x] Phase 4: Web Frontend (6/6 plans) — completed 2026-04-28
+- [x] Phase 5: Cross-Document Conflict Detection (2/2 plans) — completed 2026-04-29
+- [x] Phase 6: Integration & Docker Compose Finalization (2/2 plans) — completed 2026-05-04
+
+Full archive: `.planning/milestones/v1.0-ROADMAP.md`
+
+</details>
+
+**v2.0 Production-Quality RAG**
+
+- [x] **Phase 7: Eval & Calibration** — Run full experiment, analyze retrieval quality, tune score_threshold, align test suite (completed 2026-05-05)
+- [x] **Phase 8: Corpus Expansion** — Admin CLI to ingest PDF/TXT policy documents with dedup and validation (completed 2026-05-05)
+- [x] **Phase 9: UX Enhancements** — Source filter dropdown + retrieval score display on citation cards (completed 2026-05-06)
+- [ ] **Phase 10: Multi-user & Rate Limiting** — Admin user management API + per-user rate limiting
 
 ## Phase Details
 
-### Phase 1: Infrastructure & Data Ingestion
-**Goal:** Qdrant is running in Docker, the 17K-passage corpus is embedded and indexed with correct metadata, and ingestion health checks confirm the vector store is queryable.
-**UI hint**: no
-**Requirements:** INFRA-01, INFRA-02, INFRA-03, INFRA-04, INFRA-05, INGEST-01, INGEST-02, INGEST-03, INGEST-04, INGEST-05, INGEST-06
-**Success Criteria:**
-1. Running `docker compose up` starts the Qdrant container and the backend service waits for Qdrant health before accepting requests.
-2. After running the ingestion script, Qdrant reports the expected collection with all context passages stored, each chunk carrying `text`, `title`, `source_doc`, and `chunk_index` metadata.
-3. The ingestion sanity check passes: a known passage is embedded, queried, and confirmed to rank #1 in search results.
-4. A developer can run the backend locally using the Python 3.11 `.venv` with all secrets loaded from `.env` — no API keys appear in source code.
-**Plans**: 5 plans
+### Phase 7: Eval & Calibration
+**Goal**: The RAG pipeline is formally calibrated — retrieval quality is measured, the score_threshold reflects empirical data, and the test suite accurately reflects production behavior.
+**Depends on**: Phase 6 (v1.0 complete — eval infrastructure exists at `backend/eval/run_experiment.py`)
+**Requirements**: EVAL-01, EVAL-02, EVAL-03, EVAL-04
+**Success Criteria** (what must be TRUE):
+  1. Admin can run the full experiment against the validation set and see context_hit, answer_match, and retrieved metrics in the Phoenix dashboard
+  2. A written root cause analysis exists explaining why context_hit is at its measured level and what the score distribution looks like
+  3. score_threshold in production config is updated to the calibrated optimal value with reasoning documented in both code comments and the decision log
+  4. Running `pytest` on `test_rag.py` passes with no assertion failures — the threshold asserted in tests matches the value in production config
+**Plans**: 4 plans
 
 Plans:
-- [ ] 01-PLAN-01-project-scaffolding.md — Project directory structure, requirements.txt, .env.example, .gitignore, .dockerignore
-- [ ] 01-PLAN-02-docker-compose-infrastructure.md — docker-compose.yml (Qdrant named volume + healthcheck) and backend Dockerfile
-- [ ] 01-PLAN-03-fastapi-backend-shell.md — pydantic-settings config, FastAPI lifespan with Qdrant collection bootstrap, /health endpoint
-- [ ] 01-PLAN-04-ingestion-pipeline.md — Text chunker and full ingestion script (dedup, checkpoint, rate-limit backoff, sanity check)
-- [ ] 01-PLAN-05-ingestion-eval-suite.md — Pytest eval suite covering all 10 AI-SPEC eval dimensions + Makefile targets
+- [x] 07-01-PLAN.md — Move score_threshold to Settings and wire both RAG pipelines (Wave 1)
+- [x] 07-02-PLAN.md — Fix test_rag.py assertions to use get_settings().score_threshold (Wave 1)
+- [x] 07-03-PLAN.md — Run baseline experiment, score distribution analysis, write ANALYSIS.md (Wave 2)
+- [x] 07-04-PLAN.md — Apply calibrated threshold to Settings default, update PROJECT.md, confirm pytest (Wave 3)
 
----
-
-### Phase 2: Core RAG Pipeline
-**Goal:** The `/chat` endpoint accepts a question, retrieves relevant chunks from Qdrant, streams a grounded answer via SSE, and returns a response payload with verified inline citations.
-**UI hint**: no
-**Requirements:** RAG-01, RAG-02, RAG-03, RAG-04, RAG-05, RAG-06, RAG-07, CITE-01, CITE-02, CITE-03
-**Success Criteria:**
-1. A `curl` request to `/chat` with a policy question returns a streamed SSE response with the first token arriving within 3 seconds.
-2. The response payload contains `{answer, citations: [{id, title, text}]}` where every cited ID matches a chunk in the retrieved set (no fabricated IDs).
-3. Every answer includes at least one verbatim excerpt from a retrieved chunk with the source document title.
-4. When no chunk exceeds the 0.55 score threshold, the endpoint returns a "no matching policy found" message without calling the LLM.
-5. Follow-up questions that reference the previous turn produce coherent answers, confirming conversation history (last 3 turns) is included in the prompt.
-**Plans**: 3 plans
-
-Plans:
-- [x] 02-01-PLAN.md — Wave 0: pytest infrastructure (pytest.ini, conftest.py, 10+2 test stubs)
-- [x] 02-02-PLAN.md — Wave 1: backend/app/services/rag.py (embed, retrieve, stream, verify citations)
-- [x] 02-03-PLAN.md — Wave 1: backend/app/api/chat.py (router, Pydantic models, StreamingResponse) + main.py wiring
-
----
-
-### Phase 3: Authentication
-**Goal:** All chat endpoints require a valid JWT; users can log in with username/password, receive access and refresh tokens, and re-authenticate transparently when the access token expires.
-**UI hint**: no
-**Requirements:** AUTH-01, AUTH-02, AUTH-03, AUTH-04, AUTH-05
-**Success Criteria:**
-1. A `curl` request to `/chat` without an Authorization header receives HTTP 401.
-2. A user can POST to `/auth/login` with correct credentials and receive an access token (expires 30 min) and a refresh token.
-3. Using the refresh token against `/auth/refresh` issues a new access token without re-entering credentials.
-4. Passwords are stored as Argon2 hashes in SQLite; querying the database directly reveals no plaintext passwords.
-**Plans**: 3 plans
-
-Plans:
-- [x] 03-01-PLAN.md — Wave 1: test infrastructure (conftest.py auth fixtures + 10 test stubs in test_auth.py)
-- [x] 03-02-PLAN.md — Wave 2: DB layer (models.py + session.py) + auth service (JWT + password)
-- [x] 03-03-PLAN.md — Wave 3: config extension + lifespan wiring + auth router + chat protection + 10 tests green
-
----
-
-### Phase 4: Web Frontend
-**Goal:** A browser user can log in through a React SPA, submit questions and see streamed tokens appear progressively, view expandable citation cards under each answer, see "no matching policy" messages, and log out cleanly.
-**UI hint**: yes
-**Requirements:** UI-01, UI-02, UI-03, UI-04, UI-05, UI-06, CITE-04
-**Success Criteria:**
-1. An unauthenticated browser visit to the app redirects to the login page; after entering valid credentials the user lands on the chat interface.
-2. Typing a question and submitting causes response tokens to appear character-by-character (streaming), not all at once after a delay.
-3. Each assistant message displays expandable citation cards below the answer, each card showing the document title and the full verbatim excerpt.
-4. When no relevant policy is found, the UI shows a clearly worded "No matching policy found" message in place of an answer.
-5. Clicking the logout button clears the session and returns the user to the login page, with the chat endpoint now returning HTTP 401.
-**Plans**: 6 plans
-
-Plans:
-- [x] 04-01-PLAN.md — Wave 1: Vite+React scaffold, shadcn/ui init (new-york), vitest+happy-dom config, 6 test stub files
-- [x] 04-02-PLAN.md — Wave 2: tokens.ts, api.ts (fetchWithAuth + silent refresh), vite.config.ts proxy, App.tsx routes, ProtectedRoute
-- [x] 04-03-PLAN.md — Wave 3: useAuth hook (login/logout/forceLogout), LoginForm (all states), LoginPage layout
-- [x] 04-04-PLAN.md — Wave 3: useSSEChat hook (SSE parser), StreamingCursor, CitationCard, NoMatchMessage (parallel with plan 03)
-- [x] 04-05-PLAN.md — Wave 4: MessageBubble, MessageList, ChatInput, Header, ChatPage composition
-- [x] 04-06-PLAN.md — Wave 5: All 6 test stubs replaced with passing implementations
-
----
-
-### Phase 5: Cross-Document Conflict Detection
-**Goal:** Queries that imply cross-document comparison trigger a dedicated retrieval and prompting path that returns a structured conflict classification citing exact passages from each involved document.
-**UI hint**: no
-**Requirements:** CONFLICT-01, CONFLICT-02, CONFLICT-03, CONFLICT-04
-**Success Criteria:**
-1. Submitting a question containing "conflict", "mâu thuẫn", "so sánh", or "differ" causes the system to retrieve top-10 chunks (not top-5) from across all source documents.
-2. The response for a comparison query uses the conflict-detection prompt and classifies the relevant passages as contradictory, consistent, or one-silent.
-3. The conflict response identifies the specific documents involved and cites exact passages from each side by numeric chunk ID.
-4. A standard single-document query is unaffected — it still uses top-5 retrieval and the normal grounded-response prompt.
+### Phase 8: Corpus Expansion
+**Goal**: An admin can grow the policy corpus by ingesting new PDF or TXT documents via a CLI script, with safeguards against duplicate passages and tooling to verify the resulting corpus.
+**Depends on**: Phase 7 (calibrated threshold ensures newly ingested passages are retrievable with correct settings)
+**Requirements**: CORP-01, CORP-02
+**Success Criteria** (what must be TRUE):
+  1. Admin can run the ingest script pointing at a PDF or TXT file and have its passages embedded and stored in Qdrant
+  2. Re-running the script on a document that is already indexed adds zero duplicate passages (content-hash dedup enforced)
+  3. Admin can run a validation command that prints total passage count, sample metadata rows, and flags any anomalies (missing fields, zero-length passages, etc.)
 **Plans**: 2 plans
 
 Plans:
-- [x] 05-01-PLAN.md — Wave 0: test stubs (conftest fixture + 6 test_rag stubs + 3 test_chat_endpoint stubs)
-- [x] 05-02-PLAN.md — Wave 1: is_conflict_query + routing branch (chat.py) + stream_conflict_answer + _build_conflict_messages (rag.py)
+- [x] 08-01-PLAN.md — ingest_doc.py: single-document PDF/TXT ingest CLI with UUID5 dedup (Wave 1)
+- [x] 08-02-PLAN.md — validate_corpus.py: corpus health CLI with per-source breakdown and anomaly flags (Wave 1)
 
----
-
-### Phase 6: Integration & Docker Compose Finalization
-**Goal:** The complete system — Qdrant, FastAPI backend, and React frontend — starts reliably with `docker compose up`, all health checks pass, restart policies handle failures, and an end-to-end browser session (login → question → streamed answer with citations → logout) works without manual intervention.
-**UI hint**: no
-**Requirements:** (integration phase — all 36 v1 requirements exercised end-to-end; no new requirement IDs)
-**Success Criteria:**
-1. Running `docker compose up` on a clean machine (with `.env` populated) brings all services healthy within 60 seconds and no manual steps are required.
-2. Stopping and restarting containers leaves Qdrant data intact — previously indexed passages are immediately queryable after restart.
-3. An end-to-end browser session completes successfully: login → type a policy question → receive a streamed, cited answer → log out.
-4. A comparison query ("mâu thuẫn") in the same session returns a conflict-classified response citing passages from multiple documents.
-**Plans**: 2 plans
+### Phase 9: UX Enhancements
+**Goal**: Users have clearer control over query scope and can assess retrieval confidence — source filter scopes search to a single policy, and every citation card shows its cosine similarity score.
+**Depends on**: Phase 7 (calibrated threshold makes displayed scores meaningful)
+**Requirements**: UX-01, UX-02, UX-03
+**Success Criteria** (what must be TRUE):
+  1. A dropdown in the chat UI lists all available policy sources plus an "All sources" default option
+  2. When a source is selected, only passages from that policy appear in citations — no results from other sources leak through
+  3. Each citation card in the UI displays the retrieval score as a numeric value (e.g. 0.38) so users can judge match confidence
+  4. Selecting "All sources" restores the default multi-source retrieval behavior with no backend change required
+**Plans**: 4 plans
 
 Plans:
-- [x] 06-01-PLAN.md — Wave 1: docker-compose.yml (backend healthcheck + frontend service + phoenix observability profile) + frontend/Dockerfile (node:20-alpine → nginx:alpine) + frontend/nginx.conf (SSE proxy + SPA routing)
-- [x] 06-02-PLAN.md — Wave 2: Makefile smoke-test target + VERIFICATION.md (E2E browser checklist) + frontend/src/lib/api.ts BASE_URL constant
+- [x] 09-01-PLAN.md — Backend data layer: GET /api/sources, source_filter in RAG pipeline, score in citation dicts (Wave 1)
+- [x] 09-02-PLAN.md — Backend tests: test_sources_endpoint.py, extended test_rag.py + test_chat_endpoint.py (Wave 2)
+- [x] 09-03-PLAN.md — Frontend types + CitationCard: Citation.score, submit sourceFilter param, score badge (Wave 2)
+- [x] 09-04-PLAN.md — AskAssistantScreen: real sources fetch, source_filter wiring, real ConfidenceBar scores (Wave 2)
 
----
+### Phase 10: Multi-user & Rate Limiting
+**Goal**: The system supports multiple managed user accounts with role-based access control, and the API enforces per-user rate limits to prevent abuse.
+**Depends on**: Phase 7 (stable production config before layering on auth changes)
+**Requirements**: AUTH-05, AUTH-06, AUTH-07
+**Success Criteria** (what must be TRUE):
+  1. Admin can create, list, and delete user accounts via API endpoints — no self-registration flow exists
+  2. A non-admin user calling user management endpoints receives HTTP 403
+  3. When a user exceeds the configured requests-per-minute limit on POST /api/chat, the API returns HTTP 429 with a clear error message
+  4. The rate limit is configurable per deployment (via environment variable or config) without code changes
+**Plans**: 4 plans
 
-## Requirement Coverage
+Plans:
+**Wave 1**
+- [ ] 10-01-PLAN.md — Foundation: slowapi in requirements, User.is_admin, Settings.rate_limit_per_minute, core/limiter.py, require_admin (Wave 1)
 
-| Requirement | Phase |
-|-------------|-------|
-| INFRA-01 | Phase 1 |
-| INFRA-02 | Phase 1 |
-| INFRA-03 | Phase 1 |
-| INFRA-04 | Phase 1 |
-| INFRA-05 | Phase 1 |
-| INGEST-01 | Phase 1 |
-| INGEST-02 | Phase 1 |
-| INGEST-03 | Phase 1 |
-| INGEST-04 | Phase 1 |
-| INGEST-05 | Phase 1 |
-| INGEST-06 | Phase 1 |
-| RAG-01 | Phase 2 |
-| RAG-02 | Phase 2 |
-| RAG-03 | Phase 2 |
-| RAG-04 | Phase 2 |
-| RAG-05 | Phase 2 |
-| RAG-06 | Phase 2 |
-| RAG-07 | Phase 2 |
-| CITE-01 | Phase 2 |
-| CITE-02 | Phase 2 |
-| CITE-03 | Phase 2 |
-| AUTH-01 | Phase 3 |
-| AUTH-02 | Phase 3 |
-| AUTH-03 | Phase 3 |
-| AUTH-04 | Phase 3 |
-| AUTH-05 | Phase 3 |
-| UI-01 | Phase 4 |
-| UI-02 | Phase 4 |
-| UI-03 | Phase 4 |
-| UI-04 | Phase 4 |
-| UI-05 | Phase 4 |
-| UI-06 | Phase 4 |
-| CITE-04 | Phase 4 |
-| CONFLICT-01 | Phase 5 |
-| CONFLICT-02 | Phase 5 |
-| CONFLICT-03 | Phase 5 |
-| CONFLICT-04 | Phase 5 |
+**Wave 2** *(blocked on Wave 1 completion)*
+- [ ] 10-02-PLAN.md — Startup migration + admin router: _migrate_add_is_admin_column, _patch_admin_is_admin, api/admin.py, login update (Wave 2)
+- [ ] 10-03-PLAN.md — Chat rate limiting: @limiter.limit on POST /api/chat, request: Request param, body rename (Wave 2)
 
-**Total: 36/36** (Phase 6 is an integration phase that exercises all prior requirements — no new requirement IDs.)
-
----
+**Wave 3** *(blocked on Wave 2 completion)*
+- [ ] 10-04-PLAN.md — Tests: conftest fixtures, test_admin.py (AUTH-05/07), test_rate_limit.py (AUTH-06) (Wave 3)
 
 ## Progress
 
-| Phase | Plans Complete | Status | Completed |
-|-------|----------------|--------|-----------|
-| 1. Infrastructure & Data Ingestion | 0/5 | Planned | - |
-| 2. Core RAG Pipeline | 0/3 | Planned | - |
-| 3. Authentication | 0/3 | Planned | - |
-| 4. Web Frontend | 0/6 | Planned | - |
-| 5. Cross-Document Conflict Detection | 0/2 | Planned | - |
-| 6. Integration & Docker Compose Finalization | 0/2 | Planned | - |
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 1. Infrastructure & Data Ingestion | v1.0 | 5/5 | Complete | 2026-04-24 |
+| 2. Core RAG Pipeline | v1.0 | 3/3 | Complete | 2026-04-24 |
+| 3. Authentication | v1.0 | 3/3 | Complete | 2026-04-25 |
+| 4. Web Frontend | v1.0 | 6/6 | Complete | 2026-04-28 |
+| 5. Cross-Document Conflict Detection | v1.0 | 2/2 | Complete | 2026-04-29 |
+| 6. Integration & Docker Compose Finalization | v1.0 | 2/2 | Complete | 2026-05-04 |
+| 7. Eval & Calibration | v2.0 | 4/4 | Complete    | 2026-05-05 |
+| 8. Corpus Expansion | v2.0 | 0/2 | Not started | - |
+| 9. UX Enhancements | v2.0 | 0/4 | Not started | - |
+| 10. Multi-user & Rate Limiting | v2.0 | 0/4 | Not started | - |
 
 ---
-*Roadmap created: 2026-04-22*
-*Last updated: 2026-04-28 — Phase 6 plans created (2 plans, 2 waves)*
+*v1.0 shipped: 2026-05-04*
+*v2.0 roadmap created: 2026-05-04*
