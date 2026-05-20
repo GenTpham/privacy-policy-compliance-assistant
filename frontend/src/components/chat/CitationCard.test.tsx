@@ -9,6 +9,7 @@ const mockCitation: Citation = {
   qdrant_id: "abc-123",
   title: "Google Privacy Policy",
   text: "Users may request deletion of their personal data by contacting our support team through the privacy settings page.",
+  score: 0.42,
 };
 
 const shortCitation: Citation = {
@@ -16,6 +17,7 @@ const shortCitation: Citation = {
   qdrant_id: "def-456",
   title: "Short Doc",
   text: "Short text",
+  score: 0.37,
 };
 
 describe("CitationCard (UI-04, CITE-04)", () => {

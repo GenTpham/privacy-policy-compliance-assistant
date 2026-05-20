@@ -104,6 +104,12 @@ See: `.planning/PROJECT.md`
 
 - (none)
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260519-hf-space-deploy | Add Hugging Face Space single-container deployment | 2026-05-19 | ceb19bf | [260519-hf-space-deploy](./quick/260519-hf-space-deploy/) |
+
 ---
 
 ## Session Continuity
