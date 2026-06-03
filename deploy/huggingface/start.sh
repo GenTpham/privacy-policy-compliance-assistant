@@ -51,6 +51,12 @@ if ! curl -fsS "http://127.0.0.1:8000/health" >/dev/null; then
     exit 1
 fi
 
+mkdir -p /tmp/nginx/client_body \
+         /tmp/nginx/proxy_temp \
+         /tmp/nginx/fastcgi_temp \
+         /tmp/nginx/uwsgi_temp \
+         /tmp/nginx/scgi_temp
+
 nginx -g "daemon off;" &
 NGINX_PID=$!
 
