@@ -92,10 +92,14 @@ cp .env.example .env
 Update the required values in `.env`:
 
 ```env
-OPENROUTER_API_KEY=...
+OPENROUTER_API_KEY=your-openrouter-key
 JWT_SECRET=generate-a-secret-at-least-32-characters
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=change-me-before-production
+QDRANT_URL=https://example.us-east.aws.cloud.qdrant.io
+QDRANT_API_KEY=qdrant_example_key
+
+# (Optional) Backend overrides for local Qdrant
 QDRANT_HOST=localhost
 QDRANT_PORT=6333
 ```
@@ -115,6 +119,10 @@ py -3.11 -m venv .venv
 ```
 
 ### 3. Start Qdrant and ingest the corpus
+
+Ensure `QDRANT_URL` and `QDRANT_API_KEY` are set before running ingestion.
+If ingesting into a local Qdrant instance, set `QDRANT_URL=http://localhost:6333`
+and configure a local API key to match.
 
 ```bash
 docker compose up qdrant -d
