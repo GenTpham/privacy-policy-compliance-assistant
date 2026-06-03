@@ -18,6 +18,7 @@ from qdrant_client.models import Distance, PointStruct, UpdateStatus, VectorPara
 
 from backend.app.core.config import get_settings
 from backend.app.core.qdrant_client import make_qdrant_client
+from backend.app.core.qdrant_startup import ensure_title_facet_index
 from backend.ingestion.chunker import Chunk, _count_tokens, chunk_passage
 
 # ── Constants ─────────────────────────────────────────────────────────────────
@@ -104,6 +105,7 @@ async def ensure_collection(dim: int) -> None:
                 "Delete the collection and re-ingest to fix distance metric."
             )
         print(f"[ensure_collection] Collection '{COLLECTION_NAME}' already exists with correct params.")
+        await ensure_title_facet_index(qdrant)
         return
 
     # Create with COSINE distance
@@ -120,6 +122,7 @@ async def ensure_collection(dim: int) -> None:
             "Delete the collection and re-ingest to fix distance metric."
         )
     print(f"[ensure_collection] Created collection '{COLLECTION_NAME}' with dim={dim}, distance=COSINE.")
+    await ensure_title_facet_index(qdrant)
 
 
 # ── Checkpoint I/O ─────────────────────────────────────────────────────────────
