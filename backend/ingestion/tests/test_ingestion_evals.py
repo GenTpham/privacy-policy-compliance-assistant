@@ -23,6 +23,7 @@ from qdrant_client import AsyncQdrantClient
 from qdrant_client.models import Distance
 
 from backend.app.core.config import get_settings
+from backend.app.core.qdrant_client import make_qdrant_client
 from backend.ingestion.chunker import _count_tokens
 
 # ── Constants (mirrored from ingest.py) ──────────────────────────────────────
@@ -44,12 +45,7 @@ def event_loop():
 
 @pytest_asyncio.fixture(scope="module")
 async def qdrant_client():
-    settings = get_settings()
-    client = AsyncQdrantClient(
-        host=settings.qdrant_host,
-        port=settings.qdrant_port,
-        api_key=settings.qdrant_api_key,
-    )
+    client = make_qdrant_client(get_settings())
     yield client
     await client.close()
 

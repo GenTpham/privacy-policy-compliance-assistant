@@ -7,3 +7,4 @@ ingestion_checkpoint.json
 *.db
 *.sqlite
 .DS_Store
+.worktrees

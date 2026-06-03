@@ -1,16 +1,14 @@
 """
 backend/app/main.py
 FastAPI application factory.
-Lifespan: probes embedding dimension, bootstraps Qdrant 'policies' collection.
+Lifespan: verifies pre-ingested Qdrant Cloud collection (no ingest on startup).
 """
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import AsyncIterator
 
-from fastapi import FastAPI
-from openai import AsyncOpenAI
-from qdrant_client import AsyncQdrantClient
-from qdrant_client.models import Distance, VectorParams
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from sqlalchemy import select
@@ -20,14 +18,13 @@ from backend.app.api.auth import router as auth_router
 from backend.app.api.chat import router as chat_router
 from backend.app.api.sources import router as sources_router
 from backend.app.core.config import get_settings
+from backend.app.core.qdrant_client import make_qdrant_client
+from backend.app.core.qdrant_startup import check_qdrant_ready, verify_qdrant_for_serving
 from backend.app.core.limiter import limiter
 from backend.app.core.telemetry import setup_tracing
 from backend.app.db.models import Base, User
 from backend.app.db.session import init_db, get_db
 from backend.app.services.auth import hash_password
-
-COLLECTION_NAME = "policies"
-
 
 async def _init_db_and_seed(settings) -> None:
     """
@@ -110,51 +107,11 @@ async def _patch_admin_is_admin(settings, session_factory) -> None:
         print(f"[startup] Admin user '{settings.admin_username}' patched to is_admin=True.")
 
 
-async def _probe_embedding_dim(client: AsyncOpenAI, model: str) -> int:
-    """
-    Call the embedding API once with a test string and return the vector dimension.
-    Nemotron's output dimension is not documented — must be discovered at runtime.
-    Never hardcode this value (AI-SPEC Critical Failure Mode 5).
-    """
-    resp = await client.embeddings.create(model=model, input="probe", encoding_format="float")
-    dim = len(resp.data[0].embedding)
-    print(f"[startup] Nemotron embedding dimension: {dim}")
-    return dim
-
-
-async def _ensure_collection(qdrant: AsyncQdrantClient, dim: int) -> None:
-    """
-    Create the 'policies' collection with COSINE distance if it does not exist.
-    COSINE is IMMUTABLE after creation — verify after create (AI-SPEC §6 guardrail).
-    Decision D-09: skip creation if collection already exists, proceed to verify.
-    """
-    existing = {c.name for c in (await qdrant.get_collections()).collections}
-    if COLLECTION_NAME not in existing:
-        await qdrant.create_collection(
-            collection_name=COLLECTION_NAME,
-            vectors_config=VectorParams(size=dim, distance=Distance.COSINE),
-        )
-        print(f"[startup] Created collection '{COLLECTION_NAME}' (dim={dim}, COSINE).")
-    else:
-        print(f"[startup] Collection '{COLLECTION_NAME}' already exists — skipping creation.")
-
-    # Guardrail: verify distance metric is COSINE regardless of whether we just created it
-    info = await qdrant.get_collection(COLLECTION_NAME)
-    actual_distance = info.config.params.vectors.distance
-    if actual_distance != Distance.COSINE:
-        raise RuntimeError(
-            f"Collection '{COLLECTION_NAME}' distance metric is {actual_distance}, "
-            f"expected COSINE. Delete the collection and re-ingest to fix. "
-            f"This is an immutable collection property."
-        )
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """
     FastAPI lifespan — runs at startup and shutdown.
-    Startup: telemetry → probe embedding dim → bootstrap Qdrant collection.
-    Shutdown: (nothing needed — Qdrant client has no persistent connection to close).
+    Startup: DB → verify pre-ingested Qdrant Cloud collection (no ingestion).
     """
     settings = get_settings()
 
@@ -179,24 +136,13 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     # Gracefully skips if Phoenix is not running or packages are not installed
     setup_tracing(endpoint=settings.phoenix_collector_endpoint)
 
-    openrouter = AsyncOpenAI(
-        base_url="https://openrouter.ai/api/v1",
-        api_key=settings.openrouter_api_key,
-        default_headers={
-            "HTTP-Referer": "https://privacy-policy-assistant",
-            "X-OpenRouter-Title": "Privacy Policy Assistant",
-        },
-    )
-    qdrant = AsyncQdrantClient(
-        url=f"http://{settings.qdrant_host}:{settings.qdrant_port}",
-        api_key=settings.qdrant_api_key or None,
-    )
+    qdrant = make_qdrant_client(settings)
+    if not settings.qdrant_skip_startup_verify:
+        await verify_qdrant_for_serving(qdrant)
+    else:
+        print("[startup] Qdrant startup verify skipped (QDRANT_SKIP_STARTUP_VERIFY).")
 
-    dim = await _probe_embedding_dim(
-        openrouter, "nvidia/llama-nemotron-embed-vl-1b-v2"
-    )
-    await _ensure_collection(qdrant, dim)
-
+    app.state.qdrant = qdrant
     print("[startup] FastAPI ready.")
     yield
     # Shutdown — nothing to close
@@ -223,8 +169,25 @@ app = create_app()
 
 @app.get("/health")
 async def health() -> dict:
-    """
-    Liveness probe — returns 200 if the service is running.
-    Does NOT check Qdrant connectivity (that is verified at startup).
-    """
+    """Liveness probe — process is up (does not call Qdrant Cloud)."""
     return {"status": "ok"}
+
+
+@app.get("/health/ready")
+async def health_ready(request: Request) -> JSONResponse:
+    """
+    Readiness probe — Qdrant Cloud collection exists and has indexed points.
+    Use for Docker/Kubernetes healthchecks after deploy (no ingestion required).
+    """
+    if get_settings().qdrant_skip_startup_verify:
+        return JSONResponse({"status": "ready", "qdrant": "verify_skipped"})
+
+    qdrant = request.app.state.qdrant
+    try:
+        details = await check_qdrant_ready(qdrant)
+    except Exception as exc:
+        return JSONResponse(
+            status_code=503,
+            content={"status": "not_ready", "qdrant_error": str(exc)},
+        )
+    return JSONResponse({"status": "ready", "qdrant": details})

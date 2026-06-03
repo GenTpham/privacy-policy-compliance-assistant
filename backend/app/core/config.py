@@ -24,10 +24,13 @@ class Settings(BaseSettings):
             )
         return v
 
-    # Qdrant connection — override QDRANT_HOST to "qdrant" inside Docker Compose
-    qdrant_host: str = "localhost"
-    qdrant_port: int = 6333
-    qdrant_api_key: str | None = None
+    # Qdrant Cloud — full cluster URL and API key (no host/port)
+    qdrant_url: str
+    qdrant_api_key: str
+    # REST timeout (seconds); Cloud upserts with wait=True often exceed the 5s client default
+    qdrant_timeout_seconds: int = 120
+    # Set true in tests only — skips Cloud collection verification at startup
+    qdrant_skip_startup_verify: bool = False
 
     # JWT configuration (used in Phase 3+)
     jwt_algorithm: str = "HS256"

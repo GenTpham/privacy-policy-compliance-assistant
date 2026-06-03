@@ -12,7 +12,7 @@ install-dev:
 
 # ── Local dev: Qdrant only (D-05 workflow) ────────────────────────────────────
 qdrant-up:
-	docker compose up qdrant -d
+	docker compose --profile local-qdrant up qdrant -d
 
 qdrant-down:
 	docker compose down
@@ -41,14 +41,14 @@ down:
 
 # ── Health check ──────────────────────────────────────────────────────────────
 health:
-	curl -f http://localhost:8000/health && curl -f http://localhost:6333/readyz
+	curl -f http://localhost:8000/health && curl -f http://localhost:8000/health/ready
 
 # ── Smoke test: start full stack and verify health ────────────────────────────
 smoke-test:
 	docker compose up -d --build
 	@echo "Waiting for backend /health (up to 60s)..."
-	curl -f --retry 12 --retry-delay 5 --retry-connrefused http://localhost:8000/health \
-	  && echo "PASS: backend healthy" || (echo "FAIL: backend unhealthy" && exit 1)
+	curl -f --retry 12 --retry-delay 5 --retry-connrefused http://localhost:8000/health/ready \
+	  && echo "PASS: backend ready (Qdrant Cloud)" || (echo "FAIL: backend not ready" && exit 1)
 	@echo "Waiting for frontend (up to 60s)..."
 	curl -f --retry 12 --retry-delay 5 --retry-connrefused http://localhost:80 \
 	  && echo "PASS: frontend healthy" || (echo "FAIL: frontend unhealthy" && exit 1)
