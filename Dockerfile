@@ -14,9 +14,7 @@ FROM python:3.11-slim
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     HOME=/home/user \
-    PATH=/home/user/.local/bin:$PATH \
-    QDRANT_HOST=127.0.0.1 \
-    QDRANT_PORT=6333
+    PATH=/home/user/.local/bin:$PATH
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends bash ca-certificates curl libunwind8 nginx tini tzdata \

@@ -63,7 +63,7 @@ Main RAG flow:
 
 - Backend: Python 3.11, FastAPI, Uvicorn
 - LLM and embeddings: OpenRouter via the OpenAI SDK
-- Vector store: Qdrant
+- Vector store: Qdrant Cloud (pre-indexed; no ingest on deploy)
 - Auth: PyJWT, pwdlib Argon2, SQLite
 - Frontend: React, Vite, Tailwind CSS
 - Optional observability: Phoenix via Docker Compose profile
@@ -81,7 +81,9 @@ Dockerfile                Single-container Hugging Face Space image
 requirements.txt          Python runtime dependencies
 ```
 
-## Local Setup with Docker Compose
+## Deploy with Qdrant Cloud (no ingest on deploy)
+
+The app **only reads** from an existing Qdrant Cloud cluster. Index the corpus **once** (see [One-time corpus indexing](#one-time-corpus-indexing)); every later deploy only needs credentials.
 
 ### 1. Configure environment variables
 
@@ -89,77 +91,61 @@ requirements.txt          Python runtime dependencies
 cp .env.example .env
 ```
 
-Update the required values in `.env`:
+Required in `.env` (same values for Docker Compose, bare-metal, and Hugging Face):
 
 ```env
 OPENROUTER_API_KEY=your-openrouter-key
 JWT_SECRET=generate-a-secret-at-least-32-characters
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=change-me-before-production
-QDRANT_URL=https://example.us-east.aws.cloud.qdrant.io
-QDRANT_API_KEY=qdrant_example_key
-
-# (Optional) Backend overrides for local Qdrant
-QDRANT_HOST=localhost
-QDRANT_PORT=6333
+QDRANT_URL=https://your-cluster.us-east.aws.cloud.qdrant.io
+QDRANT_API_KEY=your-qdrant-cloud-api-key
 ```
 
-### 2. Install local ingestion dependencies
-
-```bash
-python3.11 -m venv .venv
-.venv/bin/pip install -r requirements.txt
-```
-
-On Windows PowerShell:
-
-```powershell
-py -3.11 -m venv .venv
-.\.venv\Scripts\pip install -r requirements.txt
-```
-
-### 3. Start Qdrant and ingest the corpus
-
-Ensure `QDRANT_URL` and `QDRANT_API_KEY` are set before running ingestion.
-If ingesting into a local Qdrant instance, set `QDRANT_URL=http://localhost:6333`
-and configure a local API key to match.
-
-```bash
-docker compose up qdrant -d
-.venv/bin/python -m backend.ingestion.ingest
-```
-
-On Windows PowerShell:
-
-```powershell
-docker compose up qdrant -d
-.\.venv\Scripts\python -m backend.ingestion.ingest
-```
-
-The ingestion script reads the corpus from `dataset/json/`, creates the `policies` collection, probes the embedding dimension from OpenRouter, and upserts policy chunks into Qdrant.
-
-### 4. Run the full stack
+### 2. Run the stack
 
 ```bash
 docker compose up --build
 ```
 
-Default local endpoints:
+On startup the backend verifies the Cloud `policies` collection exists and contains points. It does **not** run ingestion or create an empty collection.
+
+Default endpoints:
 
 - Frontend: `http://localhost`
-- Backend health check: `http://localhost:8000/health`
-- Qdrant: `http://localhost:6333`
+- Liveness: `http://localhost:8000/health`
+- Readiness (Qdrant Cloud): `http://localhost:8000/health/ready`
 
-Log in with the `ADMIN_USERNAME` and `ADMIN_PASSWORD` values from `.env`.
+Log in with `ADMIN_USERNAME` / `ADMIN_PASSWORD` from `.env`.
+
+## One-time corpus indexing
+
+Run **only when** the Cloud cluster is new, the collection was deleted, or `dataset/json/` changed:
+
+```bash
+python3.11 -m venv .venv
+.venv/bin/pip install -r requirements.txt   # Windows: .\.venv\Scripts\pip install -r requirements.txt
+python -m backend.ingestion.ingest
+```
+
+Optional local Qdrant for indexing (not used at deploy time):
+
+```bash
+docker compose --profile local-qdrant up qdrant -d
+# .env: QDRANT_URL=http://localhost:6333 and matching QDRANT_API_KEY
+python -m backend.ingestion.ingest
+```
+
+Ingestion creates the `policies` collection, embeds passages via OpenRouter, and upserts into the cluster pointed to by `QDRANT_URL`.
 
 ## Useful Commands
 
 ```bash
-make qdrant-up
-make ingest
-make up
-make health
+make up          # deploy app (expects Qdrant Cloud already indexed)
+make health      # /health + /health/ready
 make smoke-test
+make ingest      # one-time indexing only
+make qdrant-up   # optional local Qdrant for ingest (--profile local-qdrant)
 ```
 
 Frontend:
@@ -185,7 +171,8 @@ python -m compileall -q backend
 - `POST /auth/logout` - stateless logout; the client clears stored tokens.
 - `POST /api/chat` - stream an SSE response with `delta`, `done`, and `error` events.
 - `GET /api/sources` - list available policy sources; requires auth.
-- `GET /health` - liveness check.
+- `GET /health` - liveness (process up; no Qdrant call).
+- `GET /health/ready` - readiness (Qdrant Cloud `policies` collection reachable and non-empty).
 
 Example chat request:
 
@@ -199,35 +186,32 @@ Example chat request:
 
 ## Hugging Face Space Deployment
 
-This repository includes a Hugging Face Docker Space deployment path. Hugging Face Spaces do not run `docker compose` directly, so the root `Dockerfile` builds the React app, installs the FastAPI backend, copies Qdrant from the official image, and runs Qdrant, FastAPI, and nginx inside a single container on port `7860`.
+The root `Dockerfile` builds the React app, FastAPI backend, and nginx on port `7860`.
 
-### Space Settings
+**Recommended:** point the Space at the same **Qdrant Cloud** cluster used for local indexing (no ingest on Space restart).
 
-Secrets:
+### Space secrets (required)
 
 - `OPENROUTER_API_KEY`
-- `JWT_SECRET` - at least 32 characters
+- `JWT_SECRET` — at least 32 characters
+- `QDRANT_URL` — your Qdrant Cloud cluster URL
+- `QDRANT_API_KEY`
 - `ADMIN_PASSWORD`
 
-Variables:
+### Space variables
 
 - `ADMIN_USERNAME=admin`
-- `QDRANT_HOST=127.0.0.1`
-- `QDRANT_PORT=6333`
 - `RATE_LIMIT_PER_MINUTE=60`
+
+When `QDRANT_URL` is a Cloud URL, the startup script **does not** start embedded Qdrant. Readiness uses `GET /health/ready` against Cloud.
+
+### Legacy embedded Qdrant (optional)
+
+If `QDRANT_URL` is unset or points to `localhost` / `127.0.0.1`, the Space starts embedded Qdrant under `/data/qdrant`. You must still run **one-time** `python -m backend.ingestion.ingest` against that instance and enable persistent storage, or use Cloud instead.
 
 ### Persistence
 
-Enable Hugging Face persistent storage for real use. The Space container stores:
-
-- Qdrant data in `/data/qdrant`
-- SQLite users DB in `/data/backend`
-
-Without persistent storage, indexed passages and user accounts are lost when the Space restarts.
-
-### Corpus Data
-
-The Space image does not bundle the source dataset or a Qdrant snapshot. After the first deploy, restore a Qdrant snapshot into `/data/qdrant` or run the ingestion command against attached persistent storage before sharing the app.
+Enable Hugging Face persistent storage for the SQLite users DB (`/data/backend`). Vector data lives on **Qdrant Cloud** when using Cloud URLs — not in the Space volume.
 
 ### Push to a Space
 
@@ -243,9 +227,9 @@ git push hf main
 - Never commit `.env` or OpenRouter API keys.
 - Change `ADMIN_PASSWORD` for any deployment outside the public demo.
 - `JWT_SECRET` must be at least 32 characters.
-- The Qdrant `policies` collection uses COSINE distance; if it is created with the wrong metric, delete the collection and ingest again.
-- The Nemotron embedding dimension is probed at runtime and should not be hardcoded.
-- Ingestion is an offline script and is not run on every backend startup.
+- The Qdrant `policies` collection uses COSINE distance; if it has the wrong metric, delete it on Cloud and run one-time ingestion again.
+- Deploy verifies Cloud connectivity at startup; use `/health/ready` for orchestration probes.
+- Ingestion (`python -m backend.ingestion.ingest`) is a **one-time offline** step — never part of `docker compose up` or app startup.
 
 ## License
 

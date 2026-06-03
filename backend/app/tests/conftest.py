@@ -9,6 +9,9 @@ import os
 # setdefault is safe: real .env values are not overridden during local dev runs.
 os.environ.setdefault("OPENROUTER_API_KEY", "test-key")
 os.environ.setdefault("JWT_SECRET", "a" * 32)
+os.environ.setdefault("QDRANT_URL", "https://cluster.qdrant.io")
+os.environ.setdefault("QDRANT_API_KEY", "test-qdrant-key")
+os.environ.setdefault("QDRANT_SKIP_STARTUP_VERIFY", "true")
 
 from unittest.mock import AsyncMock, MagicMock
 

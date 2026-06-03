@@ -10,10 +10,10 @@ from collections.abc import AsyncGenerator
 from contextlib import nullcontext
 
 from openai import AsyncOpenAI
-from qdrant_client import AsyncQdrantClient
 from qdrant_client.models import Filter, FieldCondition, MatchValue
 
 from backend.app.core.config import get_settings
+from backend.app.core.qdrant_client import make_qdrant_client
 
 # OTel tracer — None when opentelemetry-sdk is not installed (safe fallback)
 try:
@@ -50,10 +50,7 @@ openrouter = AsyncOpenAI(
     },
 )
 
-qdrant = AsyncQdrantClient(
-    url=f"http://{_settings.qdrant_host}:{_settings.qdrant_port}",
-    api_key=_settings.qdrant_api_key or None,
-)
+qdrant = make_qdrant_client(_settings)
 
 
 # ── Source enumeration ────────────────────────────────────────────────────────

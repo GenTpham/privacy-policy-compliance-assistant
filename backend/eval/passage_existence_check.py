@@ -29,7 +29,9 @@ import sys
 from pathlib import Path
 
 from openai import AsyncOpenAI
-from qdrant_client import AsyncQdrantClient
+
+from backend.app.core.config import get_settings
+from backend.app.core.qdrant_client import make_qdrant_client
 
 
 # -- .env loader -----------------------------------------------------------------
@@ -115,11 +117,7 @@ async def check_passage(
     }
 
 
-async def run_check(
-    sample_size: int,
-    qdrant_host: str,
-    qdrant_port: int,
-) -> None:
+async def run_check(sample_size: int) -> None:
     api_key = os.environ.get("OPENROUTER_API_KEY", "")
     if not api_key:
         print("[error] OPENROUTER_API_KEY not set", file=sys.stderr)
@@ -143,7 +141,7 @@ async def run_check(
         base_url="https://openrouter.ai/api/v1",
         api_key=api_key,
     )
-    qdrant = AsyncQdrantClient(host=qdrant_host, port=qdrant_port)
+    qdrant = make_qdrant_client(get_settings())
 
     print(f"\n{'#':>4}  {'Title':20}  {'Best score':10}  {'>0.25':5}  {'>0.20':5}  {'In corpus':9}")
     print("-" * 75)
@@ -274,11 +272,9 @@ async def run_check(
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--sample", type=int, default=20, help="Number of examples to check")
-    parser.add_argument("--qdrant-host", default="localhost")
-    parser.add_argument("--qdrant-port", type=int, default=6333)
     args = parser.parse_args()
 
-    asyncio.run(run_check(args.sample, args.qdrant_host, args.qdrant_port))
+    asyncio.run(run_check(args.sample))
 
 
 if __name__ == "__main__":

@@ -19,6 +19,7 @@ from qdrant_client import AsyncQdrantClient
 from qdrant_client.models import Distance, PointStruct, UpdateStatus, VectorParams
 
 from backend.app.core.config import get_settings
+from backend.app.core.qdrant_client import make_qdrant_client
 from backend.ingestion.chunker import Chunk, chunk_passage
 
 # ── Constants (mirrored from ingest.py for consistency) ───────────────────────
@@ -39,10 +40,7 @@ def _make_clients() -> tuple[AsyncOpenAI, AsyncQdrantClient]:
             "X-Title": "Privacy Policy Compliance Assistant",
         },
     )
-    qdrant = AsyncQdrantClient(
-        url=f"http://{settings.qdrant_host}:{settings.qdrant_port}",
-        api_key=settings.qdrant_api_key or None,
-    )
+    qdrant = make_qdrant_client(settings)
     return openrouter, qdrant
 
 

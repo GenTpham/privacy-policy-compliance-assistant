@@ -16,7 +16,8 @@ from pydantic import BaseModel, field_validator
 from qdrant_client import AsyncQdrantClient
 from qdrant_client.models import Distance, PointStruct, UpdateStatus, VectorParams
 
-from backend.app.core.config import Settings, get_settings
+from backend.app.core.config import get_settings
+from backend.app.core.qdrant_client import make_qdrant_client
 from backend.ingestion.chunker import Chunk, _count_tokens, chunk_passage
 
 # ── Constants ─────────────────────────────────────────────────────────────────
@@ -61,22 +62,7 @@ openrouter = AsyncOpenAI(
     },
 )
 
-def _require_qdrant_cloud_settings(settings: Settings) -> tuple[str, str]:
-    url = (settings.qdrant_url or "").strip()
-    api_key = (settings.qdrant_api_key or "").strip()
-    if not url:
-        raise RuntimeError("QDRANT_URL is required for ingestion. Set QDRANT_URL in .env.")
-    if not api_key:
-        raise RuntimeError("QDRANT_API_KEY is required for ingestion. Set QDRANT_API_KEY in .env.")
-    return url, api_key
-
-
-def _make_qdrant_client(settings: Settings) -> AsyncQdrantClient:
-    url, api_key = _require_qdrant_cloud_settings(settings)
-    return AsyncQdrantClient(url=url, api_key=api_key)
-
-
-qdrant = _make_qdrant_client(settings)
+qdrant = make_qdrant_client(settings)
 
 
 # ── Embedding dim probe ────────────────────────────────────────────────────────
@@ -177,6 +163,40 @@ async def embed_batch(texts: list[str], retries: int = 5) -> list[list[float]]:
                 continue
             raise RuntimeError(f"embed_batch failed after {retries} retries: {exc}") from exc
     raise RuntimeError(f"embed_batch failed after {retries} retries")
+
+
+def _is_transient_qdrant_error(exc: BaseException) -> bool:
+    if isinstance(exc, TimeoutError):
+        return True
+    err = str(exc).lower()
+    if "timeout" in err or "timed out" in err:
+        return True
+    cause = exc.__cause__
+    return _is_transient_qdrant_error(cause) if cause is not None else False
+
+
+async def upsert_batch(points: list[PointStruct], batch_num: int, retries: int = 5):
+    """Upsert with retries on transient Cloud/network timeouts."""
+    for attempt in range(retries):
+        try:
+            return await qdrant.upsert(
+                collection_name=COLLECTION_NAME,
+                points=points,
+                wait=True,
+            )
+        except Exception as exc:
+            if _is_transient_qdrant_error(exc) and attempt < retries - 1:
+                wait = 2**attempt
+                print(
+                    f"[qdrant_timeout] batch {batch_num} attempt {attempt + 1}/{retries} "
+                    f"— sleeping {wait}s"
+                )
+                await asyncio.sleep(wait)
+                continue
+            raise RuntimeError(
+                f"[ingest] Upsert batch {batch_num} failed after {retries} retries: {exc}"
+            ) from exc
+    raise RuntimeError(f"[ingest] Upsert batch {batch_num} failed after {retries} retries")
 
 
 # ── Sanity check ──────────────────────────────────────────────────────────────
@@ -303,11 +323,7 @@ async def ingest() -> None:
             for c, embedding in zip(chunks_in_batch, embeddings)
         ]
 
-        result = await qdrant.upsert(
-            collection_name=COLLECTION_NAME,
-            points=points,
-            wait=True,  # Confirm write before updating checkpoint (D-04, AI-SPEC §6)
-        )
+        result = await upsert_batch(points, batch_num)
 
         # Upsert failure hard stop (AI-SPEC §6 guardrail)
         if result.status != UpdateStatus.COMPLETED:

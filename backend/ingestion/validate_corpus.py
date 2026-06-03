@@ -14,6 +14,7 @@ from qdrant_client import AsyncQdrantClient
 from qdrant_client.http.exceptions import UnexpectedResponse
 
 from backend.app.core.config import get_settings
+from backend.app.core.qdrant_client import make_qdrant_client
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 COLLECTION_NAME = "policies"
@@ -27,10 +28,7 @@ async def validate_corpus() -> None:
     # Module-level initialization would crash on import if env vars are missing
     # and creates an async client outside an event loop (incorrect for AsyncQdrantClient).
     settings = get_settings()
-    qdrant = AsyncQdrantClient(
-        url=f"http://{settings.qdrant_host}:{settings.qdrant_port}",
-        api_key=settings.qdrant_api_key or None,
-    )
+    qdrant = make_qdrant_client(settings)
 
     # Step 1 — Total count
     try:
