@@ -16,7 +16,7 @@ from pydantic import BaseModel, field_validator
 from qdrant_client import AsyncQdrantClient
 from qdrant_client.models import Distance, PointStruct, UpdateStatus, VectorParams
 
-from backend.app.core.config import get_settings
+from backend.app.core.config import Settings, get_settings
 from backend.ingestion.chunker import Chunk, _count_tokens, chunk_passage
 
 # ── Constants ─────────────────────────────────────────────────────────────────
@@ -61,10 +61,22 @@ openrouter = AsyncOpenAI(
     },
 )
 
-qdrant = AsyncQdrantClient(
-    url=f"http://{settings.qdrant_host}:{settings.qdrant_port}",
-    api_key=settings.qdrant_api_key or None,
-)
+def _require_qdrant_cloud_settings(settings: Settings) -> tuple[str, str]:
+    url = (settings.qdrant_url or "").strip()
+    api_key = (settings.qdrant_api_key or "").strip()
+    if not url:
+        raise RuntimeError("QDRANT_URL is required for ingestion. Set QDRANT_URL in .env.")
+    if not api_key:
+        raise RuntimeError("QDRANT_API_KEY is required for ingestion. Set QDRANT_API_KEY in .env.")
+    return url, api_key
+
+
+def _make_qdrant_client(settings: Settings) -> AsyncQdrantClient:
+    url, api_key = _require_qdrant_cloud_settings(settings)
+    return AsyncQdrantClient(url=url, api_key=api_key)
+
+
+qdrant = _make_qdrant_client(settings)
 
 
 # ── Embedding dim probe ────────────────────────────────────────────────────────

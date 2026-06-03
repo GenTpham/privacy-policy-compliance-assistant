@@ -24,7 +24,8 @@ class Settings(BaseSettings):
             )
         return v
 
-    # Qdrant connection — override QDRANT_HOST to "qdrant" inside Docker Compose
+    # Qdrant connection — QDRANT_URL is required for cloud ingestion
+    qdrant_url: str | None = None
     qdrant_host: str = "localhost"
     qdrant_port: int = 6333
     qdrant_api_key: str | None = None
