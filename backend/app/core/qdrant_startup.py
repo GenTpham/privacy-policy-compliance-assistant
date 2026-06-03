@@ -1,9 +1,32 @@
 """Startup/readiness checks for a pre-ingested Qdrant Cloud collection."""
 from qdrant_client import AsyncQdrantClient
 from qdrant_client.http.exceptions import UnexpectedResponse
-from qdrant_client.models import Distance
+from qdrant_client.models import Distance, PayloadSchemaType
 
 COLLECTION_NAME = "policies"
+FACET_FIELD = "title"
+
+
+async def ensure_title_facet_index(qdrant: AsyncQdrantClient) -> None:
+    """
+    Create a keyword payload index on title so GET /api/sources can use facet().
+    Idempotent — safe on every startup for clusters ingested before this index existed.
+    """
+    info = await qdrant.get_collection(COLLECTION_NAME)
+    if info.payload_schema and FACET_FIELD in info.payload_schema:
+        return
+
+    try:
+        await qdrant.create_payload_index(
+            collection_name=COLLECTION_NAME,
+            field_name=FACET_FIELD,
+            field_schema=PayloadSchemaType.KEYWORD,
+        )
+        print(f"[startup] Created payload index on '{FACET_FIELD}' for source faceting.")
+    except UnexpectedResponse as exc:
+        if "already exists" in str(exc).lower():
+            return
+        raise
 
 
 async def verify_qdrant_for_serving(qdrant: AsyncQdrantClient) -> int:
@@ -42,6 +65,8 @@ async def verify_qdrant_for_serving(qdrant: AsyncQdrantClient) -> int:
         )
 
     dim = info.config.params.vectors.size
+    await ensure_title_facet_index(qdrant)
+
     print(
         f"[startup] Qdrant Cloud ready: collection='{COLLECTION_NAME}' "
         f"points={point_count} dim={dim} distance=COSINE"
