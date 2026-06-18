@@ -1,6 +1,5 @@
-import { CitationCard } from "./CitationCard";
-import { NoMatchMessage } from "./NoMatchMessage";
 import { StreamingCursor } from "./StreamingCursor";
+import { AnswerCard } from "./AnswerCard";
 import type { Citation } from "@/hooks/useSSEChat";
 
 interface MessageBubbleProps {
@@ -10,14 +9,16 @@ interface MessageBubbleProps {
   isStreaming?: boolean;
   isNoMatch?: boolean;
   isError?: boolean;
+  onRetry?: () => void;
+  onOpenEvidence?: (citation: Citation) => void;
+  activeFilter?: string;
 }
 
 /**
  * User and assistant message bubbles.
- * Visual spec from UI-SPEC.md Message Bubbles section.
- * User:      right-aligned, bg-zinc-100, max-w-[70%]
- * Assistant: left-aligned, bg-white border border-zinc-200, max-w-[80%]
- * Citations fade in after done event (D-04): CSS fadeIn 200ms ease-out.
+ * User: right-aligned bubble.
+ * Assistant (streaming): plain text with a streaming cursor.
+ * Assistant (done): AnswerCard with inline citations and source list.
  */
 export function MessageBubble({
   role,
@@ -25,6 +26,10 @@ export function MessageBubble({
   citations = [],
   isStreaming = false,
   isNoMatch = false,
+  isError = false,
+  onRetry,
+  onOpenEvidence,
+  activeFilter,
 }: MessageBubbleProps) {
   if (role === "user") {
     return (
@@ -39,25 +44,21 @@ export function MessageBubble({
   // Assistant bubble
   return (
     <div className="flex flex-col items-start gap-2 max-w-[80%]">
-      {/* Message text — bg-white border border-zinc-200 per UI-SPEC */}
-      <div className="bg-white border border-zinc-200 rounded-lg px-4 py-3 text-zinc-950 text-base leading-relaxed w-full">
-        <span>{content}</span>
-        {isStreaming && <StreamingCursor />}
-      </div>
-
-      {/* No-match state — replaces citation cards */}
-      {isNoMatch && !isStreaming && <NoMatchMessage />}
-
-      {/* Citation cards — fade in after done event (D-04), 200ms ease-out */}
-      {!isNoMatch && !isStreaming && citations.length > 0 && (
-        <div
-          className="flex flex-col gap-2 w-full"
-          style={{ animation: "fadeIn 200ms ease-out forwards" }}
-        >
-          {citations.map((citation) => (
-            <CitationCard key={citation.id} citation={citation} />
-          ))}
+      {isStreaming ? (
+        <div className="bg-white border border-zinc-200 rounded-lg px-4 py-3 text-zinc-950 text-base leading-relaxed w-full">
+          <span>{content}</span>
+          <StreamingCursor />
         </div>
+      ) : (
+        <AnswerCard
+          content={content}
+          citations={citations}
+          isNoMatch={isNoMatch}
+          isError={isError}
+          onRetry={onRetry}
+          onOpenEvidence={onOpenEvidence}
+          activeFilter={activeFilter}
+        />
       )}
     </div>
   );
