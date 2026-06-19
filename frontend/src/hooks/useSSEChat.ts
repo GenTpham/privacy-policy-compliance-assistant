@@ -21,6 +21,7 @@ export interface UseSSEChatReturn {
   messages: Message[];
   isStreaming: boolean;
   submit: (message: string, onUnauthorized: () => void, sourceFilter?: string | null) => Promise<void>;
+  retry: (onUnauthorized: () => void, sourceFilter?: string | null) => Promise<void>;
 }
 
 /**
@@ -69,29 +70,17 @@ export function useSSEChat(): UseSSEChatReturn {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
 
-  const submit = useCallback(
-    async (message: string, onUnauthorized: () => void, sourceFilter?: string | null): Promise<void> => {
-      if (isStreaming) return; // prevent concurrent submits
-
-      // Build history from current messages (exclude the user message we're about to add)
-      // Only role "user" | "assistant" — never "system"
-      const history = messages.map((m) => ({
-        role: m.role,
-        content: m.content,
-      }));
-
-      // Add user message immediately
-      const userMessage: Message = { role: "user", content: message };
-      // Add placeholder assistant message for streaming
-      const assistantPlaceholder: Message = {
-        role: "assistant",
-        content: "",
-        citations: [],
-      };
-
-      setMessages((prev) => [...prev, userMessage, assistantPlaceholder]);
-      setIsStreaming(true);
-
+  /**
+   * Shared fetch + SSE handler. Operates on the last message in state, which
+   * must be an assistant placeholder inserted by the caller (submit or retry).
+   */
+  const runStream = useCallback(
+    async (
+      message: string,
+      history: { role: string; content: string }[],
+      onUnauthorized: () => void,
+      sourceFilter?: string | null
+    ): Promise<void> => {
       try {
         const response = await fetchWithAuth(
           "/api/chat",
@@ -101,7 +90,7 @@ export function useSSEChat(): UseSSEChatReturn {
             body: JSON.stringify({
               message,
               history,
-              source_filter: sourceFilter ?? null,  // null when "All Sources" or omitted; backend ignores null
+              source_filter: sourceFilter ?? null,
             }),
           },
           onUnauthorized
@@ -178,8 +167,64 @@ export function useSSEChat(): UseSSEChatReturn {
         setIsStreaming(false);
       }
     },
-    [messages, isStreaming]
+    []
   );
 
-  return { messages, isStreaming, submit };
+  const submit = useCallback(
+    async (message: string, onUnauthorized: () => void, sourceFilter?: string | null): Promise<void> => {
+      if (isStreaming) return; // prevent concurrent submits
+
+      // Build history from current messages (exclude the user message we're about to add)
+      // Only role "user" | "assistant" — never "system"
+      const history = messages.map((m) => ({
+        role: m.role,
+        content: m.content,
+      }));
+
+      // Add user message immediately
+      const userMessage: Message = { role: "user", content: message };
+      // Add placeholder assistant message for streaming
+      const assistantPlaceholder: Message = {
+        role: "assistant",
+        content: "",
+        citations: [],
+      };
+
+      setMessages((prev) => [...prev, userMessage, assistantPlaceholder]);
+      setIsStreaming(true);
+
+      await runStream(message, history, onUnauthorized, sourceFilter);
+    },
+    [messages, isStreaming, runStream]
+  );
+
+  const retry = useCallback(
+    async (onUnauthorized: () => void, sourceFilter?: string | null): Promise<void> => {
+      if (isStreaming) return;
+
+      const lastUserIdx = messages.map((m) => m.role).lastIndexOf("user");
+      if (lastUserIdx === -1) return;
+      const lastUserMessage = messages[lastUserIdx];
+
+      // History = everything before the last user turn (no duplicate user message)
+      const history = messages
+        .slice(0, lastUserIdx)
+        .map((m) => ({ role: m.role, content: m.content }));
+
+      // Drop trailing assistant message(s), then add a fresh placeholder
+      setMessages((prev) => {
+        const trimmed = [...prev];
+        while (trimmed.length > 0 && trimmed[trimmed.length - 1].role === "assistant") {
+          trimmed.pop();
+        }
+        return [...trimmed, { role: "assistant", content: "", citations: [] } as Message];
+      });
+      setIsStreaming(true);
+
+      await runStream(lastUserMessage.content, history, onUnauthorized, sourceFilter);
+    },
+    [messages, isStreaming, runStream]
+  );
+
+  return { messages, isStreaming, submit, retry };
 }
