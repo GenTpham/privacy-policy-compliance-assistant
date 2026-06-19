@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useTheme } from "@/lib/theme";
 import { ConfidenceBar } from "@/components/ui/ConfidenceBar";
 import { StreamingCursor } from "@/components/chat/StreamingCursor";
+import { AnswerCard } from "@/components/chat/AnswerCard";
 import { SUGGESTED_PROMPTS } from "@/lib/mockData";
 import { fetchWithAuth } from "@/lib/api";
 import type { UseSSEChatReturn, Citation } from "@/hooks/useSSEChat";
@@ -13,7 +14,7 @@ interface Props {
 
 export function AskAssistantScreen({ chat, forceLogout }: Props) {
   const { t, accent } = useTheme();
-  const { messages, isStreaming, submit } = chat;
+  const { messages, isStreaming, submit, retry } = chat;
 
   const [input, setInput] = useState("");
   const [sources, setSources] = useState<string[]>([]);
@@ -22,6 +23,7 @@ export function AskAssistantScreen({ chat, forceLogout }: Props) {
   const [activeFilter, setActiveFilter] = useState("All Sources");
   const [topicFilter, setTopicFilter] = useState("All Topics");
   const [activeEvidence, setActiveEvidence] = useState<Citation[]>([]);
+  const [isEvidenceOpen, setIsEvidenceOpen] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const allTopics = ["All Topics", "Data Collection", "Third-Party Sharing", "Data Retention", "User Rights", "Cookies"];
@@ -51,10 +53,20 @@ export function AskAssistantScreen({ chat, forceLogout }: Props) {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   // mount only — forceLogout identity changes on each render; adding it would re-fetch continuously
 
+  const handleOpenEvidence = (c: Citation) => {
+    setActiveEvidence([c]);
+    setIsEvidenceOpen(true);
+  };
+
+  const handleRetry = () => {
+    retry(forceLogout, activeFilter === "All Sources" ? null : activeFilter);
+  };
+
   const handleSend = () => {
     if (!input.trim() || isStreaming) return;
     submit(input, forceLogout, activeFilter === "All Sources" ? null : activeFilter);
     setInput("");
+    setIsEvidenceOpen(false);
   };
 
   return (
@@ -184,29 +196,24 @@ export function AskAssistantScreen({ chat, forceLogout }: Props) {
                   {msg.content}
                 </div>
               ) : (
-                <div style={{ background: t.surface, border: `1px solid ${t.border}`, borderRadius: "2px 8px 8px 8px", padding: "14px 16px", fontSize: 13, lineHeight: 1.6, color: t.text2 }}>
-                  <p style={{ margin: "0 0 12px" }}>
-                    {msg.content}
-                    {isStreaming && idx === messages.length - 1 && <StreamingCursor />}
-                  </p>
-                  {msg.citations && msg.citations.length > 0 && !isStreaming && (
-                    <div style={{ borderTop: `1px solid ${t.border2}`, paddingTop: 10, display: "flex", alignItems: "center", gap: 12 }}>
-                      <span style={{ fontSize: 12, color: t.faint }}>Confidence</span>
-                      <div style={{ width: 120 }}>
-                        <ConfidenceBar score={msg.citations[0]?.score ?? 0} />
-                      </div>
-                      <button
-                        onClick={() => setActiveEvidence(msg.citations!)}
-                        style={{ marginLeft: "auto", fontSize: 12, color: accent, background: "none", border: `1px solid ${accent}`, borderRadius: 4, padding: "3px 8px", cursor: "pointer", fontWeight: 600 }}
-                      >
-                        {msg.citations.length} citation{msg.citations.length > 1 ? "s" : ""}
-                      </button>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", maxWidth: "85%", alignSelf: "flex-start" }}>
+                  {isStreaming && idx === messages.length - 1 ? (
+                    <div style={{ background: t.surface, border: `1px solid ${t.border}`, borderRadius: "2px 8px 8px 8px", padding: "14px 16px", fontSize: 13, lineHeight: 1.6, color: t.text2 }}>
+                      <p style={{ margin: 0 }}>
+                        {msg.content}
+                        <StreamingCursor />
+                      </p>
                     </div>
-                  )}
-                  {msg.isNoMatch && !isStreaming && (
-                    <div style={{ fontSize: 12, color: t.muted, fontStyle: "italic", marginTop: 8 }}>
-                      No matching policy sections found for this query.
-                    </div>
+                  ) : (
+                    <AnswerCard
+                      content={msg.content}
+                      citations={msg.citations}
+                      isNoMatch={msg.isNoMatch}
+                      isError={msg.isError}
+                      onRetry={handleRetry}
+                      onOpenEvidence={handleOpenEvidence}
+                      activeFilter={activeFilter}
+                    />
                   )}
                 </div>
               )}
@@ -215,13 +222,6 @@ export function AskAssistantScreen({ chat, forceLogout }: Props) {
               </span>
             </div>
           ))}
-          {isStreaming && messages[messages.length - 1]?.role !== "assistant" && (
-            <div style={{ display: "flex", gap: 4, padding: "12px 16px", background: t.surface, border: `1px solid ${t.border}`, borderRadius: 8, width: "fit-content" }}>
-              {[0, 1, 2].map((i) => (
-                <div key={i} style={{ width: 6, height: 6, borderRadius: "50%", background: accent, animation: `dot-bounce 1.2s ${i * 0.2}s infinite ease-in-out` }} />
-              ))}
-            </div>
-          )}
           <div ref={messagesEndRef} />
         </div>
 
@@ -261,12 +261,23 @@ export function AskAssistantScreen({ chat, forceLogout }: Props) {
       </div>
 
       {/* Right evidence panel */}
-      <div style={{ width: 300, borderLeft: `1px solid ${t.border}`, background: t.surface2, display: "flex", flexDirection: "column", flexShrink: 0 }}>
-        <div style={{ padding: "14px 16px", borderBottom: `1px solid ${t.border2}` }}>
-          <span style={{ fontSize: 12, fontWeight: 700, color: t.text, letterSpacing: "0.04em", textTransform: "uppercase" }}>Evidence</span>
-          <span style={{ fontSize: 12, color: t.faint, marginLeft: 6 }}>{activeEvidence.length} sources</span>
-        </div>
-        <div style={{ flex: 1, overflowY: "auto", padding: 12 }}>
+      {isEvidenceOpen && (
+        <div style={{ width: 300, borderLeft: `1px solid ${t.border}`, background: t.surface2, display: "flex", flexDirection: "column", flexShrink: 0 }}>
+          <div style={{ padding: "14px 16px", borderBottom: `1px solid ${t.border2}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <span style={{ fontSize: 12, fontWeight: 700, color: t.text, letterSpacing: "0.04em", textTransform: "uppercase" }}>Evidence</span>
+              <span style={{ fontSize: 12, color: t.faint, marginLeft: 6 }}>{activeEvidence.length} sources</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsEvidenceOpen(false)}
+              style={{ background: "none", border: "none", cursor: "pointer", fontSize: 16, color: t.faint }}
+              aria-label="Close evidence panel"
+            >
+              ✕
+            </button>
+          </div>
+          <div style={{ flex: 1, overflowY: "auto", padding: 12 }}>
           {activeEvidence.length > 0 ? activeEvidence.map((c) => (
             <div key={c.id} style={{ background: t.surface, border: `1px solid ${t.border}`, borderRadius: 6, padding: 12, marginBottom: 8 }}>
               <div style={{ fontSize: 10, fontWeight: 700, color: accent, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>
@@ -291,7 +302,7 @@ export function AskAssistantScreen({ chat, forceLogout }: Props) {
             </div>
           )}
         </div>
-      </div>
+      </div>)}
     </div>
   );
 }
