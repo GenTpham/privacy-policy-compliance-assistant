@@ -159,3 +159,8 @@ Do not make direct repo edits outside a GSD workflow unless the user explicitly 
 > Profile not yet configured. Run `/gsd-profile-user` to generate your developer profile.
 > This section is managed by `generate-Codex-profile` -- do not edit manually.
 <!-- GSD:profile-end -->
+
+### Workflow: No Direct Merges to Main
+- **CRITICAL**: Never merge branches directly into the \main\ branch.
+- Always create a Pull Request or leave the branch as-is for the user to review.
+- Do not execute \git merge\ into \main\ without explicit user authorization.

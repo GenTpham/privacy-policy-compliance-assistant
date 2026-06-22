@@ -155,10 +155,12 @@ async def test_ingest_doc_dry_run_no_upsert(tmp_path):
 
     with patch("backend.ingestion.ingest_doc._make_clients", return_value=(mock_openrouter, mock_qdrant)):
         with patch("backend.ingestion.ingest_doc.chunk_passage") as mock_chunk:
-            mock_chunk.return_value = [
-                MagicMock(passage_id="policy", chunk_index=0, text="chunk text", title="Test", source_doc="Test", token_count=5),
-            ]
-            await ingest_doc(filepath=txt_path, title="Test Policy", dry_run=True)
+            with patch("backend.ingestion.ingest_doc.probe_embedding_dim", return_value=2048):
+                with patch("backend.ingestion.ingest_doc.ensure_collection"):
+                    mock_chunk.return_value = [
+                        MagicMock(passage_id="policy", chunk_index=0, text="chunk text", title="Test", source_doc="Test", token_count=5),
+                    ]
+                    await ingest_doc(filepath=txt_path, title="Test Policy", dry_run=True)
 
     # Upsert must NOT have been called
     mock_qdrant.upsert.assert_not_called()
@@ -185,10 +187,12 @@ async def test_ingest_doc_dedup_skips_existing(tmp_path):
 
     with patch("backend.ingestion.ingest_doc._make_clients", return_value=(mock_openrouter, mock_qdrant)):
         with patch("backend.ingestion.ingest_doc.chunk_passage") as mock_chunk:
-            mock_chunk.return_value = [
-                MagicMock(passage_id="policy", chunk_index=0, text="chunk text", title="Test", source_doc="Test", token_count=5),
-            ]
-            await ingest_doc(filepath=txt_path, title="Test Policy", dry_run=False)
+            with patch("backend.ingestion.ingest_doc.probe_embedding_dim", return_value=2048):
+                with patch("backend.ingestion.ingest_doc.ensure_collection"):
+                    mock_chunk.return_value = [
+                        MagicMock(passage_id="policy", chunk_index=0, text="chunk text", title="Test", source_doc="Test", token_count=5),
+                    ]
+                    await ingest_doc(filepath=txt_path, title="Test Policy", dry_run=False)
 
     # Upsert must NOT have been called since everything already indexed
     mock_qdrant.upsert.assert_not_called()

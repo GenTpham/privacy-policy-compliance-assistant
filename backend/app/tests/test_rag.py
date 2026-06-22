@@ -49,6 +49,7 @@ async def test_embed_calls_correct_model(mock_extract, mock_openrouter, mock_qdr
     """RAG-01: embeddings.create called with model='nvidia/llama-nemotron-embed-vl-1b-v2'."""
     mock_extract.return_value = ["EntityA"]
     with patch.object(rag, "openrouter", mock_openrouter), \
+         patch.object(rag, "llm_client", mock_openrouter), \
          patch.object(rag, "qdrant", mock_qdrant):
         events = [e async for e in stream_answer("test query", [])]
 
@@ -67,6 +68,7 @@ async def test_retrieve_params(mock_extract, mock_openrouter, mock_qdrant):
     """RAG-02: qdrant.search called with limit=5, score_threshold=get_settings().score_threshold, with_payload=True."""
     mock_extract.return_value = []
     with patch.object(rag, "openrouter", mock_openrouter), \
+         patch.object(rag, "llm_client", mock_openrouter), \
          patch.object(rag, "qdrant", mock_qdrant):
         events = [e async for e in stream_answer("test query", [])]
 
@@ -89,6 +91,7 @@ async def test_prompt_contains_numbered_chunks(mock_extract, mock_openrouter, mo
     mock_openrouter.chat.completions.create = AsyncMock(return_value=_fake_stream("answer"))
 
     with patch.object(rag, "openrouter", mock_openrouter), \
+         patch.object(rag, "llm_client", mock_openrouter), \
          patch.object(rag, "qdrant", mock_qdrant):
         events = [e async for e in stream_answer("test query", [])]
 
@@ -124,6 +127,7 @@ async def test_delta_before_done(mock_extract, mock_openrouter, mock_qdrant, sam
     mock_openrouter.chat.completions.create = AsyncMock(return_value=_fake_stream("Hello"))
 
     with patch.object(rag, "openrouter", mock_openrouter), \
+         patch.object(rag, "llm_client", mock_openrouter), \
          patch.object(rag, "qdrant", mock_qdrant):
         events = [e async for e in stream_answer("test query", [])]
 
@@ -164,6 +168,7 @@ async def test_no_results_early_return(mock_extract, mock_openrouter, mock_qdran
     mock_extract.return_value = []
     # mock_qdrant.search already returns [] by default from conftest
     with patch.object(rag, "openrouter", mock_openrouter), \
+         patch.object(rag, "llm_client", mock_openrouter), \
          patch.object(rag, "qdrant", mock_qdrant):
         events = [e async for e in stream_answer("test query", [])]
 
@@ -226,6 +231,7 @@ async def test_conflict_retrieve_params(mock_extract, mock_openrouter, mock_qdra
     mock_openrouter.chat.completions.create = AsyncMock(return_value=_fake_stream("answer"))
 
     with patch.object(rag, "openrouter", mock_openrouter), \
+         patch.object(rag, "llm_client", mock_openrouter), \
          patch.object(rag, "qdrant", mock_qdrant):
         events = [e async for e in stream_conflict_answer("mâu thuẫn về dữ liệu", [])]
 
@@ -278,6 +284,7 @@ async def test_conflict_done_event_shape(mock_extract, mock_openrouter, mock_qdr
     )
 
     with patch.object(rag, "openrouter", mock_openrouter), \
+         patch.object(rag, "llm_client", mock_openrouter), \
          patch.object(rag, "qdrant", mock_qdrant):
         events = [e async for e in stream_conflict_answer("differ in retention", [])]
 
@@ -344,6 +351,7 @@ async def test_score_in_abstain_fallback(mock_extract, mock_openrouter, mock_qdr
     mock_openrouter.chat.completions.create = AsyncMock(return_value=_no_ref_stream())
 
     with patch.object(rag, "openrouter", mock_openrouter), \
+         patch.object(rag, "llm_client", mock_openrouter), \
          patch.object(rag, "qdrant", mock_qdrant):
         events = [e async for e in stream_answer("test query", [])]
 
@@ -362,6 +370,7 @@ async def test_source_filter_applied(mock_extract, mock_openrouter, mock_qdrant)
     """UX-02: stream_answer with source_filter passes query_filter to query_points."""
     mock_extract.return_value = []
     with patch.object(rag, "openrouter", mock_openrouter), \
+         patch.object(rag, "llm_client", mock_openrouter), \
          patch.object(rag, "qdrant", mock_qdrant):
         events = [
             e async for e in stream_answer(
@@ -381,6 +390,7 @@ async def test_no_filter_when_none(mock_extract, mock_openrouter, mock_qdrant):
     """UX-02: stream_answer with source_filter=None passes query_filter=None to query_points."""
     mock_extract.return_value = []
     with patch.object(rag, "openrouter", mock_openrouter), \
+         patch.object(rag, "llm_client", mock_openrouter), \
          patch.object(rag, "qdrant", mock_qdrant):
         events = [e async for e in stream_answer("test query", [], source_filter=None)]
 

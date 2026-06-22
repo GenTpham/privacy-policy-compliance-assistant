@@ -14,11 +14,17 @@ Run all:        pytest backend/ingestion/tests/test_ingestion_evals.py -v --time
 import asyncio
 import hashlib
 import json
+import os
 from pathlib import Path
 from unittest.mock import AsyncMock, patch
 
 import pytest
 import pytest_asyncio
+
+pytestmark = pytest.mark.skipif(
+    os.getenv("RUN_EVALS") != "true",
+    reason="Post-ingestion evals require RUN_EVALS=true and a running Qdrant cluster"
+)
 from qdrant_client import AsyncQdrantClient
 from qdrant_client.models import Distance
 
