@@ -19,7 +19,10 @@ from qdrant_client.models import Distance, PointStruct, UpdateStatus, VectorPara
 from backend.app.core.config import get_settings
 from backend.app.core.qdrant_client import make_qdrant_client
 from backend.app.core.qdrant_startup import ensure_title_facet_index
+from backend.app.db.neo4j_client import Neo4jClient
 from backend.ingestion.chunker import Chunk, _count_tokens, chunk_passage
+from backend.ingestion.graph_extractor import extract_graph_from_chunk
+from backend.ingestion.neo4j_writer import upsert_graph_to_neo4j
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 COLLECTION_NAME = "policies"
@@ -325,6 +328,21 @@ async def ingest() -> None:
             )
             for c, embedding in zip(chunks_in_batch, embeddings)
         ]
+
+        # Extract graphs in parallel for the batch
+        print(f"[ingest] Extracting graphs for {len(chunks_in_batch)} chunks...")
+        graph_tasks = [extract_graph_from_chunk(c.text) for c in chunks_in_batch]
+        graphs = await asyncio.gather(*graph_tasks)
+
+        neo4j_client = Neo4jClient()
+        for chunk, point, graph in zip(chunks_in_batch, points, graphs):
+            upsert_graph_to_neo4j(
+                chunk_id=point.id,
+                chunk_text=chunk.text,
+                passage_id=chunk.passage_id,
+                graph=graph,
+                neo4j_client=neo4j_client
+            )
 
         result = await upsert_batch(points, batch_num)
 
