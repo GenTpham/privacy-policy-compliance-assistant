@@ -84,11 +84,11 @@ export const COMPARE_RESULTS: Record<string, CompareResult> = {
 };
 
 export const SUGGESTED_PROMPTS = [
-  "Does this policy allow third-party data sharing?",
-  "What are the user deletion rights?",
-  "How long is personal data retained?",
-  "What cookies and trackers are used?",
-  "Is this policy GDPR compliant?",
+  "Google thu thập dữ liệu gì từ tôi?",
+  "TikTok có chia sẻ dữ liệu không?",
+  "Tôi có quyền gì với dữ liệu của mình trên Facebook?",
+  "Dữ liệu của tôi được lưu giữ bao lâu trên OpenAI?",
+  "Shopify dùng cookie gì để theo dõi?",
 ];
 
 export const KPI = {

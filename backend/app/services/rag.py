@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 # ── Constants ──────────────────────────────────────────────────────────────────
 COLLECTION_NAME = "policies"
-EMBEDDING_MODEL = "nvidia/llama-nemotron-embed-vl-1b-v2"
+EMBEDDING_MODEL = "nvidia/llama-nemotron-embed-vl-1b-v2:free"
 CHAT_MODEL = "google/gemma-4-26b-a4b-it"
 
 # D-05: Hard abstain instruction — exact wording locked in CONTEXT.md
