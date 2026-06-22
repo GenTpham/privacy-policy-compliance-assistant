@@ -11,7 +11,7 @@
 ## Global Constraints
 
 - Python 3.11 only — explicit runtime requirement (no backend changes in this plan).
-- Models: OpenRouter exclusively (`google/gemma-4-26b-a4b` + `nvidia/llama-nemotron-embed-vl-1b-v2`) — no substitutions.
+- Models: OpenRouter exclusively (`google/gemma-4-26b-a4b` + `nvidia/llama-nemotron-embed-vl-1b-v2:free`) — no substitutions.
 - Vector Store: Qdrant — no changes.
 - Deployment: Docker Compose — frontend build must still pass `npm run build` and `npm test`.
 - Auth: JWT-gated UI — no auth changes.

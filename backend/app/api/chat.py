@@ -17,8 +17,10 @@ from pydantic import BaseModel, Field
 from starlette.requests import Request
 
 from backend.app.core.limiter import _get_chat_rate_limit, limiter
-from backend.app.db.models import User
+from backend.app.db.models import User, QueryLog
+from backend.app.db import session as db_session
 from backend.app.services import rag
+from backend.app.services.analytics import classify_topic
 from backend.app.services.auth import get_current_user
 
 # CONFLICT-01: compiled once at module level — avoids recompilation on every request (D-01/D-02)
@@ -104,11 +106,41 @@ async def chat_endpoint(
     history = [h.model_dump() for h in body.history]
 
     async def _generate() -> AsyncGenerator[str, None]:
-        if is_conflict_query(body.message):
-            generator = rag.stream_conflict_answer(body.message, history, source_filter=body.source_filter)
-        else:
-            generator = rag.stream_answer(body.message, history, source_filter=body.source_filter)
-        async for event in generator:
-            yield f"data: {json.dumps(event)}\n\n"
+        topic = classify_topic(body.message)
+        async with db_session._session_factory() as session:
+            log = QueryLog(user_id=current_user.id, query_text=body.message, topic=topic, status="processing")
+            session.add(log)
+            await session.commit()
+            log_id = log.id
+
+        try:
+            if is_conflict_query(body.message):
+                generator = rag.stream_conflict_answer(body.message, history, source_filter=body.source_filter)
+            else:
+                generator = rag.stream_answer(body.message, history, source_filter=body.source_filter)
+            
+            async for event in generator:
+                yield f"data: {json.dumps(event)}\n\n"
+                if event.get("type") == "error":
+                    async with db_session._session_factory() as session:
+                        err_log = await session.get(QueryLog, log_id)
+                        if err_log:
+                            err_log.status = "error"
+                            await session.commit()
+                    return
+
+            async with db_session._session_factory() as session:
+                success_log = await session.get(QueryLog, log_id)
+                if success_log:
+                    success_log.status = "success"
+                    await session.commit()
+                    
+        except Exception:
+            async with db_session._session_factory() as session:
+                fail_log = await session.get(QueryLog, log_id)
+                if fail_log:
+                    fail_log.status = "error"
+                    await session.commit()
+            raise
 
     return StreamingResponse(_generate(), media_type="text/event-stream")

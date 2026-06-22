@@ -16,6 +16,7 @@ from sqlalchemy import select
 from backend.app.api.admin import router as admin_router
 from backend.app.api.auth import router as auth_router
 from backend.app.api.chat import router as chat_router
+from backend.app.api.dashboard import router as dashboard_router
 from backend.app.api.sources import router as sources_router
 from backend.app.core.config import get_settings
 from backend.app.core.qdrant_client import make_qdrant_client
@@ -157,7 +158,8 @@ def create_app() -> FastAPI:
     )
     app.state.limiter = limiter
     app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-    app.include_router(chat_router, prefix="/api")
+    app.include_router(chat_router, prefix="/api", tags=["chat"])
+    app.include_router(dashboard_router, prefix="/api/dashboard", tags=["dashboard"])
     app.include_router(auth_router, prefix="/auth")
     app.include_router(sources_router, prefix="/api")
     app.include_router(admin_router, prefix="/admin")

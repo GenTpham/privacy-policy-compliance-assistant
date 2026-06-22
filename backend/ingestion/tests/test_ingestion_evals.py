@@ -29,7 +29,7 @@ from backend.ingestion.chunker import _count_tokens
 # ── Constants (mirrored from ingest.py) ──────────────────────────────────────
 COLLECTION_NAME = "policies"
 DATASET_PATH = Path("dataset/json/train/policy_qa_train.json")
-EMBED_MODEL = "nvidia/llama-nemotron-embed-vl-1b-v2"
+EMBED_MODEL = "nvidia/llama-nemotron-embed-vl-1b-v2:free"
 SAMPLE_SIZE = 200
 REQUIRED_PAYLOAD_FIELDS = {"title", "source_doc", "passage_id", "text"}
 

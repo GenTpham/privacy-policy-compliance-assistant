@@ -1,0 +1,31 @@
+Google Privacy Policy
+
+When you use our services, you’re trusting us with your information. We understand this is a big responsibility and work hard to protect your information and put you in control.
+
+Information Google collects:
+We want you to understand the types of information we collect as you use our services.
+We collect information to provide better services to all our users — from figuring out basic stuff like which language you speak, to more complex things like which ads you’ll find most useful, the people who matter most to you online, or which YouTube videos you might like.
+
+The information Google collects, and how that information is used, depends on how you use our services and how you manage your privacy controls.
+When you’re not signed in to a Google Account, we store the information we collect with unique identifiers tied to the browser, application, or device you’re using.
+When you’re signed in, we also collect information that we store with your Google Account, which we treat as personal information.
+
+We collect information about the apps, browsers, and devices you use to access Google services, which helps us provide features like automatic product updates and dimming your screen if your battery runs low.
+We collect information about your location when you use our services, which helps us offer features like driving directions for your weekend getaway or showtimes for movies playing near you.
+
+Why Google collects data:
+We use the information we collect from all our services for the following purposes:
+- Provide our services
+- Maintain & improve our services
+- Develop new services
+- Provide personalized services, including content and ads
+- Measure performance
+- Communicate with you
+- Protect Google, our users, and the public
+
+Sharing your information:
+We do not share your personal information with companies, organizations, or individuals outside of Google except in the following cases:
+- With your consent
+- With domain administrators
+- For external processing
+- For legal reasons

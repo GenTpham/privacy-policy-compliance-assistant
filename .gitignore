@@ -10,4 +10,4 @@ ingestion_checkpoint.json
 .worktrees
 .cursor
 .claude
-.codegraph
+.codegraphbackend/data/

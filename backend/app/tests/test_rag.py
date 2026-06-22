@@ -54,7 +54,7 @@ async def test_embed_calls_correct_model(mock_openrouter, mock_qdrant):
     call_args = mock_openrouter.embeddings.create.call_args
     # model is always passed as keyword argument in stream_answer
     model_arg = call_args.kwargs.get("model")
-    assert model_arg == "nvidia/llama-nemotron-embed-vl-1b-v2"
+    assert model_arg == "nvidia/llama-nemotron-embed-vl-1b-v2:free"
 
 
 # ── RAG-02: retrieve params ────────────────────────────────────────────────────

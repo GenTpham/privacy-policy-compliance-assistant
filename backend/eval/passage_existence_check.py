@@ -70,7 +70,7 @@ async def check_passage(
     """
     # Embed the ground-truth context (what was indexed)
     resp = await openrouter.embeddings.create(
-        model="nvidia/llama-nemotron-embed-vl-1b-v2",
+        model="nvidia/llama-nemotron-embed-vl-1b-v2:free",
         input=context_text,
         encoding_format="float",
     )
