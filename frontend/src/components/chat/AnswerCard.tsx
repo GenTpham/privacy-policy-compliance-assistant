@@ -3,6 +3,8 @@ import { parseCitations } from "@/lib/parseCitations";
 import { InlineCitationBadge } from "./InlineCitationBadge";
 import { CitationCard } from "./CitationCard";
 import type { Citation } from "@/hooks/useSSEChat";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 export interface AnswerCardProps {
   content: string;
@@ -88,10 +90,16 @@ export function AnswerCard({
           Trả lời cho: {shortName(activeFilter)}
         </div>
       )}
-      <p style={{ margin: "0 0 12px" }}>
+      <div style={{ margin: "0 0 12px", whiteSpace: "pre-wrap" }}>
         {segments.map((seg, idx) =>
           seg.type === "text" ? (
-            <span key={idx}>{seg.content}</span>
+            <ReactMarkdown
+              key={idx}
+              remarkPlugins={[remarkGfm]}
+              components={{ p: "span", ul: "ul", li: "li", strong: "strong", em: "em" }}
+            >
+              {seg.content || ""}
+            </ReactMarkdown>
           ) : (
             <InlineCitationBadge
               key={idx}
@@ -103,7 +111,7 @@ export function AnswerCard({
             />
           )
         )}
-      </p>
+      </div>
       {isNoMatch && (
         <div style={{ fontSize: 12, color: t.muted, fontStyle: "italic", marginTop: 8 }}>
           No matching policy sections found for this query.
