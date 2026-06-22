@@ -8,3 +8,6 @@ ingestion_checkpoint.json
 *.sqlite
 .DS_Store
 .worktrees
+.cursor
+.claude
+.codegraph

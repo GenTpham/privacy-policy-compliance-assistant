@@ -19,7 +19,7 @@ export function ChatPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="h-screen flex flex-col bg-white overflow-hidden">
       <Header onLogout={logout} />
       <MessageList messages={messages} isStreaming={isStreaming} />
       <ChatInput isStreaming={isStreaming} onSubmit={handleSubmit} />
