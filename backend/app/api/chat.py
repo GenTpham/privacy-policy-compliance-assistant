@@ -85,6 +85,7 @@ async def chat_endpoint(
     request: Request,
     body: ChatRequest,
     current_user: User = Depends(get_current_user),
+    session: db_session.AsyncSession = Depends(db_session.get_db),
 ) -> StreamingResponse:
     """
     POST /api/chat — accepts a question and optional conversation history,
@@ -107,11 +108,10 @@ async def chat_endpoint(
 
     async def _generate() -> AsyncGenerator[str, None]:
         topic = classify_topic(body.message)
-        async with db_session._session_factory() as session:
-            log = QueryLog(user_id=current_user.id, query_text=body.message, topic=topic, status="processing")
-            session.add(log)
-            await session.commit()
-            log_id = log.id
+        log = QueryLog(user_id=current_user.id, query_text=body.message, topic=topic, status="processing")
+        session.add(log)
+        await session.commit()
+        log_id = log.id
 
         try:
             if is_conflict_query(body.message):
@@ -122,25 +122,22 @@ async def chat_endpoint(
             async for event in generator:
                 yield f"data: {json.dumps(event)}\n\n"
                 if event.get("type") == "error":
-                    async with db_session._session_factory() as session:
-                        err_log = await session.get(QueryLog, log_id)
-                        if err_log:
-                            err_log.status = "error"
-                            await session.commit()
+                    err_log = await session.get(QueryLog, log_id)
+                    if err_log:
+                        err_log.status = "error"
+                        await session.commit()
                     return
 
-            async with db_session._session_factory() as session:
-                success_log = await session.get(QueryLog, log_id)
-                if success_log:
-                    success_log.status = "success"
-                    await session.commit()
+            success_log = await session.get(QueryLog, log_id)
+            if success_log:
+                success_log.status = "success"
+                await session.commit()
                     
         except Exception:
-            async with db_session._session_factory() as session:
-                fail_log = await session.get(QueryLog, log_id)
-                if fail_log:
-                    fail_log.status = "error"
-                    await session.commit()
+            fail_log = await session.get(QueryLog, log_id)
+            if fail_log:
+                fail_log.status = "error"
+                await session.commit()
             raise
 
     return StreamingResponse(_generate(), media_type="text/event-stream")

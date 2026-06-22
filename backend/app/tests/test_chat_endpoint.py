@@ -13,9 +13,19 @@ from backend.app.db.models import User
 from backend.app.main import create_app
 from backend.app.services.auth import get_current_user
 from backend.app.api.chat import is_conflict_query
+from backend.app.db.session import get_db
 
 
 # ── Shared helpers ────────────────────────────────────────────────────────────
+
+async def _mock_get_db():
+    from unittest.mock import MagicMock
+    mock_session = AsyncMock()
+    mock_session.add = MagicMock()
+    # Support async context manager: async with session:
+    mock_session.__aenter__.return_value = mock_session
+    mock_session.__aexit__.return_value = None
+    yield mock_session
 
 async def _minimal_done_stream(*args, **kwargs):
     """Minimal rag.stream_answer stub — yields one done event, no LLM/Qdrant calls."""
@@ -38,6 +48,7 @@ async def test_endpoint_content_type():
     """
     app = create_app()
     app.dependency_overrides[get_current_user] = _stub_current_user
+    app.dependency_overrides[get_db] = _mock_get_db
     try:
         with patch("backend.app.services.rag.stream_answer", side_effect=_minimal_done_stream):
             async with httpx.AsyncClient(
@@ -69,6 +80,7 @@ async def test_system_role_rejected():
     """
     app = create_app()
     app.dependency_overrides[get_current_user] = _stub_current_user
+    app.dependency_overrides[get_db] = _mock_get_db
     try:
         async with httpx.AsyncClient(
             transport=httpx.ASGITransport(app=app),
@@ -131,6 +143,7 @@ async def test_conflict_route_dispatches_conflict_generator():
     """
     app = create_app()
     app.dependency_overrides[get_current_user] = _stub_current_user
+    app.dependency_overrides[get_db] = _mock_get_db
     try:
         with patch("backend.app.services.rag.stream_conflict_answer", side_effect=_minimal_done_stream) as mock_conflict, \
              patch("backend.app.services.rag.stream_answer", side_effect=_minimal_done_stream) as mock_standard:
@@ -156,6 +169,7 @@ async def test_source_filter_accepted():
     """UX-02: POST /api/chat accepts source_filter field in request body (HTTP 200)."""
     app = create_app()
     app.dependency_overrides[get_current_user] = _stub_current_user
+    app.dependency_overrides[get_db] = _mock_get_db
     try:
         with patch("backend.app.services.rag.stream_answer", side_effect=_minimal_done_stream):
             async with httpx.AsyncClient(
