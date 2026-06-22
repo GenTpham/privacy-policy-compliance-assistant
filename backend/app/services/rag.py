@@ -28,7 +28,6 @@ logger = logging.getLogger(__name__)
 # ── Constants ──────────────────────────────────────────────────────────────────
 COLLECTION_NAME = "policies"
 EMBEDDING_MODEL = "nvidia/llama-nemotron-embed-vl-1b-v2:free"
-CHAT_MODEL = "google/gemma-4-26b-a4b-it"
 
 # D-05: Hard abstain instruction — exact wording locked in CONTEXT.md
 ABSTAIN_INSTRUCTION = (
@@ -42,13 +41,23 @@ ABSTAIN_INSTRUCTION = (
 # For testing: patch "backend.app.services.rag.openrouter" and "backend.app.services.rag.qdrant".
 _settings = get_settings()
 
+if _settings.llm_backend.lower() == "openai" and _settings.openai_api_key:
+    llm_client = AsyncOpenAI(api_key=_settings.openai_api_key)
+    CHAT_MODEL = "gpt-4o-mini"
+else:
+    llm_client = AsyncOpenAI(
+        base_url="https://openrouter.ai/api/v1",
+        api_key=_settings.openrouter_api_key,
+        default_headers={
+            "HTTP-Referer": "https://privacy-policy-assistant",
+            "X-OpenRouter-Title": "Privacy Policy Assistant",
+        },
+    )
+    CHAT_MODEL = "google/gemma-4-26b-a4b-it"
+
 openrouter = AsyncOpenAI(
     base_url="https://openrouter.ai/api/v1",
     api_key=_settings.openrouter_api_key,
-    default_headers={
-        "HTTP-Referer": "https://privacy-policy-assistant",
-        "X-OpenRouter-Title": "Privacy Policy Assistant",
-    },
 )
 
 qdrant = make_qdrant_client(_settings)
@@ -232,7 +241,7 @@ async def stream_answer(
     # Step 5: Stream LLM tokens (RAG-05, D-03)
     full_answer = ""
     try:
-        stream = await openrouter.chat.completions.create(
+        stream = await llm_client.chat.completions.create(
             model=CHAT_MODEL,
             messages=messages,
             stream=True,
@@ -395,7 +404,7 @@ async def stream_conflict_answer(
     # Step 5: Stream LLM tokens (identical loop to stream_answer — Pitfall 5: None guard)
     full_answer = ""
     try:
-        stream = await openrouter.chat.completions.create(
+        stream = await llm_client.chat.completions.create(
             model=CHAT_MODEL,
             messages=messages,
             stream=True,

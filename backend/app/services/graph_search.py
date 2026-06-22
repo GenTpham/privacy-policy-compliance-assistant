@@ -11,7 +11,7 @@ Question: {question}
 
 async def extract_entities_from_query(question: str) -> list[str]:
     settings = get_settings()
-    if settings.openai_api_key:
+    if settings.llm_backend.lower() == "openai" and settings.openai_api_key:
         client = AsyncOpenAI(api_key=settings.openai_api_key)
         model_name = "gpt-4o-mini"
     else:
