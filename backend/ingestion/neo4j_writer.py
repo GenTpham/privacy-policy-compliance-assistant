@@ -29,7 +29,9 @@ def upsert_graph_to_neo4j(chunk_id: str, chunk_text: str, passage_id: str, graph
     for rel in graph.get("relationships", []):
         source = rel.get("source")
         target = rel.get("target")
-        rel_type = rel.get("type", "RELATED_TO").upper().replace(" ", "_")
+        import re
+        raw_type = rel.get("type", "RELATED_TO").upper()
+        rel_type = re.sub(r'[^A-Z0-9_]', '_', raw_type)
         
         if not source or not target:
             continue
