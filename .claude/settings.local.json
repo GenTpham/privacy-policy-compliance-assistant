@@ -35,7 +35,14 @@
       "Bash(node __TRACKED_VAR__/.claude/get-shit-done/bin/gsd-tools.cjs phase complete 02)",
       "Bash(node __TRACKED_VAR__/.claude/get-shit-done/bin/gsd-tools.cjs commit 'docs\\(phase-02\\): complete phase execution' --files .planning/ROADMAP.md .planning/STATE.md .planning/phases/02-core-rag-pipeline/02-VERIFICATION.md)",
       "Bash(python -c \"from qdrant_client import AsyncQdrantClient; print\\(dir\\(AsyncQdrantClient\\)\\)\")",
-      "Bash(\"D:/data/code/privacy-policy-compliance-assistant/.venv/Scripts/python.exe\" -c \"from qdrant_client import AsyncQdrantClient; print\\([m for m in dir\\(AsyncQdrantClient\\) if 'search' in m.lower\\(\\) or 'query' in m.lower\\(\\)]\\)\")"
+      "Bash(\"D:/data/code/privacy-policy-compliance-assistant/.venv/Scripts/python.exe\" -c \"from qdrant_client import AsyncQdrantClient; print\\([m for m in dir\\(AsyncQdrantClient\\) if 'search' in m.lower\\(\\) or 'query' in m.lower\\(\\)]\\)\")",
+      "Bash(git commit -m 'docs: add chat UX answer-card + inline citations design *)",
+      "Bash(git commit -m 'docs: add chat UX answer-card implementation plan *)",
+      "Bash(npx vitest *)",
+      "Bash(npm run *)",
+      "Bash(python -m pytest backend/app/tests)",
+      "Bash(.venv/Scripts/python.exe -m pytest backend/app/tests)",
+      "Bash(.venv/Scripts/python.exe -m pytest backend/app/tests/test_rag_phase9.py::test_stream_answer_empty_string_filter_treated_as_falsy)"
     ]
   }
 }
