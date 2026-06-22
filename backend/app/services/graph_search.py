@@ -21,10 +21,18 @@ async def extract_entities_from_query(question: str) -> list[str]:
         model="google/gemma-4-26b-a4b-it",
         messages=[{"role": "user", "content": prompt}],
         response_format={"type": "json_object"},
-        temperature=0.0
+        temperature=0.0,
+        max_tokens=1024
     )
     
-    content = response.choices[0].message.content
+    content = response.choices[0].message.content.strip()
+    if content.startswith("```"):
+        lines = content.splitlines()
+        if lines[0].startswith("```"):
+            lines = lines[1:]
+        if lines and lines[-1].startswith("```"):
+            lines = lines[:-1]
+        content = "\n".join(lines).strip()
     try:
         # Assuming format: {"entities": ["A", "B"]}
         data = json.loads(content)

@@ -32,9 +32,19 @@ async def extract_graph_from_chunk(text: str) -> dict:
             model="google/gemma-4-26b-a4b-it",
             messages=[{"role": "user", "content": prompt}],
             response_format={"type": "json_object"},
-            temperature=0.1
+            temperature=0.1,
+            max_tokens=4096
         )
-        content = response.choices[0].message.content
+        content = response.choices[0].message.content.strip()
+        # Clean up markdown code blocks if the model wrapped the output
+        if content.startswith("```"):
+            lines = content.splitlines()
+            if lines[0].startswith("```"):
+                lines = lines[1:]
+            if lines and lines[-1].startswith("```"):
+                lines = lines[:-1]
+            content = "\n".join(lines).strip()
+            
         return json.loads(content)
     except Exception as e:
         print(f"[graph_extractor] Error extracting graph: {e}")
