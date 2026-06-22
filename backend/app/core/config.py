@@ -41,6 +41,11 @@ class Settings(BaseSettings):
     admin_username: str | None = None   # Optional — skip seed if not set (D-01)
     admin_password: str | None = None   # Optional — skip seed if not set (D-01)
 
+    # Neo4j configuration
+    neo4j_uri: str
+    neo4j_username: str
+    neo4j_password: str
+
     # Observability — Phoenix OTLP/gRPC collector endpoint
     # Override via PHOENIX_COLLECTOR_ENDPOINT env var when using --profile observability
     phoenix_collector_endpoint: str = "http://phoenix:4317"
