@@ -14,3 +14,4 @@ opentelemetry-exporter-otlp-proto-grpc
 openinference-instrumentation-openai
 pypdf>=4.0,<5
 slowapi==0.1.9
+neo4j==5.21.0
