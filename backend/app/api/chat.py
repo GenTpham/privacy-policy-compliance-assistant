@@ -120,15 +120,15 @@ async def chat_endpoint(
         span = None
         token = None
         try:
-            from opentelemetry import trace as otel_trace
-            from opentelemetry import context as otel_context
-            from opentelemetry.trace import set_span_in_context
-            tracer = otel_trace.get_tracer(__name__)
-            span = tracer.start_span("RAG_Pipeline", context=ctx)
-            span.set_attribute("user.query", body.message)
-            ctx = set_span_in_context(span)
-            token = otel_context.attach(ctx)
-        except ImportError:
+            if otel_context:
+                from opentelemetry import trace as otel_trace
+                from opentelemetry.trace import set_span_in_context
+                tracer = otel_trace.get_tracer(__name__)
+                span = tracer.start_span("RAG_Pipeline", context=ctx)
+                span.set_attribute("user.query", body.message)
+                new_ctx = set_span_in_context(span)
+                token = otel_context.attach(new_ctx)
+        except Exception:
             pass
 
         try:
@@ -165,7 +165,7 @@ async def chat_endpoint(
                     await session.commit()
                 raise
         finally:
-            if 'otel_context' in locals() and otel_context and token:
+            if otel_context and token:
                 otel_context.detach(token)
             if span:
                 span.end()
