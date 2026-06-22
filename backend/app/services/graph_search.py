@@ -49,6 +49,12 @@ async def extract_entities_from_query(question: str) -> list[str]:
     except json.JSONDecodeError:
         return []
 
+try:
+    from opentelemetry import trace as _otel_trace
+    _tracer = _otel_trace.get_tracer(__name__)
+except ImportError:
+    _tracer = None
+
 def retrieve_graph_context(entities: list[str], limit: int = 5) -> list[str]:
     if not entities:
         return []
@@ -63,7 +69,21 @@ def retrieve_graph_context(entities: list[str], limit: int = 5) -> list[str]:
     LIMIT $limit
     """
     try:
-        records = neo4j_client.execute_query(query, {"entities": entities, "limit": limit})
+        if _tracer:
+            with _tracer.start_as_current_span(
+                "neo4j.retrieve",
+                attributes={
+                    "neo4j.query.text": query.strip(),
+                    "neo4j.query.entities": str(entities),
+                    "neo4j.query.limit": limit,
+                }
+            ) as span:
+                records = neo4j_client.execute_query(query, {"entities": entities, "limit": limit})
+                if span:
+                    span.set_attribute("neo4j.results_count", len(records))
+        else:
+            records = neo4j_client.execute_query(query, {"entities": entities, "limit": limit})
+            
         return [record["chunk_text"] for record in records]
     except Exception as e:
         print(f"Neo4j retrieval error: {e}")
