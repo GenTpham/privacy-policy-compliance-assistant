@@ -29,7 +29,7 @@ async def extract_graph_from_chunk(text: str) -> dict:
     
     try:
         response = await client.chat.completions.create(
-            model="google/gemma-4-26b-a4b",
+            model="google/gemma-4-26b-a4b-it",
             messages=[{"role": "user", "content": prompt}],
             response_format={"type": "json_object"},
             temperature=0.1

@@ -18,7 +18,7 @@ async def extract_entities_from_query(question: str) -> list[str]:
     
     prompt = QUERY_EXTRACTION_PROMPT.format(question=question)
     response = await client.chat.completions.create(
-        model="google/gemma-4-26b-a4b",
+        model="google/gemma-4-26b-a4b-it",
         messages=[{"role": "user", "content": prompt}],
         response_format={"type": "json_object"},
         temperature=0.0
