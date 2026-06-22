@@ -26,9 +26,9 @@ export function MainApp() {
     localStorage.setItem("ppca_screen", s);
   };
 
-  const renderScreen = () => {
+    const renderScreen = () => {
     switch (screen) {
-      case "dashboard": return <DashboardScreen onNavigate={handleNavigate} />;
+      case "dashboard": return <DashboardScreen forceLogout={forceLogout} />;
       case "ask":       return <AskAssistantScreen chat={chat} forceLogout={forceLogout} />;
       case "library":   return <PolicyLibraryScreen onAsk={() => handleNavigate("ask")} />;
       case "compare":   return <ComparePoliciesScreen />;

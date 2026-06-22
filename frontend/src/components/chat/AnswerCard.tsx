@@ -3,6 +3,8 @@ import { parseCitations } from "@/lib/parseCitations";
 import { InlineCitationBadge } from "./InlineCitationBadge";
 import { CitationCard } from "./CitationCard";
 import type { Citation } from "@/hooks/useSSEChat";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 export interface AnswerCardProps {
   content: string;
@@ -30,7 +32,15 @@ export function AnswerCard({
   activeFilter,
 }: AnswerCardProps) {
   const { t, accent } = useTheme();
-  const { segments, citedSources } = parseCitations(content, citations);
+  const { citedSources } = parseCitations(content, citations);
+
+  const processedContent = content.replace(/\[(\d+)\]/g, (match, idStr) => {
+    const id = parseInt(idStr, 10);
+    if (citations.some((c) => c.id === id)) {
+      return `[CITATION:${id}](#cite)`;
+    }
+    return match;
+  });
 
   const shortName = (name: string) =>
     name.replace(" Privacy Policy", "").replace(" Privacy Statement", "");
@@ -88,22 +98,38 @@ export function AnswerCard({
           Trả lời cho: {shortName(activeFilter)}
         </div>
       )}
-      <p style={{ margin: "0 0 12px" }}>
-        {segments.map((seg, idx) =>
-          seg.type === "text" ? (
-            <span key={idx}>{seg.content}</span>
-          ) : (
-            <InlineCitationBadge
-              key={idx}
-              id={seg.citationId!}
-              onClick={(id) => {
-                const c = citations.find((x) => x.id === id);
-                if (c) onOpenEvidence?.(c);
-              }}
-            />
-          )
-        )}
-      </p>
+      <div className="markdown-body" style={{ margin: "0 0 12px" }}>
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            p: ({ children }) => <p style={{ margin: "0 0 8px" }}>{children}</p>,
+            ul: ({ children }) => <ul style={{ margin: "0 0 8px", paddingLeft: "20px", listStyleType: "disc" }}>{children}</ul>,
+            ol: ({ children }) => <ol style={{ margin: "0 0 8px", paddingLeft: "20px", listStyleType: "decimal" }}>{children}</ol>,
+            li: ({ children }) => <li style={{ margin: "4px 0" }}>{children}</li>,
+            a: ({ href, children }) => {
+              if (href === "#cite") {
+                const text = children?.toString() || "";
+                const match = text.match(/CITATION:(\d+)/);
+                if (match) {
+                  const id = parseInt(match[1], 10);
+                  return (
+                    <InlineCitationBadge
+                      id={id}
+                      onClick={() => {
+                        const c = citations.find((x) => x.id === id);
+                        if (c) onOpenEvidence?.(c);
+                      }}
+                    />
+                  );
+                }
+              }
+              return <a href={href} style={{ color: accent, textDecoration: "underline" }}>{children}</a>;
+            },
+          }}
+        >
+          {processedContent || ""}
+        </ReactMarkdown>
+      </div>
       {isNoMatch && (
         <div style={{ fontSize: 12, color: t.muted, fontStyle: "italic", marginTop: 8 }}>
           No matching policy sections found for this query.

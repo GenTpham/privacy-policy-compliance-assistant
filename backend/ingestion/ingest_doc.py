@@ -20,13 +20,16 @@ from qdrant_client.models import Distance, PointStruct, UpdateStatus, VectorPara
 
 from backend.app.core.config import get_settings
 from backend.app.core.qdrant_client import make_qdrant_client
+from backend.app.db.models import Document
+from backend.app.db import session as db_session
 from backend.ingestion.chunker import Chunk, chunk_passage
+from sqlalchemy import select
 
 # ── Constants (mirrored from ingest.py for consistency) ───────────────────────
 COLLECTION_NAME = "policies"
 BATCH_SIZE = 50
 BATCH_SLEEP_SECONDS = 3
-EMBED_MODEL = "nvidia/llama-nemotron-embed-vl-1b-v2"
+EMBED_MODEL = "nvidia/llama-nemotron-embed-vl-1b-v2:free"
 
 
 # ── Client initialization (self-contained — does NOT import from ingest.py) ───
@@ -99,8 +102,15 @@ async def embed_batch(
     """
     for attempt in range(retries):
         try:
+            # OpenRouter Nemotron VL format requirement: multimodal content array
+            nemotron_input = [
+                {"content": [{"type": "text", "text": t}]} for t in texts
+            ]
             resp = await openrouter.embeddings.create(
-                model=EMBED_MODEL, input=texts, encoding_format="float"
+                model=EMBED_MODEL,
+                input=["ignored"],  # bypass SDK validation
+                extra_body={"input": nemotron_input},
+                encoding_format="float"
             )
             return [item.embedding for item in sorted(resp.data, key=lambda x: x.index)]
         except Exception as exc:
@@ -125,8 +135,14 @@ async def probe_embedding_dim(openrouter: AsyncOpenAI) -> int:
     Probe Nemotron embedding dimension via a live API call.
     Never hardcoded — dimension is read from the first response.
     """
+    nemotron_input = [
+        {"content": [{"type": "text", "text": "probe"}]}
+    ]
     resp = await openrouter.embeddings.create(
-        model=EMBED_MODEL, input="probe", encoding_format="float"
+        model=EMBED_MODEL,
+        input=["ignored"], # bypass SDK validation
+        extra_body={"input": nemotron_input},
+        encoding_format="float"
     )
     return len(resp.data[0].embedding)
 
@@ -191,111 +207,145 @@ async def ingest_doc(filepath: Path, title: str, dry_run: bool = False) -> None:
     - dry_run: prints counts without writing to Qdrant.
     - Hard-fail on empty text (ValueError) per T-08-01.
     """
-    # 1. Detect file type
-    suffix = filepath.suffix.lower()
-    if suffix == ".pdf":
-        text = extract_pdf(filepath)
-        file_type = "pdf"
-    elif suffix == ".txt":
-        text = extract_txt(filepath)
-        file_type = "txt"
-    else:
-        raise ValueError(
-            f"Unsupported file type: {filepath.suffix!r}. Only .pdf and .txt are supported."
-        )
-
-    # 2. passage_id from filename stem
-    passage_id = filepath.stem
-
-    # 3. Chunk the text
-    chunks = chunk_passage(text, passage_id=passage_id, title=title, source_doc=title)
-    print(f"[ingest_doc] Extracted {len(chunks)} chunks from {filepath.name}")
-
-    # 4. Compute UUID5 point IDs for all chunks (matches ingest.py formula)
-    all_ids = [
-        str(uuid.uuid5(uuid.NAMESPACE_DNS, f"{c.passage_id}:{c.chunk_index}"))
-        for c in chunks
-    ]
-
-    # 5. Initialize clients
-    openrouter, qdrant = _make_clients()
-
-    # 6. Probe dim and ensure collection exists FIRST (collection must exist before retrieve)
-    dim = await probe_embedding_dim(openrouter)
-    await ensure_collection(qdrant, dim)
-
-    # 7. Retrieve existing IDs from Qdrant (dedup check — collection now guaranteed to exist)
-    found = await qdrant.retrieve(
-        collection_name=COLLECTION_NAME,
-        ids=all_ids,
-        with_payload=False,
-        with_vectors=False,
-    )
-    existing = {str(r.id) for r in found}
-
-    # 8. Dry-run path — no writes
-    if dry_run:
-        new_count = len(all_ids) - len(existing)
-        print(
-            f"[dry_run] Would ingest {new_count} chunks "
-            f"({len(existing)} already indexed — would skip)"
-        )
-        return
-
-    # 9. Filter to new-only chunks
-    new_pairs = [(c, uid) for c, uid in zip(chunks, all_ids) if uid not in existing]
-
-    if not new_pairs:
-        print("[ingest_doc] All chunks already indexed — nothing to do.")
-        return
-
-    # 10. Batch embed and upsert (collection already ensured above)
-    total = len(new_pairs)
-    for batch_start in range(0, total, BATCH_SIZE):
-        batch = new_pairs[batch_start: batch_start + BATCH_SIZE]
-        chunks_in_batch = [c for c, _ in batch]
-        ids_in_batch = [uid for _, uid in batch]
-
-        embeddings = await embed_batch(openrouter, [c.text for c in chunks_in_batch])
-
-        points = [
-            PointStruct(
-                id=uid,
-                vector=embedding,
-                payload={
-                    "title": title,
-                    "source_doc": title,
-                    "passage_id": chunk.passage_id,
-                    "text": chunk.text,
-                    "chunk_index": chunk.chunk_index,
-                    "token_count": chunk.token_count,
-                    "file_type": file_type,
-                },
+    try:
+        # 1. Detect file type
+        suffix = filepath.suffix.lower()
+        if suffix == ".pdf":
+            text = extract_pdf(filepath)
+            file_type = "pdf"
+        elif suffix == ".txt":
+            text = extract_txt(filepath)
+            file_type = "txt"
+        else:
+            raise ValueError(
+                f"Unsupported file type: {filepath.suffix!r}. Only .pdf and .txt are supported."
             )
-            for chunk, uid, embedding in zip(chunks_in_batch, ids_in_batch, embeddings)
+
+        # 2. passage_id from filename stem
+        passage_id = filepath.stem
+
+        # 3. Chunk the text
+        chunks = chunk_passage(text, passage_id=passage_id, title=title, source_doc=title)
+        print(f"[ingest_doc] Extracted {len(chunks)} chunks from {filepath.name}")
+
+        # 4. Compute UUID5 point IDs for all chunks (matches ingest.py formula)
+        all_ids = [
+            str(uuid.uuid5(uuid.NAMESPACE_DNS, f"{c.passage_id}:{c.chunk_index}"))
+            for c in chunks
         ]
 
-        result = await qdrant.upsert(
-            collection_name=COLLECTION_NAME,
-            points=points,
-            wait=True,
-        )
+        # 5. Initialize clients
+        openrouter, qdrant = _make_clients()
 
-        if result.status != UpdateStatus.COMPLETED:
-            raise RuntimeError(
-                f"[ingest_doc] Upsert failed with status={result.status}. "
-                "Re-run to retry failed batch."
+        # 6. Probe dim and ensure collection exists FIRST (collection must exist before retrieve)
+        dim = await probe_embedding_dim(openrouter)
+        await ensure_collection(qdrant, dim)
+
+        # 7. Retrieve existing IDs from Qdrant (dedup check — collection now guaranteed to exist)
+        found = await qdrant.retrieve(
+            collection_name=COLLECTION_NAME,
+            ids=all_ids,
+            with_payload=False,
+            with_vectors=False,
+        )
+        existing = {str(r.id) for r in found}
+
+        # 8. Dry-run path — no writes
+        if dry_run:
+            new_count = len(all_ids) - len(existing)
+            print(
+                f"[dry_run] Would ingest {new_count} chunks "
+                f"({len(existing)} already indexed — would skip)"
+            )
+            return
+
+        # 9. Filter to new-only chunks
+        new_pairs = [(c, uid) for c, uid in zip(chunks, all_ids) if uid not in existing]
+
+        async with db_session._session_factory() as session:
+            result = await session.execute(select(Document).where(Document.title == title))
+            doc_record = result.scalars().first()
+            if not doc_record:
+                doc_record = Document(title=title, chunk_count=0, status="processing")
+                session.add(doc_record)
+            else:
+                doc_record.status = "processing"
+            await session.commit()
+
+        if not new_pairs:
+            print("[ingest_doc] All chunks already indexed — nothing to do.")
+            async with db_session._session_factory() as session:
+                result = await session.execute(select(Document).where(Document.title == title))
+                doc_record = result.scalars().first()
+                if doc_record:
+                    doc_record.status = "completed"
+                    await session.commit()
+            return
+
+        # 10. Batch embed and upsert (collection already ensured above)
+        total = len(new_pairs)
+        for batch_start in range(0, total, BATCH_SIZE):
+            batch = new_pairs[batch_start: batch_start + BATCH_SIZE]
+            chunks_in_batch = [c for c, _ in batch]
+            ids_in_batch = [uid for _, uid in batch]
+
+            embeddings = await embed_batch(openrouter, [c.text for c in chunks_in_batch])
+
+            points = [
+                PointStruct(
+                    id=uid,
+                    vector=embedding,
+                    payload={
+                        "title": title,
+                        "source_doc": title,
+                        "passage_id": chunk.passage_id,
+                        "text": chunk.text,
+                        "chunk_index": chunk.chunk_index,
+                        "token_count": chunk.token_count,
+                        "file_type": file_type,
+                    },
+                )
+                for chunk, uid, embedding in zip(chunks_in_batch, ids_in_batch, embeddings)
+            ]
+
+            result = await qdrant.upsert(
+                collection_name=COLLECTION_NAME,
+                points=points,
+                wait=True,
             )
 
-        # Sleep only between batches — skip after the last one to avoid
-        # an unnecessary delay when all work is done.
-        if batch_start + BATCH_SIZE < total:
-            await asyncio.sleep(BATCH_SLEEP_SECONDS)
+            if result.status != UpdateStatus.COMPLETED:
+                raise RuntimeError(
+                    f"[ingest_doc] Upsert failed with status={result.status}. "
+                    "Re-run to retry failed batch."
+                )
 
-    print(
-        f"[ingest_doc] Done. Upserted {len(new_pairs)} new chunks "
-        f"({len(existing)} skipped — already indexed)."
-    )
+            # Sleep only between batches — skip after the last one to avoid
+            # an unnecessary delay when all work is done.
+            if batch_start + BATCH_SIZE < total:
+                await asyncio.sleep(BATCH_SLEEP_SECONDS)
+
+        print(
+            f"[ingest_doc] Done. Upserted {len(new_pairs)} new chunks "
+            f"({len(existing)} skipped — already indexed)."
+        )
+
+        async with db_session._session_factory() as session:
+            result = await session.execute(select(Document).where(Document.title == title))
+            doc_record = result.scalars().first()
+            if doc_record:
+                doc_record.chunk_count += len(new_pairs)
+                doc_record.status = "completed"
+                await session.commit()
+
+    except Exception:
+        async with db_session._session_factory() as session:
+            result = await session.execute(select(Document).where(Document.title == title))
+            doc_record = result.scalars().first()
+            if doc_record:
+                doc_record.status = "failed"
+                await session.commit()
+        raise
 
 
 # ── CLI entrypoint ────────────────────────────────────────────────────────────
@@ -320,4 +370,7 @@ def parse_args() -> argparse.Namespace:
 
 if __name__ == "__main__":
     args = parse_args()
+    # Initialize DB for standalone execution
+    settings = get_settings()
+    db_session.init_db("sqlite+aiosqlite:///backend/data/users.db")
     asyncio.run(ingest_doc(filepath=args.file, title=args.title, dry_run=args.dry_run))

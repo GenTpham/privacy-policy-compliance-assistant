@@ -173,9 +173,11 @@ async def stream_answer(
       {"type": "error", "message": "LLM service temporarily unavailable"}  — Pitfall 2
     """
     # Step 1: Embed query (RAG-01)
+    nemotron_input = [{"content": [{"type": "text", "text": message}]}]
     embed_resp = await openrouter.embeddings.create(
         model=EMBEDDING_MODEL,
-        input=message,
+        input=["ignored"],
+        extra_body={"input": nemotron_input},
         encoding_format="float",
     )
     query_vector = embed_resp.data[0].embedding
@@ -192,7 +194,7 @@ async def stream_answer(
             with_payload=True,
             query_filter=Filter(
                 must=[FieldCondition(key="title", match=MatchValue(value=source_filter))]
-            ) if source_filter is not None else None,
+            ) if source_filter else None,
         )
         results = response.points
         if span is not None:
@@ -322,9 +324,11 @@ async def stream_conflict_answer(
       {"type": "done", "answer": "No matching policy found for your question.", "citations": []}
     """
     # Step 1: Embed query (identical to stream_answer — same model)
+    nemotron_input = [{"content": [{"type": "text", "text": message}]}]
     embed_resp = await openrouter.embeddings.create(
         model=EMBEDDING_MODEL,
-        input=message,
+        input=["ignored"],
+        extra_body={"input": nemotron_input},
         encoding_format="float",
     )
     query_vector = embed_resp.data[0].embedding
@@ -340,7 +344,7 @@ async def stream_conflict_answer(
             with_payload=True,
             query_filter=Filter(
                 must=[FieldCondition(key="title", match=MatchValue(value=source_filter))]
-            ) if source_filter is not None else None,
+            ) if source_filter else None,
         )
         results = response.points
         if span is not None:

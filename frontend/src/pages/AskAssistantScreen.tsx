@@ -26,15 +26,46 @@ export function AskAssistantScreen({ chat, forceLogout }: Props) {
   const [isEvidenceOpen, setIsEvidenceOpen] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [isAutoScroll, setIsAutoScroll] = useState(true);
+  const prevLengthRef = useRef(messages.length);
+
   const allTopics = ["All Topics", "Data Collection", "Third-Party Sharing", "Data Retention", "User Rights", "Cookies"];
 
+  const scrollToBottom = (smooth: boolean) => {
+    if (scrollContainerRef.current) {
+      const { scrollHeight, clientHeight } = scrollContainerRef.current;
+      scrollContainerRef.current.scrollTo({
+        top: scrollHeight - clientHeight,
+        behavior: smooth ? "smooth" : "auto",
+      });
+    }
+  };
+
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const isNewMessage = messages.length > prevLengthRef.current;
+    prevLengthRef.current = messages.length;
+
+    if (isNewMessage) {
+      setIsAutoScroll(true);
+      scrollToBottom(true);
+    } else if (isAutoScroll) {
+      scrollToBottom(false);
+    }
+
     const last = messages[messages.length - 1];
     if (last?.role === "assistant" && last.citations && last.citations.length > 0) {
       setActiveEvidence(last.citations);
     }
-  }, [messages]);
+  }, [messages, isAutoScroll]);
+
+  const handleScroll = () => {
+    if (scrollContainerRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
+      const isBottom = scrollHeight - scrollTop - clientHeight < 50;
+      setIsAutoScroll(isBottom);
+    }
+  };
 
   useEffect(() => {
     fetchWithAuth("/api/sources", { method: "GET" }, forceLogout)
@@ -173,7 +204,11 @@ export function AskAssistantScreen({ chat, forceLogout }: Props) {
         </div>
 
         {/* Messages */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px", display: "flex", flexDirection: "column", gap: 20 }}>
+        <div 
+          ref={scrollContainerRef}
+          onScroll={handleScroll}
+          style={{ flex: 1, overflowY: "auto", padding: "20px 24px", display: "flex", flexDirection: "column", gap: 20 }}
+        >
           {messages.length === 0 && (
             <div style={{ textAlign: "center", padding: "60px 20px", fontSize: 13 }}>
               <div style={{ fontSize: 32, marginBottom: 12 }}>💬</div>

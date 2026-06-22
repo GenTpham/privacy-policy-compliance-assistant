@@ -63,9 +63,12 @@ async def test_rate_limit_returns_429(rate_limited_client, db_session):
     token = await _login(rate_limited_client, "rlu1")
     headers = {"Authorization": f"Bearer {token}"}
 
+    from backend.app.core.config import get_settings
+    real_settings = get_settings()
+    
     with patch.object(rag_module, "stream_answer", _mock_stream):
         with patch.object(rag_module, "stream_conflict_answer", _mock_stream):
-            with patch("backend.app.core.limiter.get_settings", return_value=type("S", (), {"rate_limit_per_minute": 1, "jwt_secret": "a" * 32})()):
+            with patch("backend.app.core.limiter.get_settings", return_value=type("S", (), {"rate_limit_per_minute": 1, "jwt_secret": real_settings.jwt_secret})()):
                 r1 = await rate_limited_client.post(
                     "/api/chat",
                     json={"message": "test", "history": []},
@@ -93,9 +96,12 @@ async def test_rate_limit_per_user(rate_limited_client, db_session):
     token_a = await _login(rate_limited_client, "usera")
     token_b = await _login(rate_limited_client, "userb")
 
+    from backend.app.core.config import get_settings
+    real_settings = get_settings()
+    
     with patch.object(rag_module, "stream_answer", _mock_stream):
         with patch.object(rag_module, "stream_conflict_answer", _mock_stream):
-            with patch("backend.app.core.limiter.get_settings", return_value=type("S", (), {"rate_limit_per_minute": 1, "jwt_secret": "a" * 32})()):
+            with patch("backend.app.core.limiter.get_settings", return_value=type("S", (), {"rate_limit_per_minute": 1, "jwt_secret": real_settings.jwt_secret})()):
                 # User A: first request succeeds, second is rate limited
                 ra1 = await rate_limited_client.post(
                     "/api/chat",

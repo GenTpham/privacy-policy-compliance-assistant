@@ -32,7 +32,7 @@ DATASET_PATHS = [
     Path("dataset/json/test_valid/policy_qa_test.json"),
     Path("dataset/json/test_valid/policy_qa_validation.json"),
 ]
-EMBED_MODEL = "nvidia/llama-nemotron-embed-vl-1b-v2"
+EMBED_MODEL = "nvidia/llama-nemotron-embed-vl-1b-v2:free"
 BATCH_SLEEP_SECONDS = 3      # polite delay — respects free-tier 20 req/min
 
 

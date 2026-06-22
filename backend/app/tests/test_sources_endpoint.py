@@ -12,9 +12,18 @@ from unittest.mock import patch, AsyncMock
 from backend.app.db.models import User
 from backend.app.main import create_app
 from backend.app.services.auth import get_current_user
-
+from backend.app.db.session import get_db
 
 # ── Shared helpers ────────────────────────────────────────────────────────────
+
+async def _mock_get_db():
+    from unittest.mock import MagicMock
+    mock_session = AsyncMock()
+    mock_session.add = MagicMock()
+    # Support async context manager: async with session:
+    mock_session.__aenter__.return_value = mock_session
+    mock_session.__aexit__.return_value = None
+    yield mock_session
 
 def _stub_current_user():
     """Override for get_current_user — returns a dummy User without DB/JWT checks."""
@@ -33,6 +42,7 @@ async def test_sources_returns_list():
     """UX-01: GET /api/sources with auth returns {"sources": [...]} with HTTP 200."""
     app = create_app()
     app.dependency_overrides[get_current_user] = _stub_current_user
+    app.dependency_overrides[get_db] = _mock_get_db
     try:
         with patch(
             "backend.app.services.rag.get_distinct_sources",
@@ -85,6 +95,7 @@ async def test_sources_returns_500_on_qdrant_error():
     """UX-01: GET /api/sources returns HTTP 500 when Qdrant raises an exception."""
     app = create_app()
     app.dependency_overrides[get_current_user] = _stub_current_user
+    app.dependency_overrides[get_db] = _mock_get_db
     try:
         with patch(
             "backend.app.services.rag.get_distinct_sources",
@@ -109,6 +120,7 @@ async def test_chat_source_filter_omitted_defaults_to_none():
     """POST /api/chat without source_filter field should pass source_filter=None to generator."""
     app = create_app()
     app.dependency_overrides[get_current_user] = _stub_current_user
+    app.dependency_overrides[get_db] = _mock_get_db
     captured_kwargs = {}
 
     async def _capture_stream(*args, **kwargs):
@@ -137,6 +149,7 @@ async def test_chat_source_filter_passed_to_stream_answer():
     """POST /api/chat with source_filter passes it to rag.stream_answer as keyword arg."""
     app = create_app()
     app.dependency_overrides[get_current_user] = _stub_current_user
+    app.dependency_overrides[get_db] = _mock_get_db
     captured_kwargs = {}
 
     async def _capture_stream(*args, **kwargs):
@@ -169,6 +182,7 @@ async def test_chat_source_filter_passed_to_conflict_stream():
     """POST /api/chat with conflict keyword and source_filter passes it to stream_conflict_answer."""
     app = create_app()
     app.dependency_overrides[get_current_user] = _stub_current_user
+    app.dependency_overrides[get_db] = _mock_get_db
     captured_kwargs = {}
 
     async def _capture_conflict(*args, **kwargs):
