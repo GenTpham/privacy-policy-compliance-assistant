@@ -64,18 +64,18 @@ class Settings(BaseSettings):
     # --- Airflow ---
     airflow_base_url: str = "http://localhost:8080"
     airflow_username: str = "admin"
-    airflow_password: str = ""
+    airflow_password: str
     airflow_dag_id: str = "pdf_ingestion"
 
     # --- GCS ---
-    gcs_bucket: str = ""
+    gcs_bucket: str
     gcs_credentials_path: str | None = None  # None = use ADC
 
     # --- Database ---
     database_url: str = "sqlite+aiosqlite:///backend/data/users.db"
 
     # --- GCP ---
-    gcp_project_id: str = ""
+    gcp_project_id: str
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 
