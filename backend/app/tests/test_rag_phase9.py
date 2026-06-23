@@ -20,6 +20,16 @@ from backend.app.services.rag import (
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
+@pytest.fixture(autouse=True)
+def mock_extract_entities():
+    with patch("backend.app.services.rag.extract_entities_from_query", new_callable=AsyncMock, return_value=["test_entity"]) as mock:
+        yield mock
+
+@pytest.fixture(autouse=True)
+def mock_search_graph():
+    with patch("backend.app.services.rag.retrieve_graph_context", return_value=["graph text"]) as mock:
+        yield mock
+
 async def _fake_stream(token: str):
     """Async generator simulating one real token then a None-content final chunk."""
     chunk = MagicMock()
@@ -77,6 +87,7 @@ async def test_get_distinct_sources_returns_sorted(mock_qdrant):
 async def test_stream_answer_no_filter_passes_none_to_query_points(mock_openrouter, mock_qdrant):
     """stream_answer(source_filter=None) passes query_filter=None to query_points."""
     with patch.object(rag, "openrouter", mock_openrouter), \
+         patch.object(rag, "llm_client", mock_openrouter), \
          patch.object(rag, "qdrant", mock_qdrant):
         events = [e async for e in stream_answer("test query", [], source_filter=None)]
 
@@ -94,6 +105,7 @@ async def test_stream_answer_with_filter_passes_filter_object(mock_openrouter, m
     mock_openrouter.chat.completions.create = AsyncMock(return_value=_fake_stream("[1]"))
 
     with patch.object(rag, "openrouter", mock_openrouter), \
+         patch.object(rag, "llm_client", mock_openrouter), \
          patch.object(rag, "qdrant", mock_qdrant):
         events = [e async for e in stream_answer("test", [], source_filter="Google Privacy Policy")]
 
@@ -105,6 +117,7 @@ async def test_stream_answer_with_filter_passes_filter_object(mock_openrouter, m
 async def test_stream_answer_empty_string_filter_treated_as_falsy(mock_openrouter, mock_qdrant):
     """stream_answer(source_filter='') treats empty string as falsy — no filter applied."""
     with patch.object(rag, "openrouter", mock_openrouter), \
+         patch.object(rag, "llm_client", mock_openrouter), \
          patch.object(rag, "qdrant", mock_qdrant):
         events = [e async for e in stream_answer("test query", [], source_filter="")]
 
@@ -118,6 +131,7 @@ async def test_stream_answer_empty_string_filter_treated_as_falsy(mock_openroute
 async def test_stream_conflict_answer_no_filter_passes_none(mock_openrouter, mock_qdrant):
     """stream_conflict_answer(source_filter=None) passes query_filter=None to query_points."""
     with patch.object(rag, "openrouter", mock_openrouter), \
+         patch.object(rag, "llm_client", mock_openrouter), \
          patch.object(rag, "qdrant", mock_qdrant):
         events = [e async for e in stream_conflict_answer("conflict", [], source_filter=None)]
 
@@ -135,6 +149,7 @@ async def test_stream_conflict_answer_with_filter_passes_filter_object(mock_open
     mock_openrouter.chat.completions.create = AsyncMock(return_value=_fake_stream("[1] [2]"))
 
     with patch.object(rag, "openrouter", mock_openrouter), \
+         patch.object(rag, "llm_client", mock_openrouter), \
          patch.object(rag, "qdrant", mock_qdrant):
         events = [e async for e in stream_conflict_answer("conflict", [], source_filter="X Policy")]
 
@@ -162,6 +177,7 @@ async def test_abstain_fallback_stream_answer_includes_score(mock_openrouter, mo
     mock_openrouter.chat.completions.create = AsyncMock(return_value=_fake_stream("I cannot answer."))
 
     with patch.object(rag, "openrouter", mock_openrouter), \
+         patch.object(rag, "llm_client", mock_openrouter), \
          patch.object(rag, "qdrant", mock_qdrant):
         events = [e async for e in stream_answer("test", [])]
 
@@ -182,6 +198,7 @@ async def test_abstain_fallback_stream_conflict_includes_score(mock_openrouter, 
     mock_openrouter.chat.completions.create = AsyncMock(return_value=_fake_stream("I cannot answer."))
 
     with patch.object(rag, "openrouter", mock_openrouter), \
+         patch.object(rag, "llm_client", mock_openrouter), \
          patch.object(rag, "qdrant", mock_qdrant):
         events = [e async for e in stream_conflict_answer("conflict", [])]
 

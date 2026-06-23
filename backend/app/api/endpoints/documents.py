@@ -88,7 +88,7 @@ async def list_documents(
 
 @router.get("/{document_id}")
 async def get_document(
-    document_id: int,
+    document_id: str,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
@@ -104,7 +104,7 @@ async def get_document(
 
 @router.get("/{document_id}/status")
 async def get_document_status(
-    document_id: int,
+    document_id: str,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
