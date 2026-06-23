@@ -15,6 +15,9 @@ os.environ.setdefault("QDRANT_SKIP_STARTUP_VERIFY", "true")
 os.environ.setdefault("NEO4J_URI", "bolt://localhost:7687")
 os.environ.setdefault("NEO4J_USERNAME", "neo4j")
 os.environ.setdefault("NEO4J_PASSWORD", "password")
+os.environ.setdefault("AIRFLOW_PASSWORD", "test-password")
+os.environ.setdefault("GCS_BUCKET", "test-bucket")
+os.environ.setdefault("GCP_PROJECT_ID", "test-project")
 
 from unittest.mock import AsyncMock, MagicMock
 
