@@ -1,5 +1,38 @@
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
 @import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-background: var(--bg);
+  --color-foreground: var(--text);
+  --color-card: var(--surface);
+  --color-card-foreground: var(--text);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--text);
+  --color-primary: var(--accent);
+  --color-primary-foreground: #FFFFFF;
+  --color-secondary: var(--surface2);
+  --color-secondary-foreground: var(--text2);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--text3);
+  --color-accent: var(--accent);
+  --color-accent-foreground: #FFFFFF;
+  --color-border: var(--border);
+  --color-input: var(--border2);
+  --color-ring: var(--accent);
+
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface2);
+  --color-border-2: var(--border2);
+  --color-text-1: var(--text);
+  --color-text-2: var(--text2);
+  --color-text-3: var(--text3);
+  --color-faint: var(--faint);
+  --color-faintest: var(--faintest);
+  --color-user-bubble: var(--userBubble);
+  --color-user-bubble-text: var(--userBubbleText);
+}
 
 @layer base {
   *, *::before, *::after { box-sizing: border-box; }
@@ -7,60 +40,52 @@
   html, body, #root {
     height: 100%;
     overflow: hidden;
-    font-family: 'IBM Plex Sans', sans-serif;
+    font-family: 'Outfit', sans-serif;
   }
 
   body {
-    transition: background 0.2s, color 0.2s;
+    transition: background-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), color 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
 
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
-    --ring: 240 5.9% 10%;
+    --bg: #F9FAFB;
+    --surface: #FFFFFF;
+    --surface2: #F3F4F6;
+    --border: #E5E7EB;
+    --border2: #D1D5DB;
+    --text: #030712;
+    --text2: #374151;
+    --text3: #6B7280;
+    --muted: #9CA3AF;
+    --faint: #D1D5DB;
+    --faintest: #E5E7EB;
+    --userBubble: #030712;
+    --userBubbleText: #F9FAFB;
+    --accent: #2563EB;
     --radius: 0.5rem;
+    --shadow-diffusion: 0 20px 40px -15px rgba(0, 0, 0, 0.05);
   }
 
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 240 3.7% 15.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
-    --ring: 240 4.9% 83.9%;
+    --bg: #030712;
+    --surface: #111827;
+    --surface2: #1F2937;
+    --border: #374151;
+    --border2: #4B5563;
+    --text: #F9FAFB;
+    --text2: #D1D5DB;
+    --text3: #9CA3AF;
+    --muted: #6B7280;
+    --faint: #4B5563;
+    --faintest: #374151;
+    --userBubble: #1F2937;
+    --userBubbleText: #F9FAFB;
+    --accent: #3B82F6;
+    --shadow-diffusion: 0 20px 40px -15px rgba(0, 0, 0, 0.4);
   }
 }
 
@@ -79,8 +104,23 @@
   40% { transform: scale(1); opacity: 1; }
 }
 
-select, textarea, input, button {
-  font-family: 'IBM Plex Sans', sans-serif;
+@keyframes staggerFade {
+  0% { opacity: 0; transform: translateY(16px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-button:active { opacity: 0.82; }
+.animate-stagger {
+  opacity: 0;
+  animation: staggerFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: calc(var(--idx, 0) * 50ms);
+}
+
+select, textarea, input, button {
+  font-family: inherit;
+}
+
+button:active { 
+  opacity: 0.95; 
+  transform: scale(0.98); 
+  transition: transform 0.1s cubic-bezier(0.16, 1, 0.3, 1); 
+}

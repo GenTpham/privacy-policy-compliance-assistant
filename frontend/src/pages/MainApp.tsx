@@ -30,7 +30,7 @@ export function MainApp() {
     switch (screen) {
       case "dashboard": return <DashboardScreen forceLogout={forceLogout} />;
       case "ask":       return <AskAssistantScreen chat={chat} forceLogout={forceLogout} />;
-      case "library":   return <PolicyLibraryScreen onAsk={() => handleNavigate("ask")} />;
+      case "library":   return <PolicyLibraryScreen onAsk={() => handleNavigate("ask")} forceLogout={forceLogout} />;
       case "compare":   return <ComparePoliciesScreen />;
       case "audit":     return <AuditLogScreen />;
       case "settings":  return (

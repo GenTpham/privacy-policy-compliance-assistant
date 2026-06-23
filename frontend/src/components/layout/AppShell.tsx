@@ -46,98 +46,95 @@ function SunIcon() {
 }
 
 export function AppShell({ screen, onNavigate, children, indexedCount = 8, totalChunks = 2083 }: AppShellProps) {
-  const { t, accent, isDark, setDark } = useTheme();
+  const { isDark, setDark } = useTheme();
   const { logout } = useAuth();
 
-  const sidebarBg = "#1E293B";
-  const sidebarText = "#94A3B8";
-
   return (
-    <div style={{ display: "flex", height: "100vh", overflow: "hidden", fontSize: 14, background: t.bg, color: t.text }}>
+    <div className="flex h-screen overflow-hidden text-sm bg-background text-text-1">
 
       {/* Sidebar */}
-      <aside style={{ width: 220, background: sidebarBg, display: "flex", flexDirection: "column", flexShrink: 0 }}>
+      <aside className="w-[240px] bg-[#161b22] dark:bg-[#0d1117] flex flex-col shrink-0 border-r border-border">
         {/* Logo */}
-        <div style={{ padding: "20px 18px 16px", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ width: 30, height: 30, background: accent, borderRadius: 6, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+        <div className="px-5 py-6 border-b border-white/5">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center shrink-0 text-white shadow-md">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <path d="M8 1L2 4v4c0 3.3 2.4 6.4 6 7 3.6-.6 6-3.7 6-7V4L8 1z" fill="rgba(255,255,255,0.9)"/>
+                <path d="M8 1L2 4v4c0 3.3 2.4 6.4 6 7 3.6-.6 6-3.7 6-7V4L8 1z" fill="currentColor"/>
               </svg>
             </div>
             <div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "#F8FAFC", lineHeight: 1.2 }}>PrivacyAI</div>
-              <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", letterSpacing: "0.03em" }}>Compliance Assistant</div>
+              <div className="text-[15px] font-bold text-slate-50 tracking-tight leading-tight">PrivacyAI</div>
+              <div className="text-[11px] text-slate-400 font-medium">Compliance Assistant</div>
             </div>
           </div>
         </div>
 
         {/* Nav */}
-        <nav style={{ flex: 1, padding: "12px 10px", overflowY: "auto" }}>
+        <nav className="flex-1 px-4 py-6 overflow-y-auto space-y-1.5">
           {NAV_ITEMS.map((item) => {
             const active = screen === item.id;
             return (
               <button
                 key={item.id}
                 onClick={() => onNavigate(item.id)}
-                style={{
-                  display: "flex", alignItems: "center", gap: 10, width: "100%",
-                  padding: "8px 10px", borderRadius: 6, border: "none", cursor: "pointer",
-                  marginBottom: 2,
-                  background: active ? "rgba(255,255,255,0.1)" : "transparent",
-                  color: active ? "#fff" : sidebarText,
-                  fontWeight: active ? 600 : 400, fontSize: 13, textAlign: "left",
-                  transition: "background 0.1s",
-                }}
+                className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg border-none cursor-pointer transition-all duration-200 ${
+                  active 
+                    ? "bg-accent/15 text-accent font-semibold shadow-sm" 
+                    : "bg-transparent text-slate-400 font-medium hover:bg-white/5 hover:text-slate-200"
+                } text-sm text-left`}
               >
-                <span style={{ fontSize: 14, opacity: active ? 1 : 0.6 }}>{item.icon}</span>
+                <span className={`text-[15px] ${active ? "opacity-100" : "opacity-60"}`}>{item.icon}</span>
                 {item.label}
-                {active && <div style={{ marginLeft: "auto", width: 4, height: 4, borderRadius: "50%", background: accent }} />}
+                {active && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-accent shadow-[0_0_8px_rgba(var(--color-accent),0.8)]" />}
               </button>
             );
           })}
         </nav>
 
         {/* Bottom */}
-        <div style={{ padding: "12px 14px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E", flexShrink: 0 }} />
-            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>Index: Live</span>
+        <div className="px-5 py-5 border-t border-white/5 bg-black/10">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+            <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Index: Live</span>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div style={{ width: 26, height: 26, borderRadius: "50%", background: accent, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: "#fff" }}>A</div>
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-accent flex items-center justify-center text-sm font-bold text-white shadow-md">A</div>
             <div>
-              <div style={{ fontSize: 11, fontWeight: 600, color: "#F8FAFC" }}>analyst</div>
-              <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)" }}>firm.io</div>
+              <div className="text-sm font-semibold text-slate-50">analyst</div>
+              <div className="text-[11px] text-slate-400">firm.io</div>
             </div>
           </div>
         </div>
       </aside>
 
       {/* Main */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0 }}>
-
+      <div className="flex-1 flex flex-col overflow-hidden min-w-0">
+        
         {/* Top bar */}
-        <header style={{ height: 52, background: t.surface, borderBottom: `1px solid ${t.border}`, display: "flex", alignItems: "center", padding: "0 24px", gap: 14, flexShrink: 0 }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, background: t.surface2, border: `1px solid ${t.border}`, borderRadius: 6, padding: "6px 12px", width: 280 }}>
-              <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-                <circle cx="5.5" cy="5.5" r="4" stroke={t.faint} strokeWidth="1.4"/>
-                <path d="M9 9l2.5 2.5" stroke={t.faint} strokeWidth="1.4" strokeLinecap="round"/>
+        <header className="h-16 bg-surface border-b border-border flex items-center px-8 gap-5 shrink-0 shadow-sm z-10">
+          <div className="flex-1">
+            <div className="flex items-center gap-2.5 bg-surface-2 border border-border rounded-lg px-3.5 py-2.5 w-80 transition-all focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20 focus-within:bg-background">
+              <svg width="14" height="14" viewBox="0 0 13 13" fill="none" className="text-faint">
+                <circle cx="5.5" cy="5.5" r="4" stroke="currentColor" strokeWidth="1.4"/>
+                <path d="M9 9l2.5 2.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
               </svg>
-              <span style={{ fontSize: 12, color: t.faint }}>Search policies, queries…</span>
+              <input 
+                type="text" 
+                placeholder="Search policies, queries…" 
+                className="bg-transparent border-none outline-none text-[13px] text-text-1 w-full placeholder:text-faint"
+              />
             </div>
           </div>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 4, background: `${accent}18`, border: `1px solid ${accent}30`, borderRadius: 5, padding: "4px 10px" }}>
-            <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#22C55E" }} />
-            <span style={{ fontSize: 11, color: accent, fontWeight: 600 }}>{indexedCount} policies · {totalChunks.toLocaleString()} chunks</span>
+          <div className="flex items-center gap-2.5 bg-accent/10 border border-accent/20 rounded-full px-4 py-1.5">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.5)]" />
+            <span className="text-[11px] text-accent font-semibold tracking-wide">{indexedCount} policies · {totalChunks.toLocaleString()} chunks</span>
           </div>
 
           <button
             onClick={() => setDark(!isDark)}
             title={isDark ? "Switch to light mode" : "Switch to dark mode"}
-            style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 10px", borderRadius: 6, border: `1px solid ${t.border}`, background: t.surface2, color: t.text3, cursor: "pointer", fontSize: 12 }}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-border bg-surface-2 text-text-2 font-medium cursor-pointer text-[13px] hover:bg-border transition-colors hover:text-text-1 hover:shadow-sm active:scale-95"
           >
             {isDark ? <SunIcon /> : <MoonIcon />}
             <span>{isDark ? "Light" : "Dark"}</span>
@@ -145,16 +142,16 @@ export function AppShell({ screen, onNavigate, children, indexedCount = 8, total
 
           <button
             onClick={() => logout()}
-            style={{ background: "none", border: `1px solid ${t.border}`, borderRadius: 6, padding: "6px 12px", fontSize: 12, color: t.text3, cursor: "pointer" }}
+            className="bg-transparent border border-border rounded-lg px-4 py-2 text-[13px] font-medium text-text-2 cursor-pointer hover:bg-border transition-colors hover:text-text-1 active:scale-95"
           >
             Sign out
           </button>
 
-          <div style={{ width: 30, height: 30, borderRadius: "50%", background: accent, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "#fff", cursor: "pointer" }}>A</div>
+          <div className="w-9 h-9 rounded-full bg-accent flex items-center justify-center text-sm font-bold text-white shadow-md cursor-pointer hover:opacity-90 transition-opacity ring-2 ring-transparent hover:ring-accent/30">A</div>
         </header>
 
         {/* Screen content */}
-        <main style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column", background: t.bg }}>
+        <main className="flex-1 overflow-hidden flex flex-col bg-background relative">
           {children}
         </main>
       </div>

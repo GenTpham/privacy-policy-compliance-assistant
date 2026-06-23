@@ -1,4 +1,3 @@
-import { useTheme } from "@/lib/theme";
 import { Badge } from "@/components/ui/Badge";
 
 
@@ -6,7 +5,6 @@ import { fetchWithAuth } from "@/lib/api";
 import { useEffect, useState } from "react";
 
 export function DashboardScreen({ forceLogout }: { forceLogout: () => void }) {
-  const { t, accent } = useTheme();
 
   const [stats, setStats] = useState({ total_queries: 0, total_documents: 0, active_users: 0, success_rate: 0 });
   const [topics, setTopics] = useState<any[]>([]);
@@ -35,79 +33,83 @@ export function DashboardScreen({ forceLogout }: { forceLogout: () => void }) {
   ];
 
   return (
-    <div style={{ padding: "32px 36px", maxWidth: 1100, margin: "0 auto", overflowY: "auto", height: "100%" }}>
+    <div className="py-10 px-8 max-w-[1100px] mx-auto overflow-y-auto h-full">
       {/* Header */}
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: t.text, margin: 0 }}>Dashboard</h1>
-        <p style={{ fontSize: 13, color: t.muted, marginTop: 4 }}>System overview</p>
+      <div className="mb-12 animate-stagger" style={{ "--idx": 0 } as React.CSSProperties}>
+        <h1 className="text-4xl font-bold text-text-1 tracking-tighter mb-2">Dashboard</h1>
+        <p className="text-[15px] text-muted font-medium">System overview</p>
       </div>
 
       {/* KPI Cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 28 }}>
+      <div className="grid grid-cols-4 gap-6 mb-10">
         {kpis.map((k, i) => (
-          <div key={i} style={{ background: t.surface, border: `1px solid ${t.border}`, borderRadius: 8, padding: "20px 22px" }}>
-            <div style={{ fontSize: 11, fontWeight: 600, color: t.faint, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 10 }}>{k.label}</div>
-            <div style={{ fontSize: 28, fontWeight: 700, color: t.text, marginBottom: 4 }}>{k.value}</div>
-            <div style={{ fontSize: 12, color: t.muted }}>{k.sub}</div>
+          <div key={i} className="bg-surface border border-border rounded-[2rem] p-8 shadow-[var(--shadow-diffusion)] animate-stagger flex flex-col justify-center" style={{ "--idx": i + 1 } as React.CSSProperties}>
+            <div className="text-[12px] font-semibold text-faint tracking-widest uppercase mb-4">{k.label}</div>
+            <div className="text-4xl font-mono font-bold text-text-1 mb-2 tracking-tighter">{k.value}</div>
+            <div className="text-[13px] text-muted font-medium">{k.sub}</div>
           </div>
         ))}
       </div>
 
       {/* Recent Queries + Top Topics */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: 20, marginBottom: 20 }}>
+      <div className="grid grid-cols-[1fr_360px] gap-8 mb-8">
         {/* Recent Queries */}
-        <div style={{ background: t.surface, border: `1px solid ${t.border}`, borderRadius: 8, overflow: "hidden" }}>
-          <div style={{ padding: "16px 20px", borderBottom: `1px solid ${t.border2}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: t.text }}>Recent Queries</span>
+        <div className="bg-surface border border-border rounded-[2rem] overflow-hidden shadow-[var(--shadow-diffusion)] flex flex-col animate-stagger" style={{ "--idx": 5 } as React.CSSProperties}>
+          <div className="px-6 py-5 border-b border-border-2 flex justify-between items-center bg-surface-2/30">
+            <span className="text-[14px] font-semibold text-text-1">Recent Queries</span>
           </div>
-          {recentQueries.map((a, i) => (
-            <div key={i} style={{ padding: "12px 20px", borderBottom: i < recentQueries.length - 1 ? `1px solid ${t.border2}` : "none", display: "flex", alignItems: "center", gap: 12 }}>
-              <span style={{ fontSize: 11, color: t.faint, fontFamily: "monospace", minWidth: 40 }}>
-                {a.timestamp ? new Date(a.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
-              </span>
-              <span style={{ fontSize: 13, color: t.text2, flex: 1 }}>{a.query}</span>
-              <Badge status={a.status === "success" ? "Answered" : a.status === "error" ? "Insufficient" : "Processing"} />
-            </div>
-          ))}
-          {recentQueries.length === 0 && <div style={{ padding: "16px 20px", fontSize: 13, color: t.muted }}>No queries yet</div>}
+          <div className="flex-1 overflow-y-auto">
+            {recentQueries.map((a, i) => (
+              <div key={i} className={`px-6 py-4 flex items-center gap-4 transition-colors hover:bg-surface-2/50 ${i < recentQueries.length - 1 ? "border-b border-border-2/50" : ""}`}>
+                <span className="text-[11px] text-faint font-mono font-medium min-w-[44px]">
+                  {a.timestamp ? new Date(a.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                </span>
+                <span className="text-[13px] text-text-2 flex-1 font-medium">{a.query}</span>
+                <Badge status={a.status === "success" ? "Answered" : a.status === "error" ? "Insufficient" : "Processing"} />
+              </div>
+            ))}
+            {recentQueries.length === 0 && <div className="px-6 py-8 text-[13px] text-muted text-center">No queries yet</div>}
+          </div>
         </div>
 
         {/* Top Topics */}
-        <div style={{ background: t.surface, border: `1px solid ${t.border}`, borderRadius: 8, overflow: "hidden" }}>
-          <div style={{ padding: "16px 20px", borderBottom: `1px solid ${t.border2}` }}>
-            <span style={{ fontSize: 13, fontWeight: 600, color: t.text }}>Top Queried Topics</span>
+        <div className="bg-surface border border-border rounded-[2rem] overflow-hidden shadow-[var(--shadow-diffusion)] flex flex-col animate-stagger" style={{ "--idx": 6 } as React.CSSProperties}>
+          <div className="px-6 py-5 border-b border-border-2 bg-surface-2/30">
+            <span className="text-[14px] font-semibold text-text-1">Top Queried Topics</span>
           </div>
-          {topics.map((tp, i) => (
-            <div key={i} style={{ padding: "12px 20px", borderBottom: i < topics.length - 1 ? `1px solid ${t.border2}` : "none" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                <span style={{ fontSize: 13, color: t.text2 }}>{tp.name}</span>
-                <span style={{ fontSize: 12, fontWeight: 600, color: t.muted }}>{tp.value}</span>
+          <div className="flex-1 overflow-y-auto">
+            {topics.map((tp, i) => (
+              <div key={i} className={`px-6 py-4 transition-colors hover:bg-surface-2/50 ${i < topics.length - 1 ? "border-b border-border-2/50" : ""}`}>
+                <div className="flex justify-between mb-2">
+                  <span className="text-[13px] text-text-2 font-medium">{tp.name}</span>
+                  <span className="text-[12px] font-semibold text-muted">{tp.value}</span>
+                </div>
+                <div className="h-1.5 bg-border rounded-full overflow-hidden">
+                  <div className="h-full bg-accent rounded-full" style={{ width: `${(tp.value / (topics[0]?.value || 1)) * 100}%` }} />
+                </div>
               </div>
-              <div style={{ height: 4, background: t.border, borderRadius: 2, overflow: "hidden" }}>
-                <div style={{ width: `${(tp.value / (topics[0]?.value || 1)) * 100}%`, height: "100%", background: accent, borderRadius: 2 }} />
-              </div>
-            </div>
-          ))}
-          {topics.length === 0 && <div style={{ padding: "16px 20px", fontSize: 13, color: t.muted }}>No topic data</div>}
+            ))}
+            {topics.length === 0 && <div className="px-6 py-8 text-[13px] text-muted text-center">No topic data</div>}
+          </div>
         </div>
       </div>
 
       {/* Ingestion Status */}
-      <div style={{ background: t.surface, border: `1px solid ${t.border}`, borderRadius: 8, overflow: "hidden" }}>
-        <div style={{ padding: "16px 20px", borderBottom: `1px solid ${t.border2}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <span style={{ fontSize: 13, fontWeight: 600, color: t.text }}>Policy Ingestion Status</span>
+      <div className="bg-surface border border-border rounded-[2rem] overflow-hidden shadow-[var(--shadow-diffusion)] animate-stagger" style={{ "--idx": 7 } as React.CSSProperties}>
+        <div className="px-6 py-5 border-b border-border-2 flex justify-between items-center bg-surface-2/30">
+          <span className="text-[14px] font-semibold text-text-1">Policy Ingestion Status</span>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))" }}>
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))]">
           {documents.slice(0, 4).map((p, i) => (
-            <div key={p.id} style={{ padding: "14px 20px", borderRight: i < Math.min(3, documents.length - 1) ? `1px solid ${t.border2}` : "none" }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: t.text, marginBottom: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            <div key={p.id} className={`p-5 hover:bg-surface-2/50 transition-colors ${i < Math.min(3, documents.length - 1) ? "border-r border-border-2/50" : ""}`}>
+              <div className="text-[13px] font-semibold text-text-1 mb-1 whitespace-nowrap overflow-hidden text-ellipsis">
                 {p.title.replace(" Privacy Policy", "").replace(" Privacy Statement", "")}
               </div>
-              <div style={{ fontSize: 11, color: t.faint, marginBottom: 8 }}>{p.chunks} chunks</div>
-              <Badge status={p.status === "completed" ? "Up to date" : p.status === "processing" ? "Indexing" : "Error"} />
+              <div className="text-[11px] text-faint mb-3 font-medium">{p.chunk_count || 0} chunks</div>
+              <Badge status={p.status} />
             </div>
           ))}
-          {documents.length === 0 && <div style={{ padding: "16px 20px", fontSize: 13, color: t.muted, gridColumn: "1 / -1" }}>No documents indexed</div>}
+          {documents.length === 0 && <div className="p-6 text-[13px] text-muted col-span-full text-center">No documents indexed</div>}
         </div>
       </div>
     </div>
