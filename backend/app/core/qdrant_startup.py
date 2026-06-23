@@ -13,20 +13,30 @@ async def ensure_title_facet_index(qdrant: AsyncQdrantClient) -> None:
     Idempotent — safe on every startup for clusters ingested before this index existed.
     """
     info = await qdrant.get_collection(COLLECTION_NAME)
-    if info.payload_schema and FACET_FIELD in info.payload_schema:
-        return
+    
+    if not (info.payload_schema and FACET_FIELD in info.payload_schema):
+        try:
+            await qdrant.create_payload_index(
+                collection_name=COLLECTION_NAME,
+                field_name=FACET_FIELD,
+                field_schema=PayloadSchemaType.KEYWORD,
+            )
+            print(f"[startup] Created payload index on '{FACET_FIELD}' for source faceting.")
+        except UnexpectedResponse as exc:
+            if "already exists" not in str(exc).lower():
+                raise
 
-    try:
-        await qdrant.create_payload_index(
-            collection_name=COLLECTION_NAME,
-            field_name=FACET_FIELD,
-            field_schema=PayloadSchemaType.KEYWORD,
-        )
-        print(f"[startup] Created payload index on '{FACET_FIELD}' for source faceting.")
-    except UnexpectedResponse as exc:
-        if "already exists" in str(exc).lower():
-            return
-        raise
+    if not (info.payload_schema and "user_id" in info.payload_schema):
+        try:
+            await qdrant.create_payload_index(
+                collection_name=COLLECTION_NAME,
+                field_name="user_id",
+                field_schema=PayloadSchemaType.KEYWORD,
+            )
+            print("[startup] Created payload index on 'user_id' for user-level filtering.")
+        except UnexpectedResponse as exc:
+            if "already exists" not in str(exc).lower():
+                raise
 
 
 async def verify_qdrant_for_serving(qdrant: AsyncQdrantClient) -> int:

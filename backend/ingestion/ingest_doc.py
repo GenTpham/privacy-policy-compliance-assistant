@@ -14,7 +14,7 @@ import uuid
 from pathlib import Path
 
 from openai import AsyncOpenAI
-from pypdf import PdfReader
+import fitz  # PyMuPDF
 from qdrant_client import AsyncQdrantClient
 from qdrant_client.models import Distance, PointStruct, UpdateStatus, VectorParams
 
@@ -55,13 +55,19 @@ def extract_pdf(filepath: Path) -> str:
     Raises ValueError if the PDF is encrypted or yields no text.
     T-08-01: hard-fail on empty text; encryption check prevents silent empty ingest.
     """
-    reader = PdfReader(filepath)
-    if reader.is_encrypted:
+    try:
+        doc = fitz.open(filepath)
+    except Exception as e:
+        raise ValueError(f"Could not open PDF {filepath.name}: {e}")
+        
+    if doc.is_encrypted:
         raise ValueError(
             f"PDF is encrypted: {filepath.name}. Decrypt the file before ingestion."
         )
-    pages_text = [page.extract_text() or "" for page in reader.pages]
+        
+    pages_text = [page.get_text() for page in doc]
     text = "\n\n".join(pages_text).strip()
+    
     if not text:
         raise ValueError(
             "No text extracted — PDF may be scanned/image-based or encrypted. "
