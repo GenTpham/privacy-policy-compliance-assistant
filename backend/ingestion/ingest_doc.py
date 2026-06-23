@@ -262,24 +262,26 @@ async def ingest_doc(filepath: Path, title: str, dry_run: bool = False) -> None:
         # 9. Filter to new-only chunks
         new_pairs = [(c, uid) for c, uid in zip(chunks, all_ids) if uid not in existing]
 
-        async with db_session._session_factory() as session:
-            result = await session.execute(select(Document).where(Document.title == title))
-            doc_record = result.scalars().first()
-            if not doc_record:
-                doc_record = Document(title=title, chunk_count=0, status="processing")
-                session.add(doc_record)
-            else:
-                doc_record.status = "processing"
-            await session.commit()
-
-        if not new_pairs:
-            print("[ingest_doc] All chunks already indexed — nothing to do.")
+        if db_session._session_factory:
             async with db_session._session_factory() as session:
                 result = await session.execute(select(Document).where(Document.title == title))
                 doc_record = result.scalars().first()
-                if doc_record:
-                    doc_record.status = "completed"
-                    await session.commit()
+                if not doc_record:
+                    doc_record = Document(title=title, chunk_count=0, status="processing")
+                    session.add(doc_record)
+                else:
+                    doc_record.status = "processing"
+                await session.commit()
+
+        if not new_pairs:
+            print("[ingest_doc] All chunks already indexed — nothing to do.")
+            if db_session._session_factory:
+                async with db_session._session_factory() as session:
+                    result = await session.execute(select(Document).where(Document.title == title))
+                    doc_record = result.scalars().first()
+                    if doc_record:
+                        doc_record.status = "completed"
+                        await session.commit()
             return
 
         # 10. Batch embed and upsert (collection already ensured above)
@@ -330,21 +332,23 @@ async def ingest_doc(filepath: Path, title: str, dry_run: bool = False) -> None:
             f"({len(existing)} skipped — already indexed)."
         )
 
-        async with db_session._session_factory() as session:
-            result = await session.execute(select(Document).where(Document.title == title))
-            doc_record = result.scalars().first()
-            if doc_record:
-                doc_record.chunk_count += len(new_pairs)
-                doc_record.status = "completed"
-                await session.commit()
+        if db_session._session_factory:
+            async with db_session._session_factory() as session:
+                result = await session.execute(select(Document).where(Document.title == title))
+                doc_record = result.scalars().first()
+                if doc_record:
+                    doc_record.chunk_count += len(new_pairs)
+                    doc_record.status = "completed"
+                    await session.commit()
 
     except Exception:
-        async with db_session._session_factory() as session:
-            result = await session.execute(select(Document).where(Document.title == title))
-            doc_record = result.scalars().first()
-            if doc_record:
-                doc_record.status = "failed"
-                await session.commit()
+        if db_session._session_factory:
+            async with db_session._session_factory() as session:
+                result = await session.execute(select(Document).where(Document.title == title))
+                doc_record = result.scalars().first()
+                if doc_record:
+                    doc_record.status = "failed"
+                    await session.commit()
         raise
 
 

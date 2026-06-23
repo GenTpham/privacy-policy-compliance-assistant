@@ -135,7 +135,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     # Telemetry — pass endpoint from settings so PHOENIX_COLLECTOR_ENDPOINT env var works
     # Gracefully skips if Phoenix is not running or packages are not installed
-    setup_tracing(endpoint=settings.phoenix_collector_endpoint)
+    setup_tracing(app=app, endpoint=settings.phoenix_collector_endpoint)
 
     qdrant = make_qdrant_client(settings)
     if not settings.qdrant_skip_startup_verify:

@@ -11,7 +11,9 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # Required — no default. Missing value raises ValidationError at startup.
+    llm_backend: str = "openrouter"  # "openrouter" or "openai"
     openrouter_api_key: str
+    openai_api_key: str | None = None
     jwt_secret: str
 
     @field_validator("jwt_secret")

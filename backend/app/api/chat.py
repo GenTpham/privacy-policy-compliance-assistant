@@ -106,38 +106,68 @@ async def chat_endpoint(
     """
     history = [h.model_dump() for h in body.history]
 
+    # Propagate OpenTelemetry trace context into the StreamingResponse generator
+    # otherwise Starlette background tasks lose the trace parent.
+    try:
+        from opentelemetry import context as otel_context
+        ctx = otel_context.get_current()
+    except ImportError:
+        otel_context = None
+        ctx = None
+
     async def _generate() -> AsyncGenerator[str, None]:
-        topic = classify_topic(body.message)
-        log = QueryLog(user_id=current_user.id, query_text=body.message, topic=topic, status="processing")
-        session.add(log)
-        await session.commit()
-        log_id = log.id
+        # Create a manual overarching trace for the RAG pipeline
+        span = None
+        token = None
+        try:
+            if otel_context:
+                from opentelemetry import trace as otel_trace
+                from opentelemetry.trace import set_span_in_context
+                tracer = otel_trace.get_tracer(__name__)
+                span = tracer.start_span("RAG_Pipeline", context=ctx)
+                span.set_attribute("user.query", body.message)
+                new_ctx = set_span_in_context(span)
+                token = otel_context.attach(new_ctx)
+        except Exception:
+            pass
 
         try:
-            if is_conflict_query(body.message):
-                generator = rag.stream_conflict_answer(body.message, history, source_filter=body.source_filter)
-            else:
-                generator = rag.stream_answer(body.message, history, source_filter=body.source_filter)
-            
-            async for event in generator:
-                yield f"data: {json.dumps(event)}\n\n"
-                if event.get("type") == "error":
-                    err_log = await session.get(QueryLog, log_id)
-                    if err_log:
-                        err_log.status = "error"
-                        await session.commit()
-                    return
+            topic = classify_topic(body.message)
+            log = QueryLog(user_id=current_user.id, query_text=body.message, topic=topic, status="processing")
+            session.add(log)
+            await session.commit()
+            log_id = log.id
 
-            success_log = await session.get(QueryLog, log_id)
-            if success_log:
-                success_log.status = "success"
-                await session.commit()
-                    
-        except Exception:
-            fail_log = await session.get(QueryLog, log_id)
-            if fail_log:
-                fail_log.status = "error"
-                await session.commit()
-            raise
+            try:
+                if is_conflict_query(body.message):
+                    generator = rag.stream_conflict_answer(body.message, history, source_filter=body.source_filter)
+                else:
+                    generator = rag.stream_answer(body.message, history, source_filter=body.source_filter)
+                
+                async for event in generator:
+                    yield f"data: {json.dumps(event)}\n\n"
+                    if event.get("type") == "error":
+                        err_log = await session.get(QueryLog, log_id)
+                        if err_log:
+                            err_log.status = "error"
+                            await session.commit()
+                        return
+
+                success_log = await session.get(QueryLog, log_id)
+                if success_log:
+                    success_log.status = "success"
+                    await session.commit()
+                        
+            except Exception:
+                fail_log = await session.get(QueryLog, log_id)
+                if fail_log:
+                    fail_log.status = "error"
+                    await session.commit()
+                raise
+        finally:
+            if otel_context and token:
+                otel_context.detach(token)
+            if span:
+                span.end()
 
     return StreamingResponse(_generate(), media_type="text/event-stream")

@@ -14,6 +14,7 @@ from qdrant_client.models import Filter, FieldCondition, MatchValue
 
 from backend.app.core.config import get_settings
 from backend.app.core.qdrant_client import make_qdrant_client
+from backend.app.services.graph_search import extract_entities_from_query, retrieve_graph_context
 
 # OTel tracer — None when opentelemetry-sdk is not installed (safe fallback)
 try:
@@ -27,7 +28,6 @@ logger = logging.getLogger(__name__)
 # ── Constants ──────────────────────────────────────────────────────────────────
 COLLECTION_NAME = "policies"
 EMBEDDING_MODEL = "nvidia/llama-nemotron-embed-vl-1b-v2:free"
-CHAT_MODEL = "google/gemma-4-26b-a4b-it"
 
 # D-05: Hard abstain instruction — exact wording locked in CONTEXT.md
 ABSTAIN_INSTRUCTION = (
@@ -41,13 +41,23 @@ ABSTAIN_INSTRUCTION = (
 # For testing: patch "backend.app.services.rag.openrouter" and "backend.app.services.rag.qdrant".
 _settings = get_settings()
 
+if _settings.llm_backend.lower() == "openai" and _settings.openai_api_key:
+    llm_client = AsyncOpenAI(api_key=_settings.openai_api_key)
+    CHAT_MODEL = "gpt-4o-mini"
+else:
+    llm_client = AsyncOpenAI(
+        base_url="https://openrouter.ai/api/v1",
+        api_key=_settings.openrouter_api_key,
+        default_headers={
+            "HTTP-Referer": "https://privacy-policy-assistant",
+            "X-OpenRouter-Title": "Privacy Policy Assistant",
+        },
+    )
+    CHAT_MODEL = "google/gemma-4-26b-a4b-it"
+
 openrouter = AsyncOpenAI(
     base_url="https://openrouter.ai/api/v1",
     api_key=_settings.openrouter_api_key,
-    default_headers={
-        "HTTP-Referer": "https://privacy-policy-assistant",
-        "X-OpenRouter-Title": "Privacy Policy Assistant",
-    },
 )
 
 qdrant = make_qdrant_client(_settings)
@@ -172,15 +182,22 @@ async def stream_answer(
     On LLM error mid-stream:
       {"type": "error", "message": "LLM service temporarily unavailable"}  — Pitfall 2
     """
-    # Step 1: Embed query (RAG-01)
+    # Step 1: Embed query & extract entities for graph search (RAG-01)
+    import asyncio
     nemotron_input = [{"content": [{"type": "text", "text": message}]}]
-    embed_resp = await openrouter.embeddings.create(
+    embed_task = openrouter.embeddings.create(
         model=EMBEDDING_MODEL,
         input=["ignored"],
         extra_body={"input": nemotron_input},
         encoding_format="float",
     )
+    entities_task = extract_entities_from_query(message)
+    embed_resp, entities = await asyncio.gather(embed_task, entities_task)
+    
     query_vector = embed_resp.data[0].embedding
+    
+    # Step 1.5: Retrieve graph context
+    graph_texts = retrieve_graph_context(entities, limit=3)
 
     # Step 2: Retrieve from Qdrant (RAG-02, D-12, D-13)
     # qdrant-client 1.13+ replaced search() with query_points() — returns QueryResponse with .points
@@ -212,12 +229,19 @@ async def stream_answer(
         return
 
     # Step 4: Build messages (D-04, D-05, D-10, RAG-03, RAG-04, RAG-06)
-    messages = _build_messages(message, results, history)
+    # Augment results with graph context (creating pseudo-chunks)
+    from types import SimpleNamespace
+    graph_chunks = [
+        SimpleNamespace(id=f"neo4j-{i}", score=1.0, payload={"title": "Graph Context", "text": text})
+        for i, text in enumerate(graph_texts)
+    ]
+    combined_results = results + graph_chunks
+    messages = _build_messages(message, combined_results, history)
 
     # Step 5: Stream LLM tokens (RAG-05, D-03)
     full_answer = ""
     try:
-        stream = await openrouter.chat.completions.create(
+        stream = await llm_client.chat.completions.create(
             model=CHAT_MODEL,
             messages=messages,
             stream=True,
@@ -237,7 +261,7 @@ async def stream_answer(
         return
 
     # Step 6: Verify citations, emit done event (CITE-03, D-07, D-08)
-    citations = _build_verified_citations(full_answer, results)
+    citations = _build_verified_citations(full_answer, combined_results)
 
     # If LLM abstained (no [N] refs) but chunks were retrieved, include all retrieved
     # chunks as citations so the frontend shows which sources were checked.
@@ -323,15 +347,22 @@ async def stream_conflict_answer(
     On zero retrieval results (D-16 — same as RAG-07):
       {"type": "done", "answer": "No matching policy found for your question.", "citations": []}
     """
-    # Step 1: Embed query (identical to stream_answer — same model)
+    # Step 1: Embed query & extract entities
+    import asyncio
     nemotron_input = [{"content": [{"type": "text", "text": message}]}]
-    embed_resp = await openrouter.embeddings.create(
+    embed_task = openrouter.embeddings.create(
         model=EMBEDDING_MODEL,
         input=["ignored"],
         extra_body={"input": nemotron_input},
         encoding_format="float",
     )
+    entities_task = extract_entities_from_query(message)
+    embed_resp, entities = await asyncio.gather(embed_task, entities_task)
+    
     query_vector = embed_resp.data[0].embedding
+    
+    # Step 1.5: Retrieve graph context
+    graph_texts = retrieve_graph_context(entities, limit=3)
 
     # Step 2: Retrieve top-10 across all source documents (CONFLICT-02, D-07, D-08)
     _threshold = get_settings().score_threshold
@@ -362,12 +393,18 @@ async def stream_conflict_answer(
         return
 
     # Step 4: Build conflict-detection messages (D-09–D-13)
-    messages = _build_conflict_messages(message, results, history)
+    from types import SimpleNamespace
+    graph_chunks = [
+        SimpleNamespace(id=f"neo4j-{i}", score=1.0, payload={"title": "Graph Context", "text": text})
+        for i, text in enumerate(graph_texts)
+    ]
+    combined_results = results + graph_chunks
+    messages = _build_conflict_messages(message, combined_results, history)
 
     # Step 5: Stream LLM tokens (identical loop to stream_answer — Pitfall 5: None guard)
     full_answer = ""
     try:
-        stream = await openrouter.chat.completions.create(
+        stream = await llm_client.chat.completions.create(
             model=CHAT_MODEL,
             messages=messages,
             stream=True,
@@ -387,7 +424,7 @@ async def stream_conflict_answer(
         return
 
     # Step 6: Verify citations (reuses _build_verified_citations — no changes needed, CONFLICT-04)
-    citations = _build_verified_citations(full_answer, results)
+    citations = _build_verified_citations(full_answer, combined_results)
 
     # Abstain fallback (Pitfall 4): if LLM abstained (no [N] refs) but chunks were retrieved,
     # include all retrieved chunks so the frontend shows which sources were checked.

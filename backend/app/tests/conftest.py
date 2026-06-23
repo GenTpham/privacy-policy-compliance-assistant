@@ -12,6 +12,9 @@ os.environ.setdefault("JWT_SECRET", "a" * 32)
 os.environ.setdefault("QDRANT_URL", "https://cluster.qdrant.io")
 os.environ.setdefault("QDRANT_API_KEY", "test-qdrant-key")
 os.environ.setdefault("QDRANT_SKIP_STARTUP_VERIFY", "true")
+os.environ.setdefault("NEO4J_URI", "bolt://localhost:7687")
+os.environ.setdefault("NEO4J_USERNAME", "neo4j")
+os.environ.setdefault("NEO4J_PASSWORD", "password")
 
 from unittest.mock import AsyncMock, MagicMock
 
