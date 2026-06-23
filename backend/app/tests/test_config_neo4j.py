@@ -1,5 +1,5 @@
 import pytest
-from pydantic import ValidationError
+from pydantic_core import ValidationError
 
 from backend.app.core.config import Settings
 
