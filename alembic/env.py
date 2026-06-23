@@ -6,6 +6,7 @@ from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from backend.app.db.models import Base
+from backend.app.core.config import get_settings
 
 config = context.config
 if config.config_file_name is not None:
@@ -13,8 +14,11 @@ if config.config_file_name is not None:
 
 target_metadata = Base.metadata
 
+def get_database_url():
+    return get_settings().database_url
+
 def run_migrations_offline() -> None:
-    url = config.get_main_option("sqlalchemy.url")
+    url = get_database_url()
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -30,8 +34,10 @@ def do_run_migrations(connection):
         context.run_migrations()
 
 async def run_async_migrations() -> None:
+    configuration = config.get_section(config.config_ini_section, {})
+    configuration["sqlalchemy.url"] = get_database_url()
     connectable = async_engine_from_config(
-        config.get_section(config.config_ini_section, {}),
+        configuration,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )

@@ -10,7 +10,9 @@ ingestion_checkpoint.json
 .worktrees
 .cursor
 .claude
-.codegraphbackend/data/
+.codegraph
+backend/data/
 
 alembic/__pycache__/
 alembic/versions/__pycache__/
+

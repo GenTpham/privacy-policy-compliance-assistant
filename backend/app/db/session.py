@@ -2,8 +2,7 @@
 Database session management.
 Supports both SQLite (dev) and PostgreSQL (prod) via DATABASE_URL.
 """
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 
 _engine = None
 _session_factory = None
@@ -17,7 +16,7 @@ def init_db(db_url: str) -> None:
         connect_args = {"check_same_thread": False}
 
     _engine = create_async_engine(db_url, connect_args=connect_args, echo=False)
-    _session_factory = sessionmaker(_engine, class_=AsyncSession, expire_on_commit=False)
+    _session_factory = async_sessionmaker(_engine, expire_on_commit=False)
 
 async def get_db():
     """FastAPI dependency — yields an AsyncSession."""
@@ -25,3 +24,4 @@ async def get_db():
         raise RuntimeError("Database not initialized. Call init_db() first.")
     async with _session_factory() as session:
         yield session
+
