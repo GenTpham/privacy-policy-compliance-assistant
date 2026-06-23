@@ -7,7 +7,7 @@
 export function StreamingCursor() {
   return (
     <span
-      className="text-zinc-950 font-normal select-none"
+      className="text-current font-normal select-none"
       style={{ animation: "blink 1s step-end infinite" }}
       aria-hidden="true"
     >

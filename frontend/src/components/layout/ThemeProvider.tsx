@@ -2,10 +2,9 @@ import { useState, useEffect, type ReactNode } from "react";
 import { ThemeContext, makeTokens } from "@/lib/theme";
 
 const STORAGE_KEY = "ppca_tweaks";
-const PREFS_VERSION = "v3"; // bump when changing DEFAULTS to force reset
-
+const PREFS_VERSION = "v4"; // bumped to v4 to force flush of old prefs
 interface Prefs { dark: boolean; accentColor: string; version: string; }
-const DEFAULTS: Prefs = { dark: false, accentColor: "#6D94C5", version: PREFS_VERSION };
+const DEFAULTS: Prefs = { dark: false, accentColor: "#2563EB", version: PREFS_VERSION };
 
 function load(): Prefs {
   try {
@@ -27,9 +26,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
-    document.body.classList.toggle("dark", isDark);
-    document.body.style.background = t.bg;
-    document.body.style.color = t.text;
+    document.documentElement.classList.toggle("dark", isDark);
+    document.documentElement.style.background = t.bg;
+    document.documentElement.style.color = t.text;
   }, [prefs, isDark, t.bg, t.text]);
 
   const setDark = (v: boolean) => setPrefs((p) => ({ ...p, dark: v }));

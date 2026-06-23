@@ -1,4 +1,3 @@
-import { useTheme } from "@/lib/theme";
 import { parseCitations } from "@/lib/parseCitations";
 import { InlineCitationBadge } from "./InlineCitationBadge";
 import { CitationCard } from "./CitationCard";
@@ -31,7 +30,6 @@ export function AnswerCard({
   onOpenEvidence,
   activeFilter,
 }: AnswerCardProps) {
-  const { t, accent } = useTheme();
   const { citedSources } = parseCitations(content, citations);
 
   const processedContent = content.replace(/\[(\d+)\]/g, (match, idStr) => {
@@ -47,33 +45,14 @@ export function AnswerCard({
 
   if (isError) {
     return (
-      <div
-        style={{
-          background: t.surface,
-          border: `1px solid ${t.border}`,
-          borderRadius: 8,
-          padding: "14px 16px",
-          fontSize: 13,
-          lineHeight: 1.6,
-          color: t.text2,
-        }}
-      >
-        <p style={{ margin: "0 0 12px" }}>
+      <div className="bg-surface border border-border rounded-[2rem] rounded-tl-sm px-6 py-5 text-[14px] leading-relaxed text-text-2 shadow-[var(--shadow-diffusion)]">
+        <p className="m-0 mb-3">
           Something went wrong while generating the response. Please try again.
         </p>
         <button
           type="button"
           onClick={onRetry}
-          style={{
-            background: accent,
-            color: "#fff",
-            border: "none",
-            borderRadius: 6,
-            padding: "6px 14px",
-            fontSize: 13,
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
+          className="bg-accent text-white border-none rounded-lg px-4 py-1.5 text-[13px] font-semibold cursor-pointer transition-all hover:bg-accent/90 active:scale-95 shadow-sm"
         >
           Thử lại
         </button>
@@ -82,30 +61,20 @@ export function AnswerCard({
   }
 
   return (
-    <div
-      style={{
-        background: t.surface,
-        border: `1px solid ${t.border}`,
-        borderRadius: "2px 8px 8px 8px",
-        padding: "14px 16px",
-        fontSize: 13,
-        lineHeight: 1.6,
-        color: t.text2,
-      }}
-    >
+    <div className="bg-surface border border-border rounded-[2rem] rounded-tl-sm px-6 py-5 text-[14px] leading-relaxed text-text-2 shadow-[var(--shadow-diffusion)] w-full">
       {activeFilter && activeFilter !== "All Sources" && (
-        <div style={{ fontSize: 12, color: accent, fontWeight: 600, marginBottom: 8 }}>
+        <div className="text-[12px] text-accent font-semibold mb-2">
           Trả lời cho: {shortName(activeFilter)}
         </div>
       )}
-      <div className="markdown-body" style={{ margin: "0 0 12px" }}>
+      <div className="markdown-body mb-3">
         <ReactMarkdown
           remarkPlugins={[remarkGfm]}
           components={{
-            p: ({ children }) => <p style={{ margin: "0 0 8px" }}>{children}</p>,
-            ul: ({ children }) => <ul style={{ margin: "0 0 8px", paddingLeft: "20px", listStyleType: "disc" }}>{children}</ul>,
-            ol: ({ children }) => <ol style={{ margin: "0 0 8px", paddingLeft: "20px", listStyleType: "decimal" }}>{children}</ol>,
-            li: ({ children }) => <li style={{ margin: "4px 0" }}>{children}</li>,
+            p: ({ children }) => <p className="m-0 mb-2">{children}</p>,
+            ul: ({ children }) => <ul className="m-0 mb-2 pl-5 list-disc">{children}</ul>,
+            ol: ({ children }) => <ol className="m-0 mb-2 pl-5 list-decimal">{children}</ol>,
+            li: ({ children }) => <li className="my-1">{children}</li>,
             a: ({ href, children }) => {
               if (href === "#cite") {
                 const text = children?.toString() || "";
@@ -123,7 +92,7 @@ export function AnswerCard({
                   );
                 }
               }
-              return <a href={href} style={{ color: accent, textDecoration: "underline" }}>{children}</a>;
+              return <a href={href} className="text-accent underline decoration-accent/30 underline-offset-2 hover:decoration-accent transition-colors">{children}</a>;
             },
           }}
         >
@@ -131,16 +100,16 @@ export function AnswerCard({
         </ReactMarkdown>
       </div>
       {isNoMatch && (
-        <div style={{ fontSize: 12, color: t.muted, fontStyle: "italic", marginTop: 8 }}>
+        <div className="text-[12px] text-muted italic mt-2">
           No matching policy sections found for this query.
         </div>
       )}
       {citedSources.length > 0 && !isNoMatch && (
-        <div style={{ borderTop: `1px solid ${t.border2}`, paddingTop: 10 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: t.text, marginBottom: 8 }}>
+        <div className="border-t border-border-2 pt-3 mt-1">
+          <div className="text-[12px] font-semibold text-text-1 mb-2">
             Sources
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <div className="flex flex-col gap-2">
             {citedSources.map((c) => (
               <CitationCard key={c.id} citation={c} />
             ))}

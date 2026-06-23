@@ -1,15 +1,13 @@
-import { useTheme } from "@/lib/theme";
-
 export function ConfidenceBar({ score }: { score: number }) {
-  const { t } = useTheme();
   const pct = Math.round(score * 100);
-  const color = score >= 0.8 ? "#22C55E" : score >= 0.5 ? "#F59E0B" : "#EF4444";
+  const colorClass = score >= 0.8 ? "bg-emerald-500" : score >= 0.5 ? "bg-amber-500" : "bg-red-500";
+  const textClass = score >= 0.8 ? "text-emerald-600 dark:text-emerald-500" : score >= 0.5 ? "text-amber-600 dark:text-amber-500" : "text-red-600 dark:text-red-500";
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-      <div style={{ flex: 1, height: 4, background: t.border, borderRadius: 2, overflow: "hidden" }}>
-        <div style={{ width: `${pct}%`, height: "100%", background: color, borderRadius: 2 }} />
+    <div className="flex items-center gap-2">
+      <div className="flex-1 h-1 bg-border rounded-full overflow-hidden">
+        <div className={`h-full rounded-full ${colorClass}`} style={{ width: `${pct}%` }} />
       </div>
-      <span style={{ fontSize: 11, color, fontWeight: 600, minWidth: 28 }}>{pct}%</span>
+      <span className={`text-[11px] font-semibold min-w-[28px] ${textClass}`}>{pct}%</span>
     </div>
   );
 }
