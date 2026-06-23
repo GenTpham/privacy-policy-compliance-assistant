@@ -8,11 +8,18 @@ from backend.app.services.document_processor import process_document_inline
 
 @pytest.fixture
 def mock_document():
+    import uuid
     doc = Document(
-        id=1,
+        id=str(uuid.uuid4()),
         user_id=123,
+        tenant_id="tenant",
         title="Test Document",
+        filename="test.pdf",
+        gcs_path="gs://test",
+        collection="policies",
+        embedding_model="test",
         status="processing",
+        source="upload",
         chunk_count=0
     )
     return doc

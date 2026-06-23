@@ -10,7 +10,20 @@ async def test_create_query_log_and_document(db_session):
     db_session.add(log)
     
     # Test Document
-    doc = Document(title="Privacy Policy 2026", chunk_count=15, status="Completed")
+    import uuid
+    doc = Document(
+        id=str(uuid.uuid4()),
+        user_id=1,
+        tenant_id="tenant",
+        title="Privacy Policy 2026",
+        filename="test.pdf",
+        gcs_path="gs://test",
+        collection="policies",
+        embedding_model="test",
+        status="Completed",
+        source="upload",
+        chunk_count=15
+    )
     db_session.add(doc)
     
     await db_session.commit()
