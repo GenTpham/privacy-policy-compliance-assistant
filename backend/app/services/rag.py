@@ -10,7 +10,7 @@ from collections.abc import AsyncGenerator
 from contextlib import nullcontext
 
 from openai import AsyncOpenAI
-from qdrant_client.models import Filter, FieldCondition, MatchValue
+from qdrant_client.models import Filter, FieldCondition, MatchValue, MatchAny
 
 from backend.app.core.config import get_settings
 from backend.app.core.qdrant_client import make_qdrant_client
@@ -168,6 +168,7 @@ async def stream_answer(
     temperature: float = 0.0,
     max_tokens: int = 1024,
     source_filter: str | None = None,
+    user_id: int | None = None,
 ) -> AsyncGenerator[dict, None]:
     """
     Core RAG pipeline as an async generator.
@@ -197,21 +198,26 @@ async def stream_answer(
     query_vector = embed_resp.data[0].embedding
     
     # Step 1.5: Retrieve graph context
-    graph_texts = retrieve_graph_context(entities, limit=3)
+    graph_texts = retrieve_graph_context(entities, limit=3, user_id=user_id)
 
     # Step 2: Retrieve from Qdrant (RAG-02, D-12, D-13)
     # qdrant-client 1.13+ replaced search() with query_points() — returns QueryResponse with .points
     _threshold = get_settings().score_threshold
     with _retrieval_span(message, limit=5, threshold=_threshold) as span:
+        must_conditions = []
+        if source_filter:
+            must_conditions.append(FieldCondition(key="title", match=MatchValue(value=source_filter)))
+        if user_id is not None:
+            must_conditions.append(FieldCondition(key="user_id", match=MatchAny(any=[str(user_id), "system"])))
+        query_filter = Filter(must=must_conditions) if must_conditions else None
+
         response = await qdrant.query_points(
             collection_name=COLLECTION_NAME,
             query=query_vector,
             limit=5,
             score_threshold=_threshold,
             with_payload=True,
-            query_filter=Filter(
-                must=[FieldCondition(key="title", match=MatchValue(value=source_filter))]
-            ) if source_filter else None,
+            query_filter=query_filter,
         )
         results = response.points
         if span is not None:
@@ -331,6 +337,7 @@ async def stream_conflict_answer(
     temperature: float = 0.0,
     max_tokens: int = 1024,
     source_filter: str | None = None,
+    user_id: int | None = None,
 ) -> AsyncGenerator[dict, None]:
     """
     Conflict-detection RAG pipeline as an async generator.
@@ -362,20 +369,25 @@ async def stream_conflict_answer(
     query_vector = embed_resp.data[0].embedding
     
     # Step 1.5: Retrieve graph context
-    graph_texts = retrieve_graph_context(entities, limit=3)
+    graph_texts = retrieve_graph_context(entities, limit=3, user_id=user_id)
 
     # Step 2: Retrieve top-10 across all source documents (CONFLICT-02, D-07, D-08)
     _threshold = get_settings().score_threshold
     with _retrieval_span(message, limit=10, threshold=_threshold) as span:
+        must_conditions = []
+        if source_filter:
+            must_conditions.append(FieldCondition(key="title", match=MatchValue(value=source_filter)))
+        if user_id is not None:
+            must_conditions.append(FieldCondition(key="user_id", match=MatchAny(any=[str(user_id), "system"])))
+        query_filter = Filter(must=must_conditions) if must_conditions else None
+
         response = await qdrant.query_points(
             collection_name=COLLECTION_NAME,
             query=query_vector,
             limit=10,
             score_threshold=_threshold,
             with_payload=True,
-            query_filter=Filter(
-                must=[FieldCondition(key="title", match=MatchValue(value=source_filter))]
-            ) if source_filter else None,
+            query_filter=query_filter,
         )
         results = response.points
         if span is not None:

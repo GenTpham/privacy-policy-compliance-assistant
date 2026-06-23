@@ -18,6 +18,7 @@ from backend.app.api.auth import router as auth_router
 from backend.app.api.chat import router as chat_router
 from backend.app.api.dashboard import router as dashboard_router
 from backend.app.api.sources import router as sources_router
+from backend.app.api.endpoints import documents
 from backend.app.core.config import get_settings
 from backend.app.core.qdrant_client import make_qdrant_client
 from backend.app.core.qdrant_startup import check_qdrant_ready, verify_qdrant_for_serving
@@ -88,6 +89,31 @@ async def _migrate_add_is_admin_column(engine) -> None:
             print("[startup] Migration: is_admin column already exists — skipping.")
 
 
+async def _migrate_documents_table(engine) -> None:
+    """
+    Add user_id, gcs_path, task_id columns to documents table if not present.
+    Safe to call on every startup; skipped if columns exist.
+    """
+    from sqlalchemy import text
+
+    columns_to_add = [
+        ("user_id", "INTEGER REFERENCES users(id) ON DELETE CASCADE"),
+    ]
+
+    async with engine.begin() as conn:
+        result = await conn.execute(text("PRAGMA table_info(documents)"))
+        existing_columns = {row[1] for row in result.fetchall()}
+
+        for col_name, col_type in columns_to_add:
+            if col_name not in existing_columns:
+                await conn.execute(
+                    text(f"ALTER TABLE documents ADD COLUMN {col_name} {col_type}")
+                )
+                print(f"[startup] Migration: added {col_name} column to documents table.")
+            else:
+                print(f"[startup] Migration: {col_name} column already exists — skipping.")
+
+
 async def _patch_admin_is_admin(settings, session_factory) -> None:
     """
     Set is_admin=True on the seeded admin user (D-03).
@@ -132,6 +158,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     await _migrate_add_is_admin_column(db_session_mod._engine)
     from backend.app.db.session import _session_factory
     await _patch_admin_is_admin(settings, _session_factory)
+    await _migrate_documents_table(db_session_mod._engine)
 
     # Telemetry — pass endpoint from settings so PHOENIX_COLLECTOR_ENDPOINT env var works
     # Gracefully skips if Phoenix is not running or packages are not installed
@@ -163,6 +190,7 @@ def create_app() -> FastAPI:
     app.include_router(auth_router, prefix="/auth")
     app.include_router(sources_router, prefix="/api")
     app.include_router(admin_router, prefix="/admin")
+    app.include_router(documents.router, prefix="/api/documents", tags=["documents"])
     return app
 
 

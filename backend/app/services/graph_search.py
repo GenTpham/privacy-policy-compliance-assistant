@@ -55,19 +55,33 @@ try:
 except ImportError:
     _tracer = None
 
-def retrieve_graph_context(entities: list[str], limit: int = 5) -> list[str]:
+def retrieve_graph_context(entities: list[str], limit: int = 5, user_id: int | None = None) -> list[str]:
     if not entities:
         return []
         
     neo4j_client = Neo4jClient()
     # Simple 1-hop traversal from identified entities
-    query = """
-    UNWIND $entities AS entity_name
-    MATCH (e:Entity {name: entity_name})
-    MATCH (c:Chunk)-[:MENTIONS]->(e)
-    RETURN DISTINCT c.text AS chunk_text, c.passage_id AS passage_id, c.id AS chunk_id
-    LIMIT $limit
-    """
+    if user_id is not None:
+        query = """
+        UNWIND $entities AS entity_name
+        MATCH (e:Entity {name: entity_name})
+        WHERE e.user_id = $user_id_str OR e.user_id = 'system' OR e.user_id IS NULL
+        MATCH (c:Chunk)-[:MENTIONS]->(e)
+        WHERE c.user_id = $user_id_str OR c.user_id = 'system' OR c.user_id IS NULL
+        RETURN DISTINCT c.text AS chunk_text, c.passage_id AS passage_id, c.id AS chunk_id
+        LIMIT $limit
+        """
+        params = {"entities": entities, "limit": limit, "user_id_str": str(user_id)}
+    else:
+        query = """
+        UNWIND $entities AS entity_name
+        MATCH (e:Entity {name: entity_name})
+        MATCH (c:Chunk)-[:MENTIONS]->(e)
+        RETURN DISTINCT c.text AS chunk_text, c.passage_id AS passage_id, c.id AS chunk_id
+        LIMIT $limit
+        """
+        params = {"entities": entities, "limit": limit}
+
     try:
         if _tracer:
             with _tracer.start_as_current_span(
@@ -76,13 +90,14 @@ def retrieve_graph_context(entities: list[str], limit: int = 5) -> list[str]:
                     "neo4j.query.text": query.strip(),
                     "neo4j.query.entities": str(entities),
                     "neo4j.query.limit": limit,
+                    "neo4j.query.user_id": str(user_id) if user_id is not None else "None"
                 }
             ) as span:
-                records = neo4j_client.execute_query(query, {"entities": entities, "limit": limit})
+                records = neo4j_client.execute_query(query, params)
                 if span:
                     span.set_attribute("neo4j.results_count", len(records))
         else:
-            records = neo4j_client.execute_query(query, {"entities": entities, "limit": limit})
+            records = neo4j_client.execute_query(query, params)
             
         return [record["chunk_text"] for record in records]
     except Exception as e:

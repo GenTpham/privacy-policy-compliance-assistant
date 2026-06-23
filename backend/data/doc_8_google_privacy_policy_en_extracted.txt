@@ -1,0 +1,869 @@
+GOOGLE PRIVACY POLICY
+When you use our services, you’re trusting us
+with your information. We understand this is a big
+responsibility and work hard to protect your
+information and put you in control.
+This Priv acy P olicy is meant t o help y ou understand what information we collect, why we
+collect it, and how y ou can update, manage, expor t, and delete y our information.
+Privacy Checkup
+Looking t o change y our priv acy settings?
+Take the Priv acy Checkup
+Effectiv e July 1, 2025 | Archived versions
+We build a r ange of ser vices that help millions of people daily t o explor e and inter act with
+the world in new wa ys. Our ser vices include:
+Google apps, sites, and de vices, lik e Sear ch, Y ouTube, and Google Home
+Platforms lik e the Chr ome br owser and Andr oid oper ating system
+Products that ar e integr ated int o thir d-par ty apps and sites, lik e ads, analytics, and
+embedded Google Maps
+You can use our ser vices in a v ariety of wa ys to manage y our priv acy. For example, y ou
+can sign up for a Google Account if y ou want t o create and manage content lik e emails
+
+and phot os, or see mor e relevant sear ch results. And y ou can use many Google ser vices
+when y ou’re signed out or without cr eating an account at all, lik e sear ching on Google or
+watching Y ouTube videos. Y ou can also choose t o browse the web in a priv ate mode, lik e
+Chrome Incognit o mode, which helps k eep y our br owsing priv ate fr om other people who
+use y our de vice. And acr oss our ser vices, y ou can adjust y our priv acy settings t o contr ol
+whether we collect some types of data and how we use it.
+To help explain things as clearly as possible, we ’ve added examples, explanat ory videos,
+and definitions for key terms . And if y ou ha ve any questions about this Priv acy P olicy ,
+you can contact us .
+INFORMATION GOOGLE COLLECTS
+We want you to understand the types of
+information we collect as you use our services
+We collect information t o provide better ser vices t o all our users — fr om figuring out
+basic stuff lik e which language y ou speak, t o mor e complex things lik e which ads y ou’ll
+find most useful , the people who matter most t o you online , or which Y ouTube videos y ou
+might lik e. The information Google collects, and how that information is used, depends
+on how y ou use our ser vices and how y ou manage y our priv acy contr ols.
+When y ou’re not signed in t o a Google Account, we st ore the information we collect with
+unique identifiers  tied t o the br owser , application, or device you’re using. This allows us
+to do things lik e maintain y our pr eferences acr oss br owsing sessions, such as y our
+preferred language or whether t o show y ou mor e relevant sear ch results or ads based on
+your activity .
+When y ou’re signed in, we also collect information that we st ore with y our Google
+Account, which we tr eat as personal information .
+Things you create or provide to us
+
+When y ou cr eate a Google Account, y ou pr ovide us with personal information  that
+includes y our name and a passwor d. You can also choose t o add a phone number  or
+payment information  to your account. E ven if y ou ar en’t signed in t o a Google Account,
+you might choose t o provide us with information — lik e an email addr ess t o
+communicate with Google or r eceiv e updates about our ser vices.
+We also collect the content y ou cr eate, upload, or r eceiv e from others when using our
+services. This includes things lik e email y ou write and r eceiv e, phot os and videos y ou
+save, docs and spr eadsheets y ou cr eate, and comments y ou mak e on Y ouTube videos.
+Information we collect as you use our services
+Your apps, browsers & devices
+We collect information about the apps, br owsers, and devices  you use t o access Google
+services, which helps us pr ovide f eatur es lik e aut omatic pr oduct updates and dimming
+your scr een if y our batter y runs low .
+The information we collect includes unique identifiers , browser type and settings, de vice
+type and settings, oper ating system, mobile network information including carrier name
+and phone number , and application v ersion number . We also collect information about
+the inter action of y our apps, br owsers, and de vices with our ser vices, including IP
+addr ess, crash r epor ts, system activity , and the date, time, and referrer URL  of y our
+request.
+We collect this information when a Google ser vice on y our de vice contacts our ser vers —
+for example, when y ou install an app fr om the Pla y Store or when a ser vice checks for
+automatic updates. If y ou’re using an Andr oid de vice with Google apps , your de vice
+periodically contacts Google ser vers t o provide information about y our de vice and
+connection t o our ser vices. This information includes things lik e your device type and
+carrier name , crash r epor ts, which apps y ou've installed, and, depending on y our de vice
+settings, other information about how y ou’re using y our Andr oid de vice.
+Your activity
+We collect information about y our activity in our ser vices, which we use t o do things lik e
+recommend a Y ouTube video y ou might lik e. The activity information we collect ma y
+
+include:
+Terms y ou sear ch for
+Videos y ou watch
+Views and inter actions with content and ads
+Voice and audio information
+Purchase activity
+People with whom y ou communicate or shar e content
+Activity on thir d-par ty sites and apps that use our ser vices
+Chrome br owsing hist ory you’ve synced with y our Google Account
+If you use our services t o mak e and r eceiv e calls or send and r eceiv e messages , we ma y
+collect call and message log information lik e your phone number , calling-par ty number ,
+receiving-par ty number , forwarding numbers, sender and r ecipient email addr ess, time
+and date of calls and messages, dur ation of calls, r outing information, and types and
+volumes of calls and messages.
+You can visit y our Google Account t o find and manage activity information that’ s saved in
+your account.
+Go to Google Account
+Your location information
+We collect location information when y ou use our ser vices, which helps us off er featur es
+like driving dir ections, sear ch results for things near y ou, and ads based on y our location.
+Depending on the pr oducts y ou’re using and settings y ou choose, Google ma y use
+different types of location information t o help mak e some ser vices and pr oducts y ou use
+more helpful. These include:
+GPS and other sensor data fr om y our de vice
+
+IP addr ess
+Activity on Google ser vices , such as fr om y our sear ches or places y ou label lik e
+home or work
+Information about things near y our de vice, such as Wi-Fi access points, cell t owers,
+and Bluet ooth-enabled de vices
+The types of location data we collect and how long we st ore it depend in par t on y our
+device and account settings. F or example, y ou can turn y our Andr oid de vice’s location on
+or off  using the de vice’s settings app. Y ou can also turn on Timeline  if you want t o create
+a priv ate map of wher e you go with y our signed-in de vices. And if y our W eb & App
+Activity setting is enabled, y our sear ches and other activity fr om Google ser vices, which
+may also include location information, is sa ved to your Google Account. Learn mor e
+about how we use location information .
+In some cir cumstances, Google also collects information about y ou fr om publicly
+accessible sour ces. For example, if y our name appears in y our local newspaper , Google ’s
+Sear ch engine ma y index that ar ticle and displa y it to other people if the y sear ch for y our
+name. W e ma y also collect information about y ou fr om trusted par tners, such as
+directory ser vices who pr ovide us with business information t o be displa yed on Google ’s
+services, mark eting par tners who pr ovide us with information about potential cust omers
+of our business ser vices, and security par tners who pr ovide us with information t o
+protect against abuse . We also r eceiv e information fr om par tners t o provide advertising
+and r esear ch ser vices on their behalf .
+We use v arious technologies t o collect and st ore information, including cookies , pixel
+tags , local st orage, such as browser web st orage or application data caches , databases,
+and server logs .
+WHY GOOGLE COLLECTS DATA
+We use data to build better services
+
+We use the information we collect fr om all our ser vices for the following purposes:
+Provide our services
+We use y our information t o deliv er our ser vices , like processing the terms y ou sear ch for
+in or der t o return r esults or helping y ou shar e content b y suggesting r ecipients fr om y our
+contacts.
+Maintain & improve our services
+We also use y our information t o ensur e our ser vices ar e working as intended , such as
+tracking outages or tr oubleshooting issues that y ou repor t to us. And we use y our
+information t o mak e impr ovements  to our ser vices — for example, understanding which
+sear ch terms ar e most fr equently misspelled helps us impr ove spell-check f eatur es used
+across our ser vices.
+Develop new services
+We use the information we collect in existing ser vices t o help us de velop new ones. F or
+example, understanding how people or ganiz ed their phot os in Picasa, Google ’s first
+phot os app, helped us design and launch Google Phot os.
+Provide personalized services, including content and ads
+We use the information we collect t o cust omiz e our ser vices for y ou, including pr oviding
+recommendations, personaliz ed content, and cust omiz ed sear ch results . For example,
+Security Checkup  provides security tips adapted t o how y ou use Google pr oducts. And,
+depending on y our a vailable settings, Google Pla y could use information lik e apps y ou’ve
+already installed and videos y ou’ve watched on Y ouTube t o suggest new apps y ou might
+like.
+Depending on y our settings, we ma y also show y ou personaliz ed ads  based on y our
+inter ests and activity acr oss Google ser vices. F or example, if y ou sear ch for “ mountain
+
+bikes,” you ma y see ads for spor ts equipment on Y ouTube. Y ou can contr ol what
+information we use t o show y ou ads b y visiting y our ad settings in My Ad Center .
+We don ’t show y ou personaliz ed ads based on sensitiv e categories , such as r ace,
+religion, sexual orientation, or health.
+We don ’t show y ou personaliz ed ads based on y our content fr om Driv e, Gmail, or
+Phot os.
+We don ’t shar e information that personally identifies y ou with adv ertisers, such as
+your name or email, unless y ou ask us t o. For example, if y ou see an ad for a nearb y
+flower shop and select the “tap t o call” butt on, we ’ll connect y our call and ma y shar e
+your phone number with the flower shop.
+Go to My Ad Center
+Measure performance
+We use data for analytics and measur ement t o understand how our ser vices ar e used.
+For example, we analyz e data about y our visits t o our sites t o do things lik e optimiz e
+product design. And we also use data about the ads y ou inter act with, including y our
+related Google Sear ch activity , to help adv ertisers understand the performance of their
+ad campaigns . We use a v ariety of t ools t o do this, including Google Analytics. When y ou
+visit sites or use apps that use Google Analytics, a Google Analytics cust omer ma y
+choose t o enable Google t o link information  about y our activity fr om that site or app with
+activity fr om other sites or apps that use our ad ser vices.
+Communicate with you
+We use information we collect, lik e your email addr ess, t o inter act with y ou dir ectly . For
+example, we ma y send y ou a notification if we detect suspicious activity , like an attempt
+to sign in t o your Google Account fr om an unusual location. Or we ma y let y ou know
+about upcoming changes or impr ovements t o our ser vices. And if y ou contact Google,
+we’ll keep a r ecor d of y our r equest in or der t o help solv e any issues y ou might be facing.
+Protect Google, our users, and the public
+
+We use information t o help impr ove the safety and r eliability  of our ser vices. This
+includes detecting, pr eventing, and r esponding t o fraud, abuse, security risks, and
+technical issues that could harm Google, our users, or the public .
+We use diff erent technologies t o process y our information for these purposes. W e use
+automated systems that analyz e your content t o provide y ou with things lik e cust omiz ed
+sear ch results, personaliz ed ads, or other f eatur es tailor ed to how y ou use our ser vices.
+And we analyz e your content t o help us detect abuse  such as spam, malwar e, and illegal
+content. W e also use algorithms  to recogniz e patterns in data. F or example, Google
+Translate helps people communicate acr oss languages b y detecting common language
+patterns in phr ases y ou ask it t o translate.
+We ma y use the information we collect  across our ser vices and acr oss y our de vices for
+the purposes described abo ve. For example, depending on y our a vailable settings, if y ou
+watch videos of guitar pla yers on Y ouTube, y ou might see an ad for guitar lessons on a
+site that uses our ad pr oducts. Depending on y our account settings, your activity on other
+sites and apps  may be associated with y our personal information in or der t o impr ove
+Google ’s ser vices and the ads deliv ered b y Google.
+If other users alr eady ha ve your email addr ess or other information that identifies y ou, we
+may show them y our publicly visible Google Account information, such as y our name and
+phot o. This helps people identify an email coming fr om y ou, for example.
+We’ll ask for y our consent befor e using y our information for a purpose that isn ’t co vered
+in this Priv acy P olicy .
+YOUR PRIVACY CONTROLS
+You have choices regarding the information we
+collect and how it's used
+
+This section describes k ey contr ols for managing y our priv acy acr oss our ser vices. Y ou
+can also visit the Privacy Checkup , which pr ovides an oppor tunity t o review and adjust
+impor tant priv acy settings. In addition t o these t ools, we also off er specific priv acy
+settings in our pr oducts — y ou can learn mor e in our Product Priv acy Guide .
+Go to Priv acy Checkup
+Managing, reviewing, and updating your
+information
+When y ou’re signed in, y ou can alwa ys review and update information b y visiting the
+services y ou use. F or example, Phot os and Driv e are both designed t o help y ou manage
+specific types of content y ou’ve saved with Google.
+We also built a place for y ou to review and contr ol information sa ved in y our Google
+Account. Y our Google Account  includes:
+Privacy controls
+Activity Controls
+Decide what types of activity y ou’d like saved in y our account. F or example,
+if you ha ve YouTube Hist ory turned on, the videos y ou watch and the things
+you sear ch for ar e saved in y our account so y ou can get better
+recommendations and r emember wher e you left off. And if y ou ha ve Web &
+App Activity turned on, y our sear ches and activity fr om other Google
+services ar e saved in y our account so y ou can get mor e personaliz ed
+experiences lik e faster sear ches and mor e helpful app and content
+recommendations. W eb & App Activity also has a subsetting that lets y ou
+contr ol whether information about y our activity on other sites, apps, and
+devices that use Google ser vices , such as apps y ou install and use on
+Andr oid, is sa ved in y our Google Account and used t o impr ove Google
+services.
+Go to Activity Contr ols
+
+Ad settings
+Manage y our pr eferences about the ads shown t o you on Google and on
+sites and apps that partner with Google  to show ads. Y ou can modify y our
+inter ests, choose whether y our personal information is used t o mak e ads
+more relevant t o you, and turn on or off cer tain adv ertising ser vices.
+Go to My Ad Center
+About you
+Manage personal info in y our Google Account and contr ol who can see it
+across Google ser vices.
+Go to About Y ou
+Shared endorsements
+Choose whether y our name and phot o appear next t o your activity , like
+reviews and r ecommendations, that appear in ads.
+Go to Shar ed Endorsements
+Sites and apps that use Google services
+Manage information that websites and apps using Google ser vices, lik e
+Google Analytics, ma y shar e with Google when y ou visit or inter act with their
+services.
+Go to How Google uses information fr om sites or apps that use our
+services
+Ways to review & update your information
+My Activity
+My Activity allows y ou to review and contr ol data that’ s saved to your
+Google Account when y ou’re signed in and using Google ser vices, lik e
+sear ches y ou’ve done or y our visits t o Google Pla y. You can br owse b y date
+and b y topic, and delete par t or all of y our activity .
+Go to My Activity
+
+Google Dashboard
+Google Dashboar d allows y ou to manage information associated with
+specific pr oducts.
+Go to Dashboar d
+Your personal information
+Manage y our contact information, such as y our name, email, and phone
+number .
+Go to Personal Info
+When y ou’re signed out, y ou can manage information associated with y our br owser or
+device, including:
+Signed-out sear ch personalization: Choose  whether y our sear ch activity is used t o
+offer you mor e relevant r esults and r ecommendations.
+YouTube settings: P ause and delete y our YouTube Sear ch Hist ory and y our YouTube
+Watch Hist ory.
+Ad Settings: Manage  your pr eferences about the ads shown t o you on Google and
+on sites and apps that par tner with Google t o show ads.
+Exporting, removing & deleting your information
+You can expor t a cop y of content in y our Google Account if y ou want t o back it up or use
+it with a ser vice outside of Google.
+Expor t your data
+To delete y our information, y ou can:
+Delete y our content fr om specific Google ser vices
+
+Sear ch for and then delete specific items fr om y our account using My Activity
+Delete specific Google pr oducts , including y our information associated with those
+products
+Delete y our entir e Google Account
+Delete y our information
+Inactiv e Account Manager  allows y ou to giv e someone else access t o par ts of y our
+Google Account in case y ou’re unexpectedly unable t o use y our account.
+And finally , you can also request t o remo ve content  from specific Google ser vices based
+on applicable law and our policies.
+Ther e are other wa ys to contr ol the information Google collects whether or not y ou’re
+signed in t o a Google Account, including:
+Browser settings: F or example, y ou can configur e your br owser t o indicate when
+Google has set a cookie  in your br owser . You can also configur e your br owser t o
+block all cookies fr om a specific domain or all domains. But r emember that our
+services rely on cookies t o function pr operly , for things lik e remembering y our
+language pr eferences.
+Device-le vel settings: Y our de vice ma y have contr ols that determine what
+information we collect. F or example, y ou can modify location settings  on y our
+Andr oid de vice.
+SHARING YOUR INFORMATION
+When you share your information
+
+Many of our ser vices let y ou shar e information with other people, and y ou ha ve contr ol
+over how y ou shar e. For example, y ou can shar e videos on Y ouTube publicly or y ou can
+decide t o keep y our videos priv ate. Remember , when y ou shar e information publicly , your
+content ma y become accessible thr ough sear ch engines, including Google Sear ch.
+When y ou’re signed in and inter act with some Google ser vices, lik e lea ving comments on
+a YouTube video or r eviewing an app in Pla y, your name and phot o appear next t o your
+activity . We ma y also displa y this information in ads depending on y our Shar ed
+endorsements setting .
+When Google shares your information
+We do not shar e your personal information with companies, or ganizations, or individuals
+outside of Google ex cept in the following cases:
+With your consent
+We’ll shar e personal information outside of Google when we ha ve your consent. F or
+example, if y ou use Google Home t o mak e a r eser vation  through a booking ser vice, we ’ll
+get y our permission befor e sharing y our name or phone number with the r estaur ant. W e
+also pr ovide y ou with contr ols t o review and manage thir d par ty apps and sites  you ha ve
+given access t o data in y our Google Account. W e’ll ask for y our explicit consent t o shar e
+any sensitiv e personal information .
+With domain administrators
+If you’re a student or work for an or ganization that uses Google ser vices, y our domain
+administr ator and r esellers who manage y our account will ha ve access t o your Google
+Account. They ma y be able t o:
+Access and r etain information st ored in y our account, lik e your email
+View statistics r egar ding y our account, lik e how many apps y ou install
+Change y our account passwor d
+Suspend or terminate y our account access
+
+Receiv e your account information in or der t o satisfy applicable law , regulation, legal
+process, or enfor ceable go vernmental r equest
+Restrict y our ability t o delete or edit y our information or y our priv acy settings
+For external processing
+We provide personal information t o our affiliates  and other trusted businesses or
+persons t o process it for us, based on our instructions and in compliance with our
+Privacy P olicy and any other appr opriate confidentiality and security measur es. F or
+example, we use ser vice pr oviders t o help oper ate our data centers, deliv er our pr oducts
+and ser vices, impr ove our internal business pr ocesses, and off er additional suppor t to
+cust omers and users. W e also use ser vice pr oviders t o help r eview Y ouTube video
+content for public saf ety and analyz e and listen t o samples of sa ved user audio t o help
+impr ove Google ’s audio r ecognition technologies.
+For legal reasons
+We will shar e personal information outside of Google if we ha ve a good-faith belief that
+disclosur e of the information is r easonably necessar y to:
+Respond t o any applicable law , regulation, legal pr ocess, or enfor ceable
+governmental r equest . We shar e information about the number and type of
+requests we r eceiv e from go vernments in our Transpar ency Repor t.
+Enfor ce applicable Terms of Ser vice, including inv estigation of potential violations.
+Detect, pr event, or other wise addr ess fr aud, security , or technical issues.
+Protect against harm t o the rights, pr oper ty or saf ety of Google, our users , or the
+public.
+We ma y shar e non-personally identifiable information  publicly and with our par tners —
+like publishers, adv ertisers, de velopers, or rights holders. F or example, we shar e
+information publicly t o show tr ends  about the gener al use of our ser vices. W e also allow
+specific par tners  to collect information fr om y our br owser or de vice for adv ertising and
+measur ement purposes using their own cookies or similar technologies.
+If Google is inv olved in a mer ger, acquisition, or sale of assets, we ’ll continue t o ensur e
+the confidentiality of y our personal information and giv e aff ected users notice befor e
+
+personal information is tr ansf erred or becomes subject t o a diff erent priv acy policy .
+KEEPING YOUR INFORMATION SECURE
+We build security into our services to protect
+your information
+All Google pr oducts ar e built with str ong security f eatur es that continuously pr otect y our
+information. The insights we gain fr om maintaining our ser vices help us detect and
+automatically block security thr eats fr om e ver reaching y ou. And if we do detect
+something risky that we think y ou should know about, we ’ll notify y ou and help guide y ou
+through steps t o sta y better pr otected.
+We work har d to protect y ou and Google fr om unauthoriz ed access, alter ation,
+disclosur e, or destruction of information we hold, including:
+We use encr yption t o keep y our data priv ate while in tr ansit
+We off er a r ange of security f eatur es, lik e Safe Browsing , Security Checkup, and 2
+Step V erification  to help y ou pr otect y our account
+We review our information collection, st orage, and pr ocessing pr actices, including
+physical security measur es, to prevent unauthoriz ed access t o our systems
+We restrict access t o personal information t o Google emplo yees, contr actors, and
+agents who need that information in or der t o process it. Any one with this access is
+subject t o strict contr actual confidentiality obligations and ma y be disciplined or
+terminated if the y fail t o meet these obligations.
+EXPORTING & DELETING YOUR INFORMATION
+
+You can export a copy of your information or
+delete it from your Google Account at any time
+You can expor t a cop y of content in y our Google Account if y ou want t o back it up or use
+it with a ser vice outside of Google.
+Expor t your data
+To delete y our information, y ou can:
+Delete y our content fr om specific Google ser vices
+Sear ch for and then delete specific items fr om y our account using My Activity
+Delete specific Google pr oducts , including y our information associated with those
+products
+Delete y our entir e Google Account
+Delete y our information
+RETAINING YOUR INFORMATION
+We retain the data we collect for diff erent periods of time depending on what it is, how
+we use it, and how y ou configur e your settings:
+Some data y ou can delete whene ver you lik e, such as y our personal info  or the
+content y ou cr eate or upload, lik e phot os and documents . You can also delete
+activity information  saved in y our account, or choose t o ha ve it deleted
+
+automatically  after a set period of time. W e’ll keep this data in y our Google Account
+until y ou remo ve it or choose t o ha ve it r emo ved.
+Other data is deleted or anonymiz ed aut omatically after a set period of time, such
+as advertising data  in ser ver logs.
+We keep some data until y ou delete y our Google Account, such as information
+about how often y ou use our ser vices.
+And some data we r etain for longer periods of time when necessar y for legitimate
+business or legal purposes, such as security , fraud and abuse pr evention, or
+financial r ecor d-keeping.
+When y ou delete data, we follow a deletion pr ocess t o mak e sur e that y our data is saf ely
+and completely r emo ved fr om our ser vers or r etained only in anonymiz ed form. W e try to
+ensur e that our ser vices pr otect information fr om accidental or malicious deletion.
+Because of this, ther e ma y be dela ys between when y ou delete something and when
+copies ar e deleted fr om our activ e and backup systems.
+You can r ead mor e about Google ’s data r etention periods , including how long it tak es us
+to delete y our information.
+COMPLIANCE & COOPERATION WITH REGULATORS
+We regularly r eview this Priv acy P olicy and mak e sur e that we pr ocess y our information
+in wa ys that comply with it.
+Data transfers
+We maintain servers ar ound the world  and y our information ma y be pr ocessed on
+servers located outside of the countr y wher e you liv e. Data pr otection laws v ary among
+countries, with some pr oviding mor e protection than others. Regar dless of wher e your
+information is pr ocessed, we apply the same pr otections described in this policy . We
+also comply with cer tain legal fr ameworks  relating t o the tr ansf er of data.
+
+When we r eceiv e formal written complaints, we r espond b y contacting the person who
+made the complaint. W e work with the appr opriate r egulat ory authorities, including local
+data pr otection authorities, t o resolv e any complaints r egar ding the tr ansf er of y our data
+that we cannot r esolv e with y ou dir ectly .
+ABOUT THIS POLICY
+When this policy applies
+This Priv acy P olicy applies t o all of the ser vices off ered b y Google LL C and its affiliates ,
+including Y ouTube, Andr oid, and ser vices off ered on thir d-par ty sites, such as adv ertising
+services. This Priv acy P olicy doesn ’t apply t o ser vices that ha ve separ ate priv acy policies
+that do not incorpor ate this Priv acy P olicy .
+This Priv acy P olicy doesn ’t apply t o:
+The information pr actices of other companies and or ganizations that adv ertise our
+services
+Services off ered b y other companies or individuals, including pr oducts or sites the y
+offer that ma y include Google ser vices t o which the policy applies, or pr oducts or
+sites displa yed to you in sear ch results, or link ed fr om our ser vices
+Changes to this policy
+We change this Priv acy P olicy fr om time t o time. W e will not r educe y our rights under this
+Privacy P olicy without y our explicit consent. W e alwa ys indicate the date the last
+changes wer e published and we off er access t o archived versions  for y our r eview . If
+changes ar e significant, we ’ll provide a mor e prominent notice (including, for cer tain
+services, email notification of Priv acy P olicy changes).
+
+RELATED PRIVACY PRACTICES
+Specific Google services
+The following priv acy notices pr ovide additional information about some Google
+services:
+Payments
+Fiber
+Gemini Apps
+Google Fi
+Google W orkspace for E ducation
+Read Along
+YouTube Kids
+Google Accounts Managed with F amily Link, for Childr en under 13 (or applicable
+age in y our countr y)
+Family Link priv acy guide for childr en & teens
+Voice and A udio Collection fr om Childr en’s Featur es on the Google Assistant
+If you’re a member of an or ganization that uses Google W orkspace or Google Cloud
+Platform, learn how these ser vices collect and use y our personal information in the
+Google Cloud Priv acy Notice .
+Other useful resources
+The following links highlight useful r esour ces for y ou to learn mor e about our pr actices
+and priv acy settings.
+
+Your Google Account  is home t o many of the settings y ou can use t o manage y our
+account
+Privacy Checkup  guides y ou thr ough k ey priv acy settings for y our Google Account
+Google ’s saf ety center  helps y ou learn mor e about our built-in security , priv acy
+contr ols, and t ools t o help set digital gr ound rules for y our family online
+Google ’s Teen Priv acy Guide  provides answers t o some of the t op questions we get
+asked about priv acy
+Privacy & Terms  provides mor e context r egar ding this Priv acy P olicy and our Terms
+of Ser vice
+Technologies  includes mor e information about:
+How Google uses cookies
+Technologies used for Advertising
+How Google uses information fr om sites or apps that use our ser vices
+Key terms
+Affiliates
+An affiliate is an entity that belongs t o the Google gr oup of companies, including the
+following companies that pr ovide consumer ser vices in the EU: Google Ir eland Limited,
+Google Commer ce Ltd, Google P ayment Corp, and Google Dialer Inc. Learn mor e about
+the companies pr oviding business ser vices in the EU .
+Algorithm
+
+A process or set of rules followed b y a computer in per forming pr oblem-solving
+oper ations.
+Application data cache
+An application data cache is a data r eposit ory on a de vice. It can, for example, enable a
+web application t o run without an internet connection and impr ove the per formance of
+the application b y enabling faster loading of content.
+Browser web storage
+Browser web st orage enables websites t o store data in a br owser on a de vice. When
+used in "local st orage" mode, it enables data t o be st ored acr oss sessions. This mak es
+data r etrie vable e ven after a br owser has been closed and r eopened. One technology that
+facilitates web st orage is H TML 5.
+Cookies
+A cookie is a small file containing a string of char acters that is sent t o your computer
+when y ou visit a website. When y ou visit the site again, the cookie allows that site t o
+recogniz e your br owser . Cookies ma y store user pr eferences and other information. Y ou
+can configur e your br owser t o refuse all cookies or t o indicate when a cookie is being
+sent. Howe ver, some website f eatur es or ser vices ma y not function pr operly without
+cookies. Learn mor e about how Google uses cookies  and how Google uses data,
+including cookies, when y ou use our par tners' sites or apps .
+Device
+A de vice is a computer that can be used t o access Google ser vices. F or example,
+deskt op computers, tablets, smar t speak ers, and smar tphones ar e all consider ed
+devices.
+Google Account
+
+You ma y access some of our ser vices b y signing up for a Google Account  and pr oviding
+us with some personal information (typically y our name, email addr ess, and a passwor d).
+This account information is used t o authenticate y ou when y ou access Google ser vices
+and pr otect y our account fr om unauthoriz ed access b y others. Y ou can edit or delete
+your account at any time thr ough y our Google Account settings.
+IP address
+Every device connected t o the Internet is assigned a number known as an Internet
+protocol (IP) addr ess. These numbers ar e usually assigned in geogr aphic blocks. An IP
+addr ess can often be used t o identify the location fr om which a de vice is connecting t o
+the Internet. Learn mor e about how we use location information.
+Non-personally identifiable information
+This is information that is r ecor ded about users so that it no longer r eflects or r eferences
+an individually-identifiable user .
+Personal information
+This is information that y ou pr ovide t o us which personally identifies y ou, such as y our
+name, email addr ess, or billing information, or other data that can be r easonably link ed to
+such information b y Google, such as information we associate with y our Google
+Account.
+Pixel tag
+A pix el tag is a type of technology placed on a website or within the body of an email for
+the purpose of tr acking cer tain activity , such as views of a website or when an email is
+opened. Pix el tags ar e often used in combination with cookies.
+Referrer URL
+A Ref errer URL (Uniform Resour ce Locat or) is information tr ansmitted t o a destination
+webpage b y a web br owser , typically when y ou click a link t o that page. The Ref errer URL
+
+contains the URL of the last webpage the br owser visited.
+Sensitive personal information
+This is a par ticular categor y of personal information r elating t o topics such as
+confidential medical facts, r acial or ethnic origins, political or r eligious beliefs, or
+sexuality .
+Server logs
+Like most websites, our ser vers aut omatically r ecor d the page r equests made when y ou
+visit our sites. These “ server logs” typically include y our web r equest, Internet Pr otocol
+addr ess, br owser type, br owser language, the date and time of y our r equest, and one or
+more cookies that ma y uniquely identify y our br owser .
+A typical log entr y for a sear ch for “ cars” looks lik e this:
+123.45.67.89 - 25/Mar/2003 10:15:32 -
+http://www.google.com/search?q=cars -
+Chrome 112; OS X 10.15.7 -
+740674ce2123e969
+123.45.67.89  is the Internet Pr otocol addr ess assigned t o the user b y the user ’s
+ISP. Depending on the user ’s ser vice, a diff erent addr ess ma y be assigned t o the
+user b y their ser vice pr ovider each time the y connect t o the Internet.
+25/Mar/2003 10:15:32  is the date and time of the quer y.
+http://www.google.com/search?q=cars  is the r equested URL, including the
+sear ch quer y.
+Chrome 112; OS X 10.15.7  is the br owser and oper ating system being used.
+740674ce2123a969  is the unique cookie ID assigned t o this par ticular computer the
+first time it visited Google. (Cookies can be deleted b y users. If the user has deleted
+the cookie fr om the computer since the last time the y’ve visited Google, then it will
+be the unique cookie ID assigned t o their de vice the next time the y visit Google fr om
+that par ticular de vice).
+Unique identifiers
+
+A unique identifier is a string of char acters that can be used t o uniquely identify a
+browser , app, or de vice. Diff erent identifiers v ary in how permanent the y are, whether the y
+can be r eset b y users, and how the y can be accessed.
+Unique identifiers can be used for v arious purposes, including security and fr aud
+detection, syncing ser vices such as y our email inbo x, remembering y our pr eferences, and
+providing personaliz ed adv ertising. F or example, unique identifiers st ored in cookies help
+sites displa y content in y our br owser in y our pr eferred language. Y ou can configur e your
+browser t o refuse all cookies or t o indicate when a cookie is being sent. Learn mor e
+about how Google uses cookies .
+On other platforms besides br owsers, unique identifiers ar e used t o recogniz e a specific
+device or app on that de vice. F or example, a unique identifier such as the Adv ertising ID
+is used t o provide r elevant adv ertising on Andr oid de vices, and can be managed  in your
+device’s settings. Unique identifiers ma y also be incorpor ated int o a de vice b y its
+manufactur er (sometimes called a univ ersally unique ID or UUID), such as the IMEI-
+number of a mobile phone. F or example, a de vice’s unique identifier can be used t o
+cust omiz e our ser vice t o your de vice or analyz e de vice issues r elated t o our ser vices.
+Additional Context
+Activity on Google Services
+If you’re signed in t o your Google Account and ha ve Web & App Activity turned on, y our
+activity data on Google sites, apps, and ser vices ma y be sa ved in y our account’ s Web &
+App Activity . Some activity ma y include information about the gener al ar ea you wer e in
+when using the Google ser vice. When y ou sear ch for something using a gener al ar ea,
+your sear ch will use an ar ea of at least 3 sq km, or expand until the ar ea represents the
+locations of at least 1,000 people. This helps pr otect y our priv acy.
+In some cases, ar eas that y ou ha ve sear ched fr om in the past ma y be used t o estimate a
+relevant location for y our sear ch. F or example, if y ou sear ch for coff ee shops while in
+Chelsea, Google might show r esults for Chelsea in futur e sear ches.
+You can view and contr ol your W eb & App Activity at My Activity .
+activity on third-party sites and apps that use our services
+
+Websites and apps that integr ate Google ser vices lik e ads and analytics shar e
+information with us.
+This information is collected r egar dless of which br owser or br owser mode y ou use. F or
+example, although Incognit o mode in Chr ome can help k eep y our br owsing priv ate fr om
+other people who use y our de vice, thir d par ty sites and apps that integr ate our ser vices
+may still shar e information with Google when y ou visit them.
+You can learn mor e about some of the wa ys you can contr ol the information that is
+shar ed when y ou visit or inter act with sites and apps that use Google ser vices.
+ads you’ll find most useful
+For example, if y ou watch videos about baking on Y ouTube, y ou ma y see mor e ads that
+relate t o baking as y ou br owse the web. W e also ma y use y our IP addr ess t o determine
+your appr oximate location, so that we can ser ve you ads for a nearb y pizza deliv ery
+service if y ou sear ch for “ pizza. ” Learn mor e about Google ads  and why y ou ma y see
+particular ads .
+advertising and research services on their behalf
+For example, mer chants ma y upload data fr om their lo yalty-car d programs so that the y
+can include lo yalty information in sear ch or shopping r esults, or better understand the
+performance of their ad campaigns. W e only pr ovide aggr egated r epor ts to adv ertisers
+that don ’t reveal information about individual people.
+Android device with Google apps
+Andr oid de vices with Google apps include de vices sold b y Google or one of our par tners
+and include phones, camer as, v ehicles, wear ables, and tele visions. These de vices use
+Google Pla y Ser vices and other pr e-installed apps that include ser vices lik e Gmail, Maps,
+your phone ’s camer a and phone dialer , text-t o-speech conv ersion, k eyboar d input, and
+security f eatur es. Learn mor e about Google Pla y Ser vices .
+customized search results
+
+For example, when y ou’re signed in t o your Google Account and ha ve the W eb & App
+Activity contr ol enabled, y ou can get mor e relevant sear ch results that ar e based on y our
+previous sear ches and activity fr om other Google ser vices. Y ou can learn mor e her e. You
+may also get cust omiz ed sear ch results e ven when y ou’re signed out. If y ou don ’t want
+this le vel of sear ch cust omization, y ou can sear ch and br owse priv ately  or turn off
+signed-out sear ch personalization .
+deliver our services
+Examples of how we use y our information t o deliv er our ser vices include:
+We use the IP addr ess assigned t o your de vice t o send y ou the data y ou requested,
+such as loading a Y ouTube video
+We use unique identifiers st ored in cookies on y our de vice t o help us authenticate
+you as the person who should ha ve access t o your Google Account
+Phot os and videos y ou upload t o Google Phot os ar e used t o help y ou cr eate
+albums, collages, and other cr eations that y ou can shar e. Learn mor e
+A flight confirmation email y ou receiv e ma y be used t o create a “ check-in ” butt on
+that appears in y our Gmail
+When y ou pur chase ser vices or physical goods fr om us, y ou ma y provide us
+information lik e your shipping addr ess or deliv ery instructions. W e use this
+information for things lik e processing, fulfilling, and deliv ering y our or der, and t o
+provide suppor t in connection with the pr oduct or ser vice y ou pur chase.
+detect abuse
+When we detect spam, malwar e, illegal content (including child sexual abuse and
+exploitation material ), and other forms of abuse on our systems in violation of our
+policies, we ma y disable y our account or tak e other appr opriate action. In cer tain
+circumstances, we ma y also r epor t the violation t o appr opriate authorities.
+devices
+For example, we can use information fr om y our de vices t o help y ou decide which de vice
+you’d like to use t o install an app or view a mo vie y ou buy fr om Google Pla y. We also use
+
+this information t o help pr otect y our account.
+ensure and improve
+For example, we analyz e how people inter act with adv ertising t o impr ove the
+performance of our ads.
+ensure our services are working as intended
+For example, we continuously monit or our systems t o look for pr oblems. And if we find
+something wr ong with a specific f eatur e, reviewing activity information collected befor e
+the pr oblem star ted allows us t o fix things mor e quickly .
+Information about things near your device
+If you use Google ’s Location ser vices on Andr oid, we can impr ove the per formance of
+apps that r ely on y our location, lik e Google Maps. If y ou use Google ’s Location ser vices,
+your de vice sends information t o Google about its location, sensors (lik e acceler ometer),
+and nearb y cell t owers and Wi-Fi access points (lik e MAC addr ess and signal str ength).
+All these things help t o determine y our location. Y ou can use y our de vice settings t o
+enable Google Location ser vices. Learn mor e
+legal process, or enforceable governmental request
+Like other technology and communications companies, Google r egularly r eceiv es
+requests fr om go vernments and cour ts ar ound the world t o disclose user data. Respect
+for the priv acy and security of data y ou st ore with Google underpins our appr oach t o
+complying with these legal r equests. Our legal team r eviews each and e very request,
+regar dless of type, and we fr equently push back when a r equest appears t o be o verly
+broad or doesn ’t follow the corr ect pr ocess. Learn mor e in our Transpar ency Repor t.
+make improvements
+For example, we use cookies t o analyz e how people inter act with our ser vices. And that
+analysis can help us build better pr oducts. F or example, it ma y help us disco ver that it’ s
+
+taking people t oo long t o complete a cer tain task or that the y have trouble finishing steps
+at all. W e can then r edesign that f eatur e and impr ove the pr oduct for e veryone.
+may link information
+Google Analytics r elies on first-par ty cookies, which means the cookies ar e set b y the
+Google Analytics cust omer . Using our systems, data gener ated thr ough Google Analytics
+can be link ed b y the Google Analytics cust omer and b y Google t o thir d-par ty cookies that
+are related t o visits t o other websites. F or example, an adv ertiser ma y want t o use its
+Google Analytics data t o create mor e relevant ads, or t o fur ther analyz e its tr affic. Learn
+more
+our users
+For example, t o prevent abuse and incr ease tr anspar ency and accountability o ver our
+online content moder ation pr actices, Google shar es data about r equests for r emo val of
+content fr om our ser vices with L umen, which collects and analyz es these r equests t o
+facilitate r esear ch to help Internet users understand their rights. Learn mor e.
+partner with Google
+Ther e are over 2 million non-Google websites and apps that par tner with Google t o show
+ads. Learn mor e
+payment information
+For example, if y ou add a cr edit car d or other pa yment method t o your Google Account,
+you can use it t o buy things acr oss our ser vices, lik e apps in the Pla y Store. W e ma y also
+ask for other information, lik e a business tax ID , to help pr ocess y our pa yment. In some
+cases, we ma y also need t o verify y our identity and ma y ask y ou for information t o do
+this.
+We ma y also use pa yment information t o verify that y ou meet age r equir ements, if, for
+example, y ou enter an incorr ect bir thda y indicating y ou’re not old enough t o ha ve a
+Google Account. Learn mor e
+
+Performance of their ad campaigns.
+Learn mor e about the technologies used for adv ertising.
+personalized ads
+You ma y also see personaliz ed ads based on information fr om the adv ertiser . If you
+shopped on an adv ertiser 's website, for example, the y can use that visit information t o
+show y ou ads. Learn mor e
+phone number
+If you add y our phone number t o your account, it can be used for diff erent purposes
+across Google ser vices, depending on y our settings. F or example, y our phone number
+can be used t o help y ou access y our account if y ou for get y our passwor d, help people
+find and connect with y ou, and mak e the ads y ou see mor e relevant t o you. Learn mor e
+Places you label like home and work
+You might choose t o sa ve places t o your Google Account that ar e impor tant t o you, such
+as your home or y our work. If y ou set y our home or work addr esses, the y can be used t o
+help y ou do things mor e easily , such as getting dir ections or finding r esults closer t o your
+home or work, and for ads.
+You can edit or delete y our home or work addr esses anytime in y our Google Account.
+protect against abuse
+For example, information about security thr eats can help us notify y ou if we think y our
+account has been compr omised (at which point we can help y ou tak e steps t o protect
+your account).
+publicly accessible sources
+
+For example, we ma y collect information that’ s publicly a vailable online or fr om other
+public sour ces t o help tr ain Google ’s AI models and build pr oducts and f eatur es lik e
+Google Translate, Gemini Apps, and Cloud AI capabilities. Or , if your business’ s
+information appears on a website, we ma y index and displa y it on Google ser vices.
+rely on cookies to function properly
+For example, we use a cookie called ‘lbcs’ that mak es it possible for y ou to open many
+Google Docs in one br owser . Blocking this cookie would pr event Google Docs fr om
+working as expected. Learn mor e
+safety and reliability
+Some examples of how we use y our information t o help k eep our ser vices saf e and
+reliable include:
+Collecting and analyzing IP addr esses and cookie data t o protect against
+automated abuse. This abuse tak es many forms, such as sending spam t o Gmail
+users, stealing mone y from adv ertisers b y fraudulently clicking on ads, or censoring
+content b y launching a Distributed Denial of Ser vice (DDoS) attack.
+The “last account activity ” featur e in Gmail can help y ou find out if and when
+someone accessed y our email without y our knowledge. This f eatur e shows y ou
+information about r ecent activity in Gmail, such as the IP addr esses that accessed
+your mail, the associated location, and the date and time of access. Learn mor e
+sensitive categories
+When showing y ou personaliz ed ads, we use t opics that we think might be of inter est t o
+you based on y our activity . For example, y ou ma y see ads for things lik e "Cooking and
+Recipes" or " Air Travel.” We don ’t use t opics or show personaliz ed ads based on sensitiv e
+categories lik e race, r eligion, sexual orientation, or health. And we requir e the same fr om
+advertisers  that use our ser vices.
+Sensor data from your device
+
+Your de vice ma y have sensors that can be used t o better understand y our location and
+movement. F or example, an acceler ometer can be used t o determine y our speed and a
+gyroscope t o figur e out y our dir ection of tr avel. Learn mor e about how we use location
+information.
+servers around the world
+For example, we oper ate data centers located around the world  to help k eep our pr oducts
+continuously a vailable for users.
+services to make and receive calls or send and receive messages
+Examples of these ser vices include:
+Google V oice, for making and r eceiving calls, sending text messages, and managing
+voicemail
+Google Meet, for making and r eceiving video calls
+Gmail, for sending and r eceiving emails
+Google Chat, for sending and r eceiving messages
+Google Duo, for making and r eceiving video calls and sending and r eceiving
+messages
+Google Fi, for a phone plan
+show trends
+When lots of people star t sear ching for something, it can pr ovide useful information
+about par ticular tr ends at that time. Google Trends samples Google web sear ches t o
+estimate the popularity of sear ches o ver a cer tain period of time and shar es those
+results publicly in aggr egated terms. Learn mor e
+similar information related to your physical or mental health
+
+If you use fitness pr oducts and apps we off er, such as Fitbit, Pix el W atch, Nest or Google
+Fit, we collect data y ou pr ovide, lik e your height and weight. W e also collect information
+from these apps and de vices, such as y our sleep patterns, hear t rate, skin temper ature,
+calories burned, and steps tak en.
+specific Google services
+For example, y ou can delete your blog  from Blogger or a Google Site y ou own  from
+Google Sites. Y ou can also delete reviews  you’ve left on apps, games, and other content
+in the Pla y Store.
+specific partners
+For example, we allow Y ouTube cr eators and adv ertisers t o work with measur ement
+companies t o learn about the audience of their Y ouTube videos or ads, using cookies or
+similar technologies. Another example is mer chants on our shopping pages, who use
+cookies t o understand how many diff erent people see their pr oduct listings. Learn mor e
+about these par tners and how the y use y our information.
+synced with your Google Account
+Your Chr ome br owsing hist ory is only sa ved to your account if y ou’ve enabled Chr ome
+synchr onization with y our Google Account. Learn mor e
+the people who matter most to you online
+For example, when y ou type an addr ess in the To, Cc, or Bcc field of an email y ou're
+composing, Gmail will suggest addr esses based on the people y ou contact most
+frequently .
+the public
+For example, we pr ocess information about requests t o remo ve content  from our
+services under Google 's content r emo val policies or applicable law t o assess the r equest,
+and t o ensur e transpar ency , impr ove accountability and pr event abuse and fr aud in these
+practices.
+
+third parties
+For example, we pr ocess y our information t o repor t use statistics t o rights holders about
+how their content was used in our ser vices. W e ma y also pr ocess y our information if
+people sear ch for y our name and we displa y sear ch results for sites containing publicly
+available information about y ou.
+use the information we collect across our services
+Depending on y our a vailable settings, some examples of how we use the information we
+collect acr oss our ser vices include:
+When y ou’re signed in t o your Google Account and sear ch on Google, y ou can see
+sear ch results fr om the public web, along with r elevant information fr om the
+content y ou ha ve in other Google pr oducts, lik e Gmail or Google Calendar . This can
+include things lik e the status of y our upcoming flights, r estaur ant, and hotel
+reser vations, or y our phot os. Learn mor e
+If you ha ve communicated with someone via Gmail and want t o add them t o a
+Google Doc or an e vent in Google Calendar , Google mak es it easy t o do so b y
+autocompleting their email addr ess when y ou star t to type in their name. This
+featur e mak es it easier t o shar e things with people y ou know . Learn mor e
+The Google app can use data that y ou ha ve stored in other Google pr oducts t o
+show y ou personaliz ed content, depending on y our settings. F or example, if y ou
+have sear ches st ored in y our W eb & App Activity , the Google app can show y ou
+news ar ticles and other information about y our inter ests, lik e spor ts scor es, based
+on your activity .
+If you connect y our Google Account t o your Google Home, y ou can manage y our
+information and get things done thr ough the Google Assistant. F or example, y ou
+can add e vents t o your Google Calendar or get y our schedule for the da y, ask for
+status updates on y our upcoming flight, or send information lik e driving dir ections
+to your phone. Learn mor e
+If you’re a user in the EU, the decisions y ou mak e on linking ser vices will aff ect how
+certain Google ser vices can use the data acr oss our ser vices.
+Views and interactions with content and ads
+
+For example, we collect information about views and inter actions with ads so we can
+provide aggr egated r epor ts to adv ertisers, lik e telling them whether we ser ved their ad on
+a page and whether the ad was lik ely seen b y a viewer . We ma y also measur e other
+inter actions, such as how y ou mo ve your mouse o ver an ad or if y ou inter act with the
+page on which the ad appears.
+Voice and audio information
+For example, y ou can choose whether y ou want Google t o sa ve an audio r ecor ding t o
+your Google Account when y ou inter act with Google Sear ch, Assistant, and Maps. When
+your de vice detects an audio activ ation command, lik e “He y Google, ” Google r ecor ds your
+voice and audio plus a f ew seconds befor e the activ ation. Learn mor e
+your activity on other sites and apps
+This activity might come fr om y our use of Google ser vices, lik e from syncing y our
+account with Chr ome or y our visits t o sites and apps that par tner with Google. Many
+websites and apps par tner with Google t o impr ove their content and ser vices. F or
+example, a website might use our adv ertising ser vices (lik e AdSense) or analytics t ools
+(like Google Analytics), or it might embed other content (such as videos fr om Y ouTube).
+These ser vices ma y shar e information about y our activity with Google and, depending on
+your account settings  and the pr oducts in use (for instance, when a par tner uses Google
+Analytics in conjunction with our adv ertising ser vices), this data ma y be associated with
+your personal information.
+Learn mor e about how Google uses data when y ou use our par tners' sites or apps.

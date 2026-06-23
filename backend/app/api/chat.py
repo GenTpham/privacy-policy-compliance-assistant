@@ -140,9 +140,9 @@ async def chat_endpoint(
 
             try:
                 if is_conflict_query(body.message):
-                    generator = rag.stream_conflict_answer(body.message, history, source_filter=body.source_filter)
+                    generator = rag.stream_conflict_answer(body.message, history, source_filter=body.source_filter, user_id=current_user.id)
                 else:
-                    generator = rag.stream_answer(body.message, history, source_filter=body.source_filter)
+                    generator = rag.stream_answer(body.message, history, source_filter=body.source_filter, user_id=current_user.id)
                 
                 async for event in generator:
                     yield f"data: {json.dumps(event)}\n\n"
