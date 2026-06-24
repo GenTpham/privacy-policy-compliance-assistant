@@ -1,48 +1,43 @@
 """
-backend/app/services/gcs.py
-Thin wrapper around google-cloud-storage for PDF upload/download.
+Google Cloud Storage Service.
+Handles streaming uploads using google-cloud-storage.
 """
+import asyncio
+from typing import BinaryIO
+
 from google.cloud import storage
-import functools
 
 from backend.app.core.config import get_settings
 
 
-@functools.lru_cache()
-def _get_gcs_client() -> storage.Client:
-    """Return a GCS client, optionally from a service account JSON file."""
-    settings = get_settings()
-    if settings.gcs_credentials_path:
-        return storage.Client.from_service_account_json(settings.gcs_credentials_path)
-    return storage.Client()
-
-
-def upload_to_gcs(
-    file_content: bytes,
+async def upload_file_to_gcs(
+    file_obj: BinaryIO,
     destination_blob_name: str,
-    bucket_name: str,
-    content_type: str = "application/octet-stream",
+    content_type: str = "application/pdf"
 ) -> str:
     """
-    Upload bytes to GCS. Returns the gs:// URI.
-    """
-    client = _get_gcs_client()
-    bucket = client.bucket(bucket_name)
-    blob = bucket.blob(destination_blob_name)
-    blob.upload_from_string(file_content, content_type=content_type)
-    return f"gs://{bucket_name}/{destination_blob_name}"
+    Uploads a file object to GCS.
+    Runs the synchronous GCP client in a threadpool to avoid blocking the event loop.
 
-
-def download_from_gcs(gcs_uri: str) -> bytes:
+    Returns:
+        The gs:// URI of the uploaded file.
     """
-    Download a blob from a gs:// URI. Returns raw bytes.
-    """
-    # Parse gs://bucket/path/to/blob
-    parts = gcs_uri.replace("gs://", "").split("/", 1)
-    bucket_name = parts[0]
-    blob_name = parts[1]
+    settings = get_settings()
 
-    client = _get_gcs_client()
-    bucket = client.bucket(bucket_name)
-    blob = bucket.blob(blob_name)
-    return blob.download_as_bytes()
+    def _upload():
+        if settings.gcs_credentials_path:
+            client = storage.Client.from_service_account_json(
+                settings.gcs_credentials_path, project=settings.gcp_project_id
+            )
+        else:
+            # Uses Application Default Credentials (ADC)
+            client = storage.Client(project=settings.gcp_project_id)
+
+        bucket = client.bucket(settings.gcs_bucket)
+        blob = bucket.blob(destination_blob_name)
+        blob.upload_from_file(file_obj, content_type=content_type)
+        return f"gs://{settings.gcs_bucket}/{destination_blob_name}"
+
+    loop = asyncio.get_running_loop()
+    gs_uri = await loop.run_in_executor(None, _upload)
+    return gs_uri

@@ -31,23 +31,33 @@ def test_require_qdrant_settings_missing_api_key():
 @pytest.mark.asyncio
 async def test_ensure_title_facet_index_skips_when_present():
     qdrant = AsyncMock()
-    qdrant.get_collection = AsyncMock(return_value=MagicMock(payload_schema={"title": {}}))
+    qdrant.get_collection = AsyncMock(return_value=MagicMock(payload_schema={"title": {}, "user_id": {}}))
     await qs.ensure_title_facet_index(qdrant)
     qdrant.create_payload_index.assert_not_called()
 
 
 @pytest.mark.asyncio
 async def test_ensure_title_facet_index_creates_when_missing():
+    from unittest.mock import call
     from qdrant_client.models import PayloadSchemaType
 
     qdrant = AsyncMock()
     qdrant.get_collection = AsyncMock(return_value=MagicMock(payload_schema={}))
     await qs.ensure_title_facet_index(qdrant)
-    qdrant.create_payload_index.assert_called_once_with(
-        collection_name=qs.COLLECTION_NAME,
-        field_name="title",
-        field_schema=PayloadSchemaType.KEYWORD,
-    )
+    
+    assert qdrant.create_payload_index.call_count == 2
+    qdrant.create_payload_index.assert_has_calls([
+        call(
+            collection_name=qs.COLLECTION_NAME,
+            field_name="title",
+            field_schema=PayloadSchemaType.KEYWORD,
+        ),
+        call(
+            collection_name=qs.COLLECTION_NAME,
+            field_name="user_id",
+            field_schema=PayloadSchemaType.KEYWORD,
+        )
+    ], any_order=True)
 
 
 def test_make_qdrant_client_uses_url_and_api_key():

@@ -28,7 +28,7 @@ async def extract_graph_from_chunk(text: str) -> dict:
                 "X-Title": "Privacy Policy Compliance Assistant",
             },
         )
-        model_name = "google/gemma-4-26b-a4b-it"
+        model_name = "openai/gpt-oss-120b:free"
     
     prompt = EXTRACTION_PROMPT.format(text=text)
     
