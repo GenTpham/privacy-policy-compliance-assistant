@@ -1,0 +1,9 @@
+# Dependencies for Airflow worker containers
+pymupdf
+tiktoken
+openai
+qdrant-client
+neo4j
+google-cloud-storage
+sqlalchemy
+psycopg2-binary

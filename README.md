@@ -55,7 +55,7 @@ Main RAG flow:
 2. The backend verifies the JWT and applies rate limiting.
 3. The question is embedded with `nvidia/llama-nemotron-embed-vl-1b-v2`.
 4. Qdrant retrieves relevant passages from the `policies` collection.
-5. `google/gemma-4-26b-a4b` generates a grounded answer.
+5. `openai/gpt-oss-120b:free` generates a grounded answer.
 6. The backend verifies citation references against retrieved chunks.
 7. The UI streams the answer and displays source citations with retrieval scores.
 

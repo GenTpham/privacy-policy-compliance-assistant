@@ -1,65 +1,38 @@
-"""Tests for GCS upload/download service."""
+import io
 import pytest
-from unittest.mock import MagicMock, patch, AsyncMock
-from pathlib import Path
+from unittest.mock import MagicMock, patch
 
-from backend.app.services.gcs import upload_to_gcs, download_from_gcs
+from backend.app.services.gcs import upload_file_to_gcs
 
+@pytest.mark.asyncio
+@patch("backend.app.services.gcs.storage")
+@patch("backend.app.services.gcs.get_settings")
+async def test_upload_file_to_gcs(mock_get_settings, mock_storage):
+    # Setup mock settings
+    mock_settings = MagicMock()
+    mock_settings.gcs_bucket = "test-bucket"
+    mock_settings.gcp_project_id = "test-project"
+    mock_settings.gcs_credentials_path = None
+    mock_get_settings.return_value = mock_settings
 
-class TestUploadToGcs:
-    def test_upload_returns_gcs_uri(self):
-        mock_client = MagicMock()
-        mock_bucket = MagicMock()
-        mock_blob = MagicMock()
-        mock_client.bucket.return_value = mock_bucket
-        mock_bucket.blob.return_value = mock_blob
+    # Setup mock GCS client
+    mock_client = MagicMock()
+    mock_storage.Client.return_value = mock_client
+    mock_bucket = MagicMock()
+    mock_client.bucket.return_value = mock_bucket
+    mock_blob = MagicMock()
+    mock_bucket.blob.return_value = mock_blob
 
-        with patch("backend.app.services.gcs._get_gcs_client", return_value=mock_client):
-            result = upload_to_gcs(
-                file_content=b"fake pdf bytes",
-                destination_blob_name="uploads/user_1/test.pdf",
-                bucket_name="test-bucket",
-            )
+    # Test data
+    file_obj = io.BytesIO(b"dummy pdf content")
+    destination_blob_name = "uploads/tenant1/doc1.pdf"
 
-        assert result == "gs://test-bucket/uploads/user_1/test.pdf"
-        mock_blob.upload_from_string.assert_called_once_with(
-            b"fake pdf bytes", content_type="application/octet-stream"
-        )
+    # Execute
+    result_path = await upload_file_to_gcs(file_obj, destination_blob_name, "application/pdf")
 
-    def test_upload_uses_content_type(self):
-        mock_client = MagicMock()
-        mock_bucket = MagicMock()
-        mock_blob = MagicMock()
-        mock_client.bucket.return_value = mock_bucket
-        mock_bucket.blob.return_value = mock_blob
-
-        with patch("backend.app.services.gcs._get_gcs_client", return_value=mock_client):
-            upload_to_gcs(
-                file_content=b"fake pdf",
-                destination_blob_name="test.pdf",
-                bucket_name="b",
-                content_type="application/pdf",
-            )
-
-        mock_blob.upload_from_string.assert_called_once_with(
-            b"fake pdf", content_type="application/pdf"
-        )
-
-
-class TestDownloadFromGcs:
-    def test_download_returns_bytes(self):
-        mock_client = MagicMock()
-        mock_bucket = MagicMock()
-        mock_blob = MagicMock()
-        mock_client.bucket.return_value = mock_bucket
-        mock_bucket.blob.return_value = mock_blob
-        mock_blob.download_as_bytes.return_value = b'{"chunks": []}'
-
-        with patch("backend.app.services.gcs._get_gcs_client", return_value=mock_client):
-            result = download_from_gcs(
-                gcs_uri="gs://test-bucket/output/result.json",
-            )
-
-        assert result == b'{"chunks": []}'
-        mock_client.bucket.assert_called_once_with("test-bucket")
-        mock_bucket.blob.assert_called_once_with("output/result.json")
+    # Assert
+    assert result_path == "gs://test-bucket/uploads/tenant1/doc1.pdf"
+    mock_storage.Client.assert_called_once_with(project="test-project")
+    mock_client.bucket.assert_called_once_with("test-bucket")
+    mock_bucket.blob.assert_called_once_with(destination_blob_name)
+    mock_blob.upload_from_file.assert_called_once_with(file_obj, content_type="application/pdf")

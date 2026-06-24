@@ -15,7 +15,11 @@ os.environ.setdefault("QDRANT_SKIP_STARTUP_VERIFY", "true")
 os.environ.setdefault("NEO4J_URI", "bolt://localhost:7687")
 os.environ.setdefault("NEO4J_USERNAME", "neo4j")
 os.environ.setdefault("NEO4J_PASSWORD", "password")
+os.environ.setdefault("AIRFLOW_PASSWORD", "test-password")
+os.environ.setdefault("GCS_BUCKET", "test-bucket")
+os.environ.setdefault("GCP_PROJECT_ID", "test-project")
 
+import uuid
 from unittest.mock import AsyncMock, MagicMock
 
 import httpx
@@ -80,6 +84,28 @@ async def _empty_async_iter():
     """Helper: async iterator that yields nothing — simulates zero LLM tokens."""
     return
     yield  # makes this an async generator
+
+
+@pytest.fixture
+def make_document():
+    """Factory fixture for creating Document instances with required fields."""
+    def _make(user_id: int, **overrides):
+        from backend.app.db.models import Document
+        defaults = {
+            "id": str(uuid.uuid4()),
+            "user_id": user_id,
+            "tenant_id": str(user_id),
+            "title": "Test Document",
+            "filename": "test.pdf",
+            "gcs_path": "gs://test-bucket/test.pdf",
+            "collection": "policies",
+            "embedding_model": "test-model",
+            "status": "processing",
+            "source": "upload",
+        }
+        defaults.update(overrides)
+        return Document(**defaults)
+    return _make
 
 
 @pytest.fixture

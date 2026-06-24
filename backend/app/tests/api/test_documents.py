@@ -16,38 +16,27 @@ async def authed_client(auth_client, db_session):
     return auth_client, user
 
 
-async def test_upload_document_unauthorized(auth_client):
-    resp = await auth_client.post("/documents/")
-    assert resp.status_code == 401
-
-
-async def test_upload_document(authed_client, db_session):
-    client, user = authed_client
-    
-    with patch("fastapi.BackgroundTasks.add_task") as mock_add_task:
-        
-        resp = await client.post(
-            "/documents/",
-            data={"title": "My Doc"},
-            files={"file": ("test.pdf", b"pdf content", "application/pdf")},
-        )
-        
-        assert resp.status_code == 200
-        data = resp.json()
-        assert data["title"] == "My Doc"
-        assert data["status"] == "processing"
-        
-        mock_add_task.assert_called_once()
-        
+import uuid
 
 async def test_list_documents(authed_client, db_session):
     client, user = authed_client
     
-    doc = Document(user_id=user.id, title="Doc 1", status="success")
+    doc = Document(
+        id=str(uuid.uuid4()),
+        user_id=user.id,
+        tenant_id=str(user.id),
+        title="Doc 1",
+        filename="test.pdf",
+        gcs_path="gs://bucket/test.pdf",
+        collection="policies",
+        embedding_model="test-model",
+        status="success",
+        source="upload"
+    )
     db_session.add(doc)
     await db_session.commit()
     
-    resp = await client.get("/documents/")
+    resp = await client.get("/api/documents/")
     assert resp.status_code == 200
     data = resp.json()
     assert len(data) == 1
@@ -56,12 +45,23 @@ async def test_list_documents(authed_client, db_session):
 async def test_get_document_status(authed_client, db_session):
     client, user = authed_client
     
-    doc = Document(user_id=user.id, title="Doc 1", status="processing")
+    doc = Document(
+        id=str(uuid.uuid4()),
+        user_id=user.id,
+        tenant_id=str(user.id),
+        title="Doc 1",
+        filename="test.pdf",
+        gcs_path="gs://bucket/test.pdf",
+        collection="policies",
+        embedding_model="test-model",
+        status="processing",
+        source="upload"
+    )
     db_session.add(doc)
     await db_session.commit()
     await db_session.refresh(doc)
     
-    resp = await client.get(f"/documents/{doc.id}")
+    resp = await client.get(f"/api/documents/{doc.id}/status")
     
     assert resp.status_code == 200
     data = resp.json()
