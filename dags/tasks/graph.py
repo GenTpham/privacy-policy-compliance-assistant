@@ -45,7 +45,7 @@ def _get_openrouter_client() -> OpenAI:
 def _extract_graph_from_text(client: OpenAI, text: str) -> dict:
     """Extract entities and relationships from text via LLM."""
     resp = client.chat.completions.create(
-        model="nvidia/nemotron-3-ultra-550b-a55b:free",
+        model="openai/gpt-oss-120b:free",
         messages=[{"role": "user", "content": GRAPH_EXTRACTION_PROMPT.format(text=text)}],
         temperature=0.0,
     )
