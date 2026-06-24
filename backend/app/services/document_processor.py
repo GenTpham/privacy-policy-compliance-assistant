@@ -14,6 +14,7 @@ from backend.app.services.rag import qdrant, openrouter, EMBEDDING_MODEL, COLLEC
 from backend.app.db.neo4j_client import Neo4jClient
 from backend.ingestion.ingest_doc import extract_pdf, extract_txt, embed_batch
 from backend.ingestion.chunker import chunk_passage
+from backend.ingestion.llm_enricher import enrich_chunks_batch
 
 logger = logging.getLogger(__name__)
 
@@ -58,21 +59,24 @@ async def process_document_inline(document_id: int, file_bytes: bytes, filename:
         passage_id = str(document_id)
         chunks = chunk_passage(text, passage_id=passage_id, title=title, source_doc=title)
 
-        # Step 3: Embedding and Upserting (Batched)
+        # Step 3: LLM Enrichment
+        await _update_status(document_id, "enriching_chunks")
+        enriched_chunks = await enrich_chunks_batch(openrouter, chunks, text)
+
+        # Step 4: Embedding and Upserting (Batched)
         await _update_status(document_id, "embedding_and_saving")
         neo4j = Neo4jClient()
         points = []
-        
-        # We process in batches of 50 to avoid rate limits
+
         BATCH_SIZE = 50
-        total = len(chunks)
-        
+        total = len(enriched_chunks)
+
         for batch_start in range(0, total, BATCH_SIZE):
-            batch_chunks = chunks[batch_start: batch_start + BATCH_SIZE]
-            
-            # Embed the whole batch
-            embeddings = await embed_batch(openrouter, [c.text for c in batch_chunks])
-            
+            batch_chunks = enriched_chunks[batch_start: batch_start + BATCH_SIZE]
+
+            # Use enriched_text for embedding
+            embeddings = await embed_batch(openrouter, [c.enriched_text for c in batch_chunks])
+
             for chunk, embedding in zip(batch_chunks, embeddings):
                 point_id = str(uuid4())
                 points.append(
@@ -80,18 +84,21 @@ async def process_document_inline(document_id: int, file_bytes: bytes, filename:
                         id=point_id,
                         vector=embedding,
                         payload={
-                            "title": title, 
+                            "title": title,
                             "source_doc": title,
                             "passage_id": passage_id,
-                            "text": chunk.text, 
+                            "text": chunk.text,
                             "chunk_index": chunk.chunk_index,
                             "token_count": chunk.token_count,
+                            "context_header": chunk.context_header,
+                            "llm_context": chunk.llm_context,
+                            "enriched_text": chunk.enriched_text,
                             "document_id": document_id,
                             "user_id": str(user_id)
                         }
                     )
                 )
-                
+
                 query = """
                 MERGE (d:Document {id: $doc_id, title: $title})
                 MERGE (c:Chunk {id: $chunk_id, user_id: $user_id})
@@ -99,17 +106,17 @@ async def process_document_inline(document_id: int, file_bytes: bytes, filename:
                 MERGE (d)-[:HAS_CHUNK]->(c)
                 """
                 await run_in_threadpool(
-                    neo4j.execute_query, 
-                    query, 
+                    neo4j.execute_query,
+                    query,
                     {
-                        "doc_id": document_id, 
-                        "title": title, 
-                        "chunk_id": point_id, 
+                        "doc_id": document_id,
+                        "title": title,
+                        "chunk_id": point_id,
                         "text": chunk.text,
                         "user_id": str(user_id)
                     }
                 )
-                
+
         if points:
             await qdrant.upsert(
                 collection_name=COLLECTION_NAME,
