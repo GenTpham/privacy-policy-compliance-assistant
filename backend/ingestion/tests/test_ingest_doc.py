@@ -22,14 +22,14 @@ def test_extract_pdf_returns_text(tmp_path):
 
     pdf_path = tmp_path / "policy.pdf"
 
-    # Mock PdfReader to return a page with text
+    # Mock fitz.open to return a document with a page
     mock_page = MagicMock()
-    mock_page.extract_text.return_value = "This is the policy text."
-    mock_reader = MagicMock()
-    mock_reader.is_encrypted = False
-    mock_reader.pages = [mock_page]
+    mock_page.get_text.return_value = "This is the policy text."
+    mock_doc = MagicMock()
+    mock_doc.is_encrypted = False
+    mock_doc.__iter__.return_value = iter([mock_page])
 
-    with patch("backend.ingestion.ingest_doc.PdfReader", return_value=mock_reader):
+    with patch("backend.ingestion.ingest_doc.fitz.open", return_value=mock_doc):
         result = extract_pdf(pdf_path)
 
     assert result == "This is the policy text."
@@ -42,12 +42,12 @@ def test_extract_pdf_raises_on_empty_text(tmp_path):
     pdf_path = tmp_path / "scanned.pdf"
 
     mock_page = MagicMock()
-    mock_page.extract_text.return_value = ""
-    mock_reader = MagicMock()
-    mock_reader.is_encrypted = False
-    mock_reader.pages = [mock_page]
+    mock_page.get_text.return_value = ""
+    mock_doc = MagicMock()
+    mock_doc.is_encrypted = False
+    mock_doc.__iter__.return_value = iter([mock_page])
 
-    with patch("backend.ingestion.ingest_doc.PdfReader", return_value=mock_reader):
+    with patch("backend.ingestion.ingest_doc.fitz.open", return_value=mock_doc):
         with pytest.raises(ValueError, match="No text extracted"):
             extract_pdf(pdf_path)
 
@@ -58,10 +58,10 @@ def test_extract_pdf_raises_on_encrypted(tmp_path):
 
     pdf_path = tmp_path / "encrypted.pdf"
 
-    mock_reader = MagicMock()
-    mock_reader.is_encrypted = True
+    mock_doc = MagicMock()
+    mock_doc.is_encrypted = True
 
-    with patch("backend.ingestion.ingest_doc.PdfReader", return_value=mock_reader):
+    with patch("backend.ingestion.ingest_doc.fitz.open", return_value=mock_doc):
         with pytest.raises(ValueError, match="PDF is encrypted"):
             extract_pdf(pdf_path)
 
@@ -73,14 +73,14 @@ def test_extract_pdf_joins_multiple_pages(tmp_path):
     pdf_path = tmp_path / "multi.pdf"
 
     page1 = MagicMock()
-    page1.extract_text.return_value = "Page one content."
+    page1.get_text.return_value = "Page one content."
     page2 = MagicMock()
-    page2.extract_text.return_value = "Page two content."
-    mock_reader = MagicMock()
-    mock_reader.is_encrypted = False
-    mock_reader.pages = [page1, page2]
+    page2.get_text.return_value = "Page two content."
+    mock_doc = MagicMock()
+    mock_doc.is_encrypted = False
+    mock_doc.__iter__.return_value = iter([page1, page2])
 
-    with patch("backend.ingestion.ingest_doc.PdfReader", return_value=mock_reader):
+    with patch("backend.ingestion.ingest_doc.fitz.open", return_value=mock_doc):
         result = extract_pdf(pdf_path)
 
     assert "Page one content." in result

@@ -81,9 +81,9 @@ class TestEnrichChunksBatch:
         call_count = 0
 
         async def side_effect(*args, **kwargs):
-            nonlocal call_count
-            call_count += 1
-            if call_count == 3:
+            messages = kwargs.get("messages", [])
+            content = str(messages)
+            if "Chunk 2" in content:
                 raise Exception("Transient API failure")
             mock_resp = MagicMock()
             mock_resp.choices = [
