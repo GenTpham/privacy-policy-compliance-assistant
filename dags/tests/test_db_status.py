@@ -11,8 +11,8 @@ class TestUpdateCurrentTask:
     @patch("tasks.db_status._get_engine")
     def test_updates_status_and_current_task(self, mock_engine):
         mock_conn = MagicMock()
-        mock_engine.return_value.connect.return_value.__enter__ = MagicMock(return_value=mock_conn)
-        mock_engine.return_value.connect.return_value.__exit__ = MagicMock(return_value=False)
+        mock_engine.return_value.begin.return_value.__enter__ = MagicMock(return_value=mock_conn)
+        mock_engine.return_value.begin.return_value.__exit__ = MagicMock(return_value=False)
 
         update_current_task("job-123", "download_pdf")
 
@@ -26,8 +26,8 @@ class TestMarkCompleted:
     @patch("tasks.db_status._get_engine")
     def test_sets_status_completed_and_clears_current_task(self, mock_engine):
         mock_conn = MagicMock()
-        mock_engine.return_value.connect.return_value.__enter__ = MagicMock(return_value=mock_conn)
-        mock_engine.return_value.connect.return_value.__exit__ = MagicMock(return_value=False)
+        mock_engine.return_value.begin.return_value.__enter__ = MagicMock(return_value=mock_conn)
+        mock_engine.return_value.begin.return_value.__exit__ = MagicMock(return_value=False)
 
         mark_completed("job-123", "doc-456")
 
@@ -39,8 +39,8 @@ class TestMarkFailed:
     @patch("tasks.db_status._get_engine")
     def test_sets_status_failed_with_error_details(self, mock_engine):
         mock_conn = MagicMock()
-        mock_engine.return_value.connect.return_value.__enter__ = MagicMock(return_value=mock_conn)
-        mock_engine.return_value.connect.return_value.__exit__ = MagicMock(return_value=False)
+        mock_engine.return_value.begin.return_value.__enter__ = MagicMock(return_value=mock_conn)
+        mock_engine.return_value.begin.return_value.__exit__ = MagicMock(return_value=False)
 
         mark_failed("job-123", "doc-456", "extract_text", "OCR failed: corrupt PDF")
 
