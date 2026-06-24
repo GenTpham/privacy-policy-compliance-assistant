@@ -1,7 +1,7 @@
 """Tests for text extraction and validation tasks."""
 import pytest
 
-from dags.tasks.extract import extract_text_from_bytes, validate_text
+from tasks.extract import extract_text_from_bytes, validate_text
 
 
 class TestExtractText:

@@ -9,7 +9,7 @@ import uuid
 import tiktoken
 from google.cloud import storage
 
-from dags.tasks.db_status import update_current_task
+from tasks.db_status import update_current_task
 
 MAX_TOKENS = 400
 OVERLAP_TOKENS = 50

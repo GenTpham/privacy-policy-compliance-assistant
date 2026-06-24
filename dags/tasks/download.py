@@ -7,7 +7,7 @@ from pathlib import Path
 
 from google.cloud import storage
 
-from dags.tasks.db_status import update_current_task
+from tasks.db_status import update_current_task
 
 
 def download_pdf(**context) -> str:

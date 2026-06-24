@@ -7,7 +7,7 @@ import json
 from google.cloud import storage
 from neo4j import GraphDatabase
 
-from dags.tasks.db_status import update_current_task
+from tasks.db_status import update_current_task
 
 
 def _get_neo4j_driver():

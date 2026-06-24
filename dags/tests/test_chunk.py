@@ -3,7 +3,7 @@ import json
 
 import pytest
 
-from dags.tasks.chunk import chunk_text_content
+from tasks.chunk import chunk_text_content
 
 
 class TestChunkTextContent:

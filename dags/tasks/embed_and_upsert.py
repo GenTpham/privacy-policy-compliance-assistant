@@ -11,7 +11,7 @@ from openai import OpenAI
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, PointStruct, VectorParams
 
-from dags.tasks.db_status import update_current_task
+from tasks.db_status import update_current_task
 
 BATCH_SIZE = 50
 BATCH_SLEEP_SECONDS = 3  # Respect free-tier rate limits

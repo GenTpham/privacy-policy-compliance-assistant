@@ -10,7 +10,7 @@ from pathlib import Path
 import fitz  # PyMuPDF
 from google.cloud import storage
 
-from dags.tasks.db_status import update_current_task
+from tasks.db_status import update_current_task
 
 
 def extract_text_from_bytes(pdf_bytes: bytes) -> str:

@@ -8,7 +8,7 @@ import json
 from google.cloud import storage
 from openai import OpenAI
 
-from dags.tasks.db_status import update_current_task
+from tasks.db_status import update_current_task
 
 GRAPH_EXTRACTION_PROMPT = """Extract named entities and relationships from the following text.
 Return a JSON object with:

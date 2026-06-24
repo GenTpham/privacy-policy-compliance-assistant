@@ -4,11 +4,11 @@ from unittest.mock import MagicMock, patch, call
 
 import pytest
 
-from dags.tasks.db_status import update_current_task, mark_completed, mark_failed
+from tasks.db_status import update_current_task, mark_completed, mark_failed
 
 
 class TestUpdateCurrentTask:
-    @patch("dags.tasks.db_status._get_engine")
+    @patch("tasks.db_status._get_engine")
     def test_updates_status_and_current_task(self, mock_engine):
         mock_conn = MagicMock()
         mock_engine.return_value.connect.return_value.__enter__ = MagicMock(return_value=mock_conn)
@@ -23,7 +23,7 @@ class TestUpdateCurrentTask:
 
 
 class TestMarkCompleted:
-    @patch("dags.tasks.db_status._get_engine")
+    @patch("tasks.db_status._get_engine")
     def test_sets_status_completed_and_clears_current_task(self, mock_engine):
         mock_conn = MagicMock()
         mock_engine.return_value.connect.return_value.__enter__ = MagicMock(return_value=mock_conn)
@@ -36,7 +36,7 @@ class TestMarkCompleted:
 
 
 class TestMarkFailed:
-    @patch("dags.tasks.db_status._get_engine")
+    @patch("tasks.db_status._get_engine")
     def test_sets_status_failed_with_error_details(self, mock_engine):
         mock_conn = MagicMock()
         mock_engine.return_value.connect.return_value.__enter__ = MagicMock(return_value=mock_conn)
