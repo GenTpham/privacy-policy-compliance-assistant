@@ -12,8 +12,8 @@ from tasks.db_status import update_current_task
 
 GRAPH_EXTRACTION_PROMPT = """Extract named entities and relationships from the following text.
 Return a JSON object with:
-- "entities": list of {"id": "unique-id", "name": "entity name", "type": "entity type"}
-- "relationships": list of {"source": "entity name", "target": "entity name", "type": "relationship type"}
+- "entities": list of {{"id": "unique-id", "name": "entity name", "type": "entity type"}}
+- "relationships": list of {{"source": "entity name", "target": "entity name", "type": "relationship type"}}
 
 Entity types: Regulation, Organization, DataType, Process, Right, Obligation, Role
 Relationship types: REFERENCES, REQUIRES, PROTECTS, GOVERNS, APPLIES_TO, GRANTS
