@@ -49,6 +49,10 @@ def _extract_graph_from_text(client: OpenAI, text: str) -> dict:
         messages=[{"role": "user", "content": GRAPH_EXTRACTION_PROMPT.format(text=text)}],
         temperature=0.0,
     )
+    
+    if not resp.choices or not resp.choices[0].message or not resp.choices[0].message.content:
+        return {"entities": [], "relationships": []}
+        
     content = resp.choices[0].message.content.strip()
 
     # Strip markdown fences if present

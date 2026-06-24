@@ -63,7 +63,9 @@ async def upload_document(
         await trigger_dag(dag_run_id=dag_run_id, conf={
             "job_id": job_id,
             "doc_id": doc_id,
+            "user_id": current_user.id,
             "tenant_id": tenant_id,
+            "title": doc.title,
             "gcs_path": gcs_path,
             "collection": collection,
             "embedding_model": embedding_model
