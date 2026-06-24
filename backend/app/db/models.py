@@ -60,8 +60,8 @@ class Document(Base):
     status: Mapped[str] = mapped_column(String(20), default="processing")  # processing | ready | failed
     source: Mapped[str] = mapped_column(String(20), default="upload")       # upload | email | sharepoint | s3 | gcs
     chunk_count: Mapped[int] = mapped_column(Integer, default=0)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow, onupdate=_utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow, onupdate=_utcnow)
 
     ingestion_jobs: Mapped[list["IngestionJob"]] = relationship("IngestionJob", back_populates="document")
 
@@ -75,8 +75,8 @@ class IngestionJob(Base):
     status: Mapped[str] = mapped_column(String(20), default="queued")  # queued | running | completed | failed
     current_task: Mapped[str | None] = mapped_column(String(64), nullable=True)
     retry_count: Mapped[int] = mapped_column(Integer, default=0)
-    started_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
-    completed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     failed_task: Mapped[str | None] = mapped_column(String(64), nullable=True)
     error_msg: Mapped[str | None] = mapped_column(Text, nullable=True)
 

@@ -16,7 +16,7 @@ router = APIRouter()
 async def upload_document(
     file: UploadFile = File(...),
     title: str | None = Form(None),
-    tenant_id: str = Form(...),
+    tenant_id: str = Form("default"),
     collection: str = Form("policies"),
     embedding_model: str = Form("nvidia/llama-nemotron-embed-vl-1b-v2:free"),
     current_user: User = Depends(get_current_user),
