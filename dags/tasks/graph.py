@@ -12,8 +12,8 @@ from tasks.db_status import update_current_task
 
 GRAPH_EXTRACTION_PROMPT = """Extract named entities and relationships from the following text.
 Return a JSON object with:
-- "entities": list of {"id": "unique-id", "name": "entity name", "type": "entity type"}
-- "relationships": list of {"source": "entity name", "target": "entity name", "type": "relationship type"}
+- "entities": list of {{"id": "unique-id", "name": "entity name", "type": "entity type"}}
+- "relationships": list of {{"source": "entity name", "target": "entity name", "type": "relationship type"}}
 
 Entity types: Regulation, Organization, DataType, Process, Right, Obligation, Role
 Relationship types: REFERENCES, REQUIRES, PROTECTS, GOVERNS, APPLIES_TO, GRANTS
@@ -45,7 +45,7 @@ def _get_openrouter_client() -> OpenAI:
 def _extract_graph_from_text(client: OpenAI, text: str) -> dict:
     """Extract entities and relationships from text via LLM."""
     resp = client.chat.completions.create(
-        model="google/gemma-4-26b-a4b",
+        model="openai/gpt-oss-120b:free",
         messages=[{"role": "user", "content": GRAPH_EXTRACTION_PROMPT.format(text=text)}],
         temperature=0.0,
     )

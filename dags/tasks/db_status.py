@@ -28,7 +28,7 @@ def _get_engine():
 def update_current_task(job_id: str, task_name: str) -> None:
     """Update ingestion_jobs.current_task and set status=running."""
     engine = _get_engine()
-    with engine.connect() as conn:
+    with engine.begin() as conn:
         conn.execute(
             text("""
                 UPDATE ingestion_jobs
@@ -39,14 +39,13 @@ def update_current_task(job_id: str, task_name: str) -> None:
             """),
             {"job_id": job_id, "task_name": task_name, "now": datetime.now(timezone.utc)},
         )
-        conn.commit()
 
 
 def mark_completed(job_id: str, doc_id: str) -> None:
     """Mark job as completed and document as ready."""
     engine = _get_engine()
     now = datetime.now(timezone.utc)
-    with engine.connect() as conn:
+    with engine.begin() as conn:
         conn.execute(
             text("""
                 UPDATE ingestion_jobs
@@ -59,14 +58,13 @@ def mark_completed(job_id: str, doc_id: str) -> None:
             text("UPDATE documents SET status = 'ready', updated_at = :now WHERE id = :doc_id"),
             {"doc_id": doc_id, "now": now},
         )
-        conn.commit()
 
 
 def mark_failed(job_id: str, doc_id: str, failed_task: str, error_msg: str) -> None:
     """Mark job as failed with error details."""
     engine = _get_engine()
     now = datetime.now(timezone.utc)
-    with engine.connect() as conn:
+    with engine.begin() as conn:
         conn.execute(
             text("""
                 UPDATE ingestion_jobs
@@ -80,7 +78,6 @@ def mark_failed(job_id: str, doc_id: str, failed_task: str, error_msg: str) -> N
             text("UPDATE documents SET status = 'failed', updated_at = :now WHERE id = :doc_id"),
             {"doc_id": doc_id, "now": now},
         )
-        conn.commit()
 
 
 def on_failure_callback(context) -> None:
