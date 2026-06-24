@@ -53,7 +53,7 @@ else:
             "X-OpenRouter-Title": "Privacy Policy Assistant",
         },
     )
-    CHAT_MODEL = "google/gemma-4-26b-a4b-it"
+    CHAT_MODEL = "nvidia/nemotron-3-ultra-550b-a55b:free"
 
 openrouter = AsyncOpenAI(
     base_url="https://openrouter.ai/api/v1",

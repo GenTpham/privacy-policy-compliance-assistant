@@ -19,7 +19,7 @@ async def extract_entities_from_query(question: str) -> list[str]:
             base_url="https://openrouter.ai/api/v1",
             api_key=settings.openrouter_api_key
         )
-        model_name = "google/gemma-4-26b-a4b-it"
+        model_name = "nvidia/nemotron-3-ultra-550b-a55b:free"
     
     prompt = QUERY_EXTRACTION_PROMPT.format(question=question)
     response = await client.chat.completions.create(
