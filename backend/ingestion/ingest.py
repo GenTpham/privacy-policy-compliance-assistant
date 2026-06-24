@@ -22,12 +22,13 @@ from backend.app.core.qdrant_startup import ensure_title_facet_index
 from backend.app.db.neo4j_client import Neo4jClient
 from backend.ingestion.chunker import Chunk, _count_tokens, chunk_passage
 from backend.ingestion.graph_extractor import extract_graph_from_chunk
+from backend.ingestion.llm_enricher import enrich_chunks_batch
 from backend.ingestion.neo4j_writer import upsert_graph_to_neo4j
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 COLLECTION_NAME = "policies"
 BATCH_SIZE = 50              # D-04: conservative for OpenRouter free-tier
-MAX_TOKENS_WARN = 400        # C6 guard: warn before embedding over-long passages
+MAX_TOKENS_WARN = 350        # C6 guard: aligned with chunker MAX_TOKENS (Nemotron safety buffer)
 CHECKPOINT_PATH = Path("ingestion_checkpoint.json")   # D-03
 # All three splits — ingest full corpus for maximum retrieval coverage
 DATASET_PATHS = [
@@ -274,7 +275,7 @@ async def ingest() -> None:
     completed_hashes = load_checkpoint()
 
     # 6. Build work queue with deduplication
-    work_queue: list[tuple[Chunk, str]] = []  # (chunk, sha256_hash)
+    work_queue: list[tuple[Chunk, str, str]] = []  # (chunk, sha256_hash, full_passage)
     seen_hashes: set[str] = set()
     token_warnings = 0
 
@@ -298,20 +299,34 @@ async def ingest() -> None:
                 continue
 
             seen_hashes.add(text_hash)
-            work_queue.append((chunk, text_hash))
+            work_queue.append((chunk, text_hash, record.context))
 
     skipped_checkpoint = len(seen_hashes) - len(work_queue) + len(completed_hashes)
     total = len(work_queue)
     print(f"[ingest] Work queue: {total} chunks to upsert ({len(completed_hashes)} skipped via checkpoint, intra-run dedup applied).")
 
-    # 7. Batch embed → upsert → checkpoint
+    # 7. Batch embed → enrich → upsert → checkpoint
     upserted = 0
     for batch_num, batch_start in enumerate(range(0, total, BATCH_SIZE), start=1):
         batch = work_queue[batch_start: batch_start + BATCH_SIZE]
-        chunks_in_batch = [c for c, _ in batch]
-        hashes_in_batch = [h for _, h in batch]
+        chunks_in_batch = [c for c, _, _ in batch]
+        hashes_in_batch = [h for _, h, _ in batch]
 
-        embeddings = await embed_batch([c.text for c in chunks_in_batch])
+        # LLM enrichment — enrich each chunk with its full passage context
+        enriched_chunks: list[Chunk] = []
+        # Group chunks by passage for efficient enrichment
+        passage_groups: dict[str, list[Chunk]] = {}
+        for chunk, _hash, passage in batch:
+            if passage not in passage_groups:
+                passage_groups[passage] = []
+            passage_groups[passage].append(chunk)
+
+        for passage_text, group_chunks in passage_groups.items():
+            enriched = await enrich_chunks_batch(openrouter, group_chunks, passage_text)
+            enriched_chunks.extend(enriched)
+
+        # Use enriched_text for embedding (includes context_header + llm_context + text)
+        embeddings = await embed_batch([c.enriched_text for c in enriched_chunks])
 
         points = [
             PointStruct(
@@ -324,18 +339,21 @@ async def ingest() -> None:
                     "text": c.text,
                     "chunk_index": c.chunk_index,
                     "token_count": c.token_count,
+                    "context_header": c.context_header,
+                    "llm_context": c.llm_context,
+                    "enriched_text": c.enriched_text,
                 },
             )
-            for c, embedding in zip(chunks_in_batch, embeddings)
+            for c, embedding in zip(enriched_chunks, embeddings)
         ]
 
         # Extract graphs in parallel for the batch
-        print(f"[ingest] Extracting graphs for {len(chunks_in_batch)} chunks...")
-        graph_tasks = [extract_graph_from_chunk(c.text) for c in chunks_in_batch]
+        print(f"[ingest] Extracting graphs for {len(enriched_chunks)} chunks...")
+        graph_tasks = [extract_graph_from_chunk(c.text) for c in enriched_chunks]
         graphs = await asyncio.gather(*graph_tasks)
 
         neo4j_client = Neo4jClient()
-        for chunk, point, graph in zip(chunks_in_batch, points, graphs):
+        for chunk, point, graph in zip(enriched_chunks, points, graphs):
             upsert_graph_to_neo4j(
                 chunk_id=point.id,
                 chunk_text=chunk.text,
