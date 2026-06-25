@@ -33,7 +33,18 @@ async def ensure_title_facet_index(qdrant: AsyncQdrantClient) -> None:
                 field_name="user_id",
                 field_schema=PayloadSchemaType.KEYWORD,
             )
-            print("[startup] Created payload index on 'user_id' for user-level filtering.")
+            print("[startup] Created payload index (KEYWORD) on 'user_id'.")
+        except UnexpectedResponse as exc:
+            if "already exists" not in str(exc).lower():
+                raise
+
+        try:
+            await qdrant.create_payload_index(
+                collection_name=COLLECTION_NAME,
+                field_name="user_id",
+                field_schema=PayloadSchemaType.INTEGER,
+            )
+            print("[startup] Created payload index (INTEGER) on 'user_id' for mixed-type compatibility.")
         except UnexpectedResponse as exc:
             if "already exists" not in str(exc).lower():
                 raise
