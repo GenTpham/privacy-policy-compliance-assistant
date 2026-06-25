@@ -30,7 +30,9 @@ async def extract_entities_from_query(question: str) -> list[str]:
         max_tokens=1024
     )
     
-    content = response.choices[0].message.content.strip()
+    content = (response.choices[0].message.content or "").strip()
+    if not content:
+        return []
     if content.startswith("```"):
         lines = content.splitlines()
         if lines[0].startswith("```"):
