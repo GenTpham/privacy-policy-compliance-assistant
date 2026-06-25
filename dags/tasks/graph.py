@@ -42,28 +42,48 @@ def _get_openrouter_client() -> OpenAI:
     )
 
 
-def _extract_graph_from_text(client: OpenAI, text: str) -> dict:
-    """Extract entities and relationships from text via LLM."""
-    resp = client.chat.completions.create(
-        model="openai/gpt-oss-120b:free",
-        messages=[{"role": "user", "content": GRAPH_EXTRACTION_PROMPT.format(text=text)}],
-        temperature=0.0,
-    )
-    
-    if not resp.choices or not resp.choices[0].message or not resp.choices[0].message.content:
-        return {"entities": [], "relationships": []}
-        
-    content = resp.choices[0].message.content.strip()
+import time
+import openai
 
-    # Strip markdown fences if present
-    if content.startswith("```"):
-        content = content.split("\n", 1)[1]
-        content = content.rsplit("```", 1)[0]
+def _extract_graph_from_text(client: OpenAI, text: str, max_retries: int = 5) -> dict:
+    """Extract entities and relationships from text via LLM with retries."""
+    for attempt in range(max_retries):
+        try:
+            resp = client.chat.completions.create(
+                model="openai/gpt-oss-120b:free",
+                messages=[{"role": "user", "content": GRAPH_EXTRACTION_PROMPT.format(text=text)}],
+                temperature=0.0,
+            )
+            
+            if not resp.choices or not resp.choices[0].message or not resp.choices[0].message.content:
+                return {"entities": [], "relationships": []}
+                
+            content = resp.choices[0].message.content.strip()
 
-    try:
-        return json.loads(content)
-    except json.JSONDecodeError:
-        return {"entities": [], "relationships": []}
+            # Strip markdown fences if present
+            if content.startswith("```"):
+                content = content.split("\n", 1)[1]
+                content = content.rsplit("```", 1)[0]
+
+            try:
+                return json.loads(content)
+            except json.JSONDecodeError:
+                return {"entities": [], "relationships": []}
+                
+        except openai.RateLimitError as e:
+            if attempt == max_retries - 1:
+                print(f"Failed after {max_retries} attempts due to Rate Limit.")
+                raise e
+            wait_time = (2 ** attempt) * 5  # 5, 10, 20, 40 seconds
+            print(f"Rate limit hit (attempt {attempt + 1}/{max_retries}). Waiting {wait_time}s...")
+            time.sleep(wait_time)
+        except Exception as e:
+            if attempt == max_retries - 1:
+                raise e
+            print(f"Unexpected error: {e}. Retrying in 5s...")
+            time.sleep(5)
+            
+    return {"entities": [], "relationships": []}
 
 
 def build_graph(**context) -> str:
