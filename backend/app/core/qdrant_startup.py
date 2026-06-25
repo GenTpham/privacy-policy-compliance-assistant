@@ -26,28 +26,12 @@ async def ensure_title_facet_index(qdrant: AsyncQdrantClient) -> None:
             if "already exists" not in str(exc).lower():
                 raise
 
-    if not (info.payload_schema and "user_id" in info.payload_schema):
-        try:
-            await qdrant.create_payload_index(
-                collection_name=COLLECTION_NAME,
-                field_name="user_id",
-                field_schema=PayloadSchemaType.KEYWORD,
-            )
-            print("[startup] Created payload index (KEYWORD) on 'user_id'.")
-        except UnexpectedResponse as exc:
-            if "already exists" not in str(exc).lower():
-                raise
-
-        try:
-            await qdrant.create_payload_index(
-                collection_name=COLLECTION_NAME,
-                field_name="user_id",
-                field_schema=PayloadSchemaType.INTEGER,
-            )
-            print("[startup] Created payload index (INTEGER) on 'user_id' for mixed-type compatibility.")
-        except UnexpectedResponse as exc:
-            if "already exists" not in str(exc).lower():
-                raise
+    # Note: We intentionally do NOT create a payload index on 'user_id' because
+    # it can contain mixed types (strings like "user-001" and integers like 1).
+    # Qdrant only supports ONE index type per field. If we index it as KEYWORD, 
+    # integer filtering fails. If we index it as INTEGER, string filtering fails.
+    # By leaving it unindexed, Qdrant does a full scan which is fine for this scale
+    # and supports our mixed-type `Filter(should=[...])` query.
 
 
 async def verify_qdrant_for_serving(qdrant: AsyncQdrantClient) -> int:
