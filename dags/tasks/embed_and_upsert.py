@@ -50,6 +50,8 @@ def _get_qdrant_client() -> QdrantClient:
     return QdrantClient(url=url, api_key=api_key if api_key else None)
 
 
+from qdrant_client.models import PayloadSchemaType
+
 def _ensure_collection(qdrant: QdrantClient, collection: str, dim: int) -> None:
     """Create Qdrant collection if it doesn't exist."""
     collections = [c.name for c in qdrant.get_collections().collections]
@@ -58,6 +60,13 @@ def _ensure_collection(qdrant: QdrantClient, collection: str, dim: int) -> None:
             collection_name=collection,
             vectors_config=VectorParams(size=dim, distance=Distance.COSINE),
         )
+        # Ensure indices are created
+        for field in ["user_id", "tenant_id", "doc_id"]:
+            qdrant.create_payload_index(
+                collection_name=collection,
+                field_name=field,
+                field_schema=PayloadSchemaType.KEYWORD,
+            )
 
 
 def embed_and_upsert_qdrant(**context) -> dict:
