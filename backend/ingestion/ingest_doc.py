@@ -23,6 +23,7 @@ from backend.app.core.qdrant_client import make_qdrant_client
 from backend.app.db.models import Document
 from backend.app.db import session as db_session
 from backend.ingestion.chunker import Chunk, chunk_passage
+from backend.ingestion.llm_enricher import enrich_chunks_batch
 from sqlalchemy import select
 
 # ── Constants (mirrored from ingest.py for consistency) ───────────────────────
@@ -108,15 +109,10 @@ async def embed_batch(
     """
     for attempt in range(retries):
         try:
-            # OpenRouter Nemotron VL format requirement: multimodal content array
-            nemotron_input = [
-                {"content": [{"type": "text", "text": t}]} for t in texts
-            ]
             resp = await openrouter.embeddings.create(
                 model=EMBED_MODEL,
-                input=["ignored"],  # bypass SDK validation
-                extra_body={"input": nemotron_input},
-                encoding_format="float"
+                input=texts,
+                encoding_format="float",
             )
             return [item.embedding for item in sorted(resp.data, key=lambda x: x.index)]
         except Exception as exc:
@@ -290,14 +286,21 @@ async def ingest_doc(filepath: Path, title: str, dry_run: bool = False) -> None:
                         await session.commit()
             return
 
-        # 10. Batch embed and upsert (collection already ensured above)
-        total = len(new_pairs)
+        # 10. Enrich chunks with LLM context
+        print(f"[ingest_doc] Enriching {len(new_pairs)} chunks with LLM context...")
+        new_chunks_only = [c for c, _ in new_pairs]
+        enriched_chunks = await enrich_chunks_batch(openrouter, new_chunks_only, text)
+        enriched_pairs = list(zip(enriched_chunks, [uid for _, uid in new_pairs]))
+
+        # 11. Batch embed and upsert
+        total = len(enriched_pairs)
         for batch_start in range(0, total, BATCH_SIZE):
-            batch = new_pairs[batch_start: batch_start + BATCH_SIZE]
+            batch = enriched_pairs[batch_start: batch_start + BATCH_SIZE]
             chunks_in_batch = [c for c, _ in batch]
             ids_in_batch = [uid for _, uid in batch]
 
-            embeddings = await embed_batch(openrouter, [c.text for c in chunks_in_batch])
+            # Use enriched_text for embedding
+            embeddings = await embed_batch(openrouter, [c.enriched_text for c in chunks_in_batch])
 
             points = [
                 PointStruct(
@@ -310,6 +313,9 @@ async def ingest_doc(filepath: Path, title: str, dry_run: bool = False) -> None:
                         "text": chunk.text,
                         "chunk_index": chunk.chunk_index,
                         "token_count": chunk.token_count,
+                        "context_header": chunk.context_header,
+                        "llm_context": chunk.llm_context,
+                        "enriched_text": chunk.enriched_text,
                         "file_type": file_type,
                     },
                 )
@@ -328,13 +334,11 @@ async def ingest_doc(filepath: Path, title: str, dry_run: bool = False) -> None:
                     "Re-run to retry failed batch."
                 )
 
-            # Sleep only between batches — skip after the last one to avoid
-            # an unnecessary delay when all work is done.
             if batch_start + BATCH_SIZE < total:
                 await asyncio.sleep(BATCH_SLEEP_SECONDS)
 
         print(
-            f"[ingest_doc] Done. Upserted {len(new_pairs)} new chunks "
+            f"[ingest_doc] Done. Upserted {len(enriched_pairs)} new chunks "
             f"({len(existing)} skipped — already indexed)."
         )
 

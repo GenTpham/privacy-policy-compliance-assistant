@@ -46,25 +46,25 @@ services:
       retries: 6
       start_period: 60s
     restart: on-failure
-    command: uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
+    command: uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --reload
     volumes:
-      - ./backend/data:/app/backend/data
+      - ./backend:/app/backend
 
   frontend:
     build:
       context: frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     ports:
-      - "127.0.0.1:8081:80"
+      - "127.0.0.1:8081:5173"
+    environment:
+      - VITE_API_PROXY_TARGET=http://backend:8000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     depends_on:
       backend:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/index.html || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
+    # Disable healthcheck for dev mode since nginx is gone and vite dev server uses different paths
     restart: on-failure
 
 volumes:

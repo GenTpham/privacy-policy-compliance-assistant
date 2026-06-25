@@ -185,11 +185,9 @@ async def stream_answer(
     """
     # Step 1: Embed query & extract entities for graph search (RAG-01)
     import asyncio
-    nemotron_input = [{"content": [{"type": "text", "text": message}]}]
     embed_task = openrouter.embeddings.create(
         model=EMBEDDING_MODEL,
-        input=["ignored"],
-        extra_body={"input": nemotron_input},
+        input=[message],
         encoding_format="float",
     )
     entities_task = extract_entities_from_query(message)
@@ -356,11 +354,9 @@ async def stream_conflict_answer(
     """
     # Step 1: Embed query & extract entities
     import asyncio
-    nemotron_input = [{"content": [{"type": "text", "text": message}]}]
     embed_task = openrouter.embeddings.create(
         model=EMBEDDING_MODEL,
-        input=["ignored"],
-        extra_body={"input": nemotron_input},
+        input=[message],
         encoding_format="float",
     )
     entities_task = extract_entities_from_query(message)
