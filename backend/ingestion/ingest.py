@@ -153,11 +153,22 @@ def save_checkpoint(completed: set[str]) -> None:
 async def embed_batch(texts: list[str], retries: int = 5) -> list[list[float]]:
     """
     Embed a batch of texts via Nemotron on OpenRouter.
+    Uses Nemotron multimodal content array format (must match rag.py query format).
     Exponential backoff on 429 errors (D-04, D-05, INGEST-05).
     """
     for attempt in range(retries):
         try:
-            resp = await openrouter.embeddings.create(model=EMBED_MODEL, input=texts, encoding_format="float")
+            # OpenRouter Nemotron VL format: multimodal content array
+            # MUST match the format used in rag.py query embedding
+            nemotron_input = [
+                {"content": [{"type": "text", "text": t}]} for t in texts
+            ]
+            resp = await openrouter.embeddings.create(
+                model=EMBED_MODEL,
+                input=["ignored"],  # bypass SDK validation
+                extra_body={"input": nemotron_input},
+                encoding_format="float",
+            )
             # Sort by index to ensure order matches input (AI-SPEC §3 note)
             return [item.embedding for item in sorted(resp.data, key=lambda x: x.index)]
         except Exception as exc:
