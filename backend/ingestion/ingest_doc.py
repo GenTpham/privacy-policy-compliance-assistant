@@ -109,15 +109,10 @@ async def embed_batch(
     """
     for attempt in range(retries):
         try:
-            # OpenRouter Nemotron VL format requirement: multimodal content array
-            nemotron_input = [
-                {"content": [{"type": "text", "text": t}]} for t in texts
-            ]
             resp = await openrouter.embeddings.create(
                 model=EMBED_MODEL,
-                input=["ignored"],  # bypass SDK validation
-                extra_body={"input": nemotron_input},
-                encoding_format="float"
+                input=texts,
+                encoding_format="float",
             )
             return [item.embedding for item in sorted(resp.data, key=lambda x: x.index)]
         except Exception as exc:
