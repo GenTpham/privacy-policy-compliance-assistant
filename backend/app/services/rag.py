@@ -206,14 +206,7 @@ async def stream_answer(
         if source_filter:
             must_conditions.append(FieldCondition(key="title", match=MatchValue(value=source_filter)))
         if user_id is not None:
-            # Qdrant MatchAny requires elements of the SAME type.
-            # We must use a nested Filter with 'should' (OR logic) for mixed types.
-            user_conditions = [
-                FieldCondition(key="user_id", match=MatchAny(any=[str(user_id), "system"]))
-            ]
-            if str(user_id).isdigit():
-                user_conditions.append(FieldCondition(key="user_id", match=MatchValue(value=int(user_id))))
-            must_conditions.append(Filter(should=user_conditions))
+            must_conditions.append(FieldCondition(key="user_id", match=MatchAny(any=[str(user_id), "system"])))
         query_filter = Filter(must=must_conditions) if must_conditions else None
 
         response = await qdrant.query_points(
@@ -381,12 +374,7 @@ async def stream_conflict_answer(
         if source_filter:
             must_conditions.append(FieldCondition(key="title", match=MatchValue(value=source_filter)))
         if user_id is not None:
-            user_conditions = [
-                FieldCondition(key="user_id", match=MatchAny(any=[str(user_id), "system"]))
-            ]
-            if str(user_id).isdigit():
-                user_conditions.append(FieldCondition(key="user_id", match=MatchValue(value=int(user_id))))
-            must_conditions.append(Filter(should=user_conditions))
+            must_conditions.append(FieldCondition(key="user_id", match=MatchAny(any=[str(user_id), "system"])))
         query_filter = Filter(must=must_conditions) if must_conditions else None
 
         response = await qdrant.query_points(
