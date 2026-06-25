@@ -206,7 +206,12 @@ async def stream_answer(
         if source_filter:
             must_conditions.append(FieldCondition(key="title", match=MatchValue(value=source_filter)))
         if user_id is not None:
-            must_conditions.append(FieldCondition(key="user_id", match=MatchAny(any=[str(user_id), "system"])))
+            # Type mismatch fix: Qdrant distinguishes between int(1) and str("1") in payloads.
+            # Depending on ingestion, user_id might be stored as either type. We query for both.
+            search_ids = [str(user_id), "system"]
+            if str(user_id).isdigit():
+                search_ids.append(int(user_id))
+            must_conditions.append(FieldCondition(key="user_id", match=MatchAny(any=search_ids)))
         query_filter = Filter(must=must_conditions) if must_conditions else None
 
         response = await qdrant.query_points(
@@ -374,7 +379,10 @@ async def stream_conflict_answer(
         if source_filter:
             must_conditions.append(FieldCondition(key="title", match=MatchValue(value=source_filter)))
         if user_id is not None:
-            must_conditions.append(FieldCondition(key="user_id", match=MatchAny(any=[str(user_id), "system"])))
+            search_ids = [str(user_id), "system"]
+            if str(user_id).isdigit():
+                search_ids.append(int(user_id))
+            must_conditions.append(FieldCondition(key="user_id", match=MatchAny(any=search_ids)))
         query_filter = Filter(must=must_conditions) if must_conditions else None
 
         response = await qdrant.query_points(
