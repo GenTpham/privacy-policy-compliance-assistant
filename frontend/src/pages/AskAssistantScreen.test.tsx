@@ -40,6 +40,7 @@ describe("AskAssistantScreen", () => {
       { role: "assistant", content: "Answer [1].", citations: [citation] },
     ]);
     renderWithTheme(<AskAssistantScreen chat={chat} forceLogout={vi.fn()} />);
+    await screen.findByText("Google"); // wait for sources to load
     expect(await screen.findByRole("button", { name: /citation 1/i })).toBeInTheDocument();
   });
 
@@ -49,8 +50,9 @@ describe("AskAssistantScreen", () => {
       { role: "assistant", content: "Answer [1].", citations: [citation] },
     ]);
     renderWithTheme(<AskAssistantScreen chat={chat} forceLogout={vi.fn()} />);
+    await screen.findByText("Google"); // wait for sources to load
     await userEvent.click(await screen.findByRole("button", { name: /citation 1/i }));
-    expect(screen.getByText(/Evidence/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Evidence/i)).toBeInTheDocument();
   });
 
   test("calls retry on error answer", async () => {
@@ -59,6 +61,7 @@ describe("AskAssistantScreen", () => {
       { role: "assistant", content: "", isError: true },
     ]);
     renderWithTheme(<AskAssistantScreen chat={chat} forceLogout={vi.fn()} />);
+    await screen.findByText("Google"); // wait for sources to load
     await userEvent.click(screen.getByRole("button", { name: /thử lại/i }));
     expect(chat.retry).toHaveBeenCalled();
   });

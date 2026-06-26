@@ -1,6 +1,7 @@
 import { describe, test, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
+import { ChatPage } from "@/pages/ChatPage";
 
 // Mock hooks to prevent actual API calls
 vi.mock("@/hooks/useAuth", () => ({
@@ -23,8 +24,7 @@ describe("ChatPage (UI-02)", () => {
     localStorage.setItem("access_token", "test-token");
   });
 
-  test("renders message list and chat input", async () => {
-    const { ChatPage } = await import("@/pages/ChatPage");
+  test("renders message list and chat input", () => {
     render(
       <MemoryRouter>
         <ChatPage />
@@ -38,8 +38,7 @@ describe("ChatPage (UI-02)", () => {
     ).toBeInTheDocument();
   });
 
-  test("renders empty state heading when messages is empty", async () => {
-    const { ChatPage } = await import("@/pages/ChatPage");
+  test("renders empty state heading when messages is empty", () => {
     render(
       <MemoryRouter>
         <ChatPage />
