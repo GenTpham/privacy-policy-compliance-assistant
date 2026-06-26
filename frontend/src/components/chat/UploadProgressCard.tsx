@@ -16,25 +16,27 @@ export function UploadProgressCard({ fileName, docStatus, currentTask, jobStatus
     { id: "extract", label: "Extracting text" },
     { id: "validate", label: "Validating text" },
     { id: "chunk", label: "Chunking & formatting" },
-    { id: "embed", label: "Embedding into Qdrant" },
-    { id: "graph", label: "Building Knowledge Graph" },
-    { id: "neo4j", label: "Upserting to Neo4j" },
+    { id: "embed_and_graph", label: "Embedding & Knowledge Graph generation" },
     { id: "ready", label: "Ready for questions" },
   ];
 
   // Determine current step index
   let activeIndex = 0;
   if (docStatus === "ready") {
-    activeIndex = 8;
+    activeIndex = 6;
   } else if (jobStatus === "running") {
     if (currentTask === "download_pdf") activeIndex = 1;
     else if (currentTask === "extract_text") activeIndex = 2;
     else if (currentTask === "validate_text") activeIndex = 3;
     else if (currentTask === "chunk_text") activeIndex = 4;
-    else if (currentTask === "embed_and_upsert_qdrant" || currentTask === "generate_embeddings" || currentTask === "upsert_qdrant") activeIndex = 5;
-    else if (currentTask === "build_graph") activeIndex = 6;
-    else if (currentTask === "upsert_neo4j") activeIndex = 7;
-    else if (currentTask === "finalize") activeIndex = 8;
+    else if (
+      currentTask === "embed_and_upsert_qdrant" || 
+      currentTask === "generate_embeddings" || 
+      currentTask === "upsert_qdrant" || 
+      currentTask === "build_graph" || 
+      currentTask === "upsert_neo4j"
+    ) activeIndex = 5;
+    else if (currentTask === "finalize") activeIndex = 6;
     else activeIndex = 1; // default if unknown running task
   } else if (jobStatus === "queued") {
     activeIndex = 0;
