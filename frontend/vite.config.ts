@@ -10,6 +10,9 @@ export default defineConfig({
     alias: { "@": "/src" },
   },
   server: {
+    watch: {
+      usePolling: true,
+    },
     proxy: {
       "/api": target,
       "/auth": target,

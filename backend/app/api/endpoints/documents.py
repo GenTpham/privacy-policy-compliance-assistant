@@ -119,3 +119,29 @@ async def get_document_status(
         raise HTTPException(status_code=404, detail="Document not found")
         
     return {"id": document_id, "status": status}
+
+@router.get("/{document_id}/job_status")
+async def get_document_job_status(
+    document_id: str,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    # Get document status and ingestion job status
+    result = await db.execute(
+        select(Document.status, IngestionJob.current_task, IngestionJob.status.label("job_status"))
+        .outerjoin(IngestionJob, IngestionJob.doc_id == Document.id)
+        .where(Document.id == document_id, Document.user_id == current_user.id)
+        .order_by(IngestionJob.started_at.desc())
+        .limit(1)
+    )
+    row = result.first()
+    
+    if not row:
+        raise HTTPException(status_code=404, detail="Document not found")
+        
+    return {
+        "id": document_id, 
+        "doc_status": row.status, 
+        "current_task": row.current_task,
+        "job_status": row.job_status
+    }

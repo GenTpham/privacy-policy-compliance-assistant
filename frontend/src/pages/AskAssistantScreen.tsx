@@ -1,8 +1,9 @@
-import { useState, useRef, useEffect } from "react";
-import { MessageSquare } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { MessageSquare, Paperclip } from "lucide-react";
 import { ConfidenceBar } from "@/components/ui/ConfidenceBar";
 import { StreamingCursor } from "@/components/chat/StreamingCursor";
 import { AnswerCard } from "@/components/chat/AnswerCard";
+import { UploadProgressCard } from "@/components/chat/UploadProgressCard";
 import { SUGGESTED_PROMPTS } from "@/lib/mockData";
 import { fetchWithAuth } from "@/lib/api";
 import type { UseSSEChatReturn, Citation } from "@/hooks/useSSEChat";
@@ -23,6 +24,16 @@ export function AskAssistantScreen({ chat, forceLogout }: Props) {
   const [topicFilter, setTopicFilter] = useState("All Topics");
   const [activeEvidence, setActiveEvidence] = useState<Citation[]>([]);
   const [isEvidenceOpen, setIsEvidenceOpen] = useState(false);
+
+  // Upload state
+  const [uploadState, setUploadState] = useState<{
+    docId: string;
+    fileName: string;
+    docStatus: string;
+    currentTask: string;
+    jobStatus: string;
+  } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -45,7 +56,7 @@ export function AskAssistantScreen({ chat, forceLogout }: Props) {
     const isNewMessage = messages.length > prevLengthRef.current;
     prevLengthRef.current = messages.length;
 
-    if (isNewMessage) {
+    if (isNewMessage || uploadState) {
       setIsAutoScroll(true);
       scrollToBottom(true);
     } else if (isAutoScroll) {
@@ -56,7 +67,7 @@ export function AskAssistantScreen({ chat, forceLogout }: Props) {
     if (last?.role === "assistant" && last.citations && last.citations.length > 0) {
       setActiveEvidence(last.citations);
     }
-  }, [messages, isAutoScroll]);
+  }, [messages, uploadState, isAutoScroll]);
 
   const handleScroll = () => {
     if (scrollContainerRef.current) {
@@ -66,7 +77,7 @@ export function AskAssistantScreen({ chat, forceLogout }: Props) {
     }
   };
 
-  useEffect(() => {
+  const fetchSources = useCallback(() => {
     fetchWithAuth("/api/sources", { method: "GET" }, forceLogout)
       .then((r) => {
         if (!r.ok) throw new Error(`Sources fetch failed: ${r.status}`);
@@ -80,8 +91,76 @@ export function AskAssistantScreen({ chat, forceLogout }: Props) {
         setSourcesError("Could not load sources. Try refreshing the page.");
         setSourcesLoading(false);
       });
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  // mount only — forceLogout identity changes on each render; adding it would re-fetch continuously
+  }, [forceLogout]);
+
+  useEffect(() => {
+    fetchSources();
+  }, [fetchSources]);
+
+  // Polling effect for upload
+  useEffect(() => {
+    if (!uploadState?.docId) return;
+    if (uploadState.docStatus === "ready" || uploadState.docStatus === "failed") return;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetchWithAuth(`/api/documents/${uploadState.docId}/job_status`, { method: "GET" }, forceLogout);
+        if (res.ok) {
+          const data = await res.json();
+          setUploadState(prev => prev ? {
+            ...prev,
+            docStatus: data.doc_status,
+            currentTask: data.current_task || prev.currentTask,
+            jobStatus: data.job_status || prev.jobStatus
+          } : null);
+
+          if (data.doc_status === "ready") {
+            fetchSources();
+          }
+        }
+      } catch (e) {
+        // ignore errors during polling
+      }
+    }, 2000);
+
+    return () => clearInterval(interval);
+  }, [uploadState?.docId, uploadState?.docStatus, forceLogout, fetchSources]);
+
+  const handleUploadFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setUploadState({
+      docId: "",
+      fileName: file.name,
+      docStatus: "processing",
+      currentTask: "upload",
+      jobStatus: "running"
+    });
+    
+    const formData = new FormData();
+    formData.append("file", file);
+    
+    try {
+      const res = await fetchWithAuth("/api/documents/", {
+        method: "POST",
+        body: formData,
+      }, forceLogout);
+      
+      if (res.ok) {
+        const data = await res.json();
+        setUploadState(prev => prev ? { ...prev, docId: data.document_id, jobStatus: "queued" } : null);
+        fetchSources();
+      } else {
+        setUploadState(prev => prev ? { ...prev, docStatus: "failed", jobStatus: "failed" } : null);
+      }
+    } catch (err) {
+      setUploadState(prev => prev ? { ...prev, docStatus: "failed", jobStatus: "failed" } : null);
+    }
+    
+    // reset input
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   const handleOpenEvidence = (c: Citation) => {
     setActiveEvidence([c]);
@@ -98,6 +177,7 @@ export function AskAssistantScreen({ chat, forceLogout }: Props) {
     setInput("");
     setIsEvidenceOpen(false);
   };
+
   return (
     <div className="flex h-full overflow-hidden">
       {/* Left filter sidebar */}
@@ -182,7 +262,7 @@ export function AskAssistantScreen({ chat, forceLogout }: Props) {
           onScroll={handleScroll}
           className="flex-1 overflow-y-auto px-6 py-8 flex flex-col gap-6"
         >
-          {messages.length === 0 && (
+          {messages.length === 0 && !uploadState && (
             <div className="flex flex-col items-center justify-center px-5 py-24 animate-stagger" style={{ "--idx": 1 } as React.CSSProperties}>
               <div className="relative mb-6">
                 <div className="absolute inset-0 bg-accent/20 blur-2xl rounded-full" />
@@ -239,6 +319,19 @@ export function AskAssistantScreen({ chat, forceLogout }: Props) {
               </span>
             </div>
           ))}
+
+          {/* Upload Progress Message */}
+          {uploadState && (
+            <div className="flex flex-col max-w-[85%] items-start self-start">
+              <UploadProgressCard
+                fileName={uploadState.fileName}
+                docStatus={uploadState.docStatus}
+                currentTask={uploadState.currentTask}
+                jobStatus={uploadState.jobStatus}
+              />
+            </div>
+          )}
+
           <div ref={messagesEndRef} />
         </div>
 
@@ -257,7 +350,21 @@ export function AskAssistantScreen({ chat, forceLogout }: Props) {
 
         {/* Input */}
         <div className="px-6 pb-6 pt-3 shrink-0 bg-surface">
-          <div className="flex gap-3 border border-border rounded-xl p-2.5 bg-surface-2 transition-colors focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20 focus-within:bg-background shadow-sm">
+          <div className="flex items-center gap-3 border border-border rounded-xl p-2.5 bg-surface-2 transition-colors focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20 focus-within:bg-background shadow-sm">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="p-2 text-faint hover:text-accent bg-transparent border-none rounded-lg cursor-pointer transition-colors active:scale-95 flex items-center justify-center"
+              title="Upload Policy"
+            >
+              <Paperclip className="w-5 h-5" />
+            </button>
+            <input 
+              type="file" 
+              className="hidden" 
+              ref={fileInputRef} 
+              onChange={handleUploadFile}
+              accept=".pdf,.txt,.md,.docx"
+            />
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
