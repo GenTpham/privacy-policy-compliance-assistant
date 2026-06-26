@@ -149,7 +149,7 @@ async def run_benchmark(
     print("\n" + "=" * 80)
     print("  BENCHMARK RESULTS")
     print("=" * 80)
-    print(f"\n{'Metric':<25} {'Naive RAG':>12} {'Optimized RAG':>15} {'Δ':>10}")
+    print(f"\n{'Metric':<25} {'Naive RAG':>12} {'Optimized RAG':>15} {'Diff':>10}")
     print("-" * 65)
     for metric in results["naive"]:
         naive_val = results["naive"][metric]

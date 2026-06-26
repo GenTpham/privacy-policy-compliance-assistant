@@ -32,9 +32,10 @@ class TestNaiveChunk:
         assert len(result) == 1
 
     def test_no_overlap_by_default(self):
-        text = "word " * 400  # 2000 chars
+        text = "abcdefghij" * 200  # 2000 chars, no repeating 10-char sequences across boundaries that easily match unless by chance
         result = naive_chunk(text, chunk_size=1000, overlap=0)
         # First chunk ends at char 1000, second starts at char 1000
-        assert result[0] != result[1]
-        # No shared content
-        assert result[0][-10:] not in result[1][:10] or result[0][-10:].strip() == ""
+        assert len(result) == 2
+        # No shared overlap
+        assert text[:1000] == result[0]
+        assert text[1000:] == result[1]

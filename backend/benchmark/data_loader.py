@@ -47,7 +47,7 @@ def load_fiqa() -> FiQAData:
         queries[qid] = row["text"]
 
     # Load qrels (relevance judgments)
-    qrels_ds = load_dataset("BeIR/fiqa", "default", split="test")
+    qrels_ds = load_dataset("BeIR/fiqa-qrels", split="test")
     qrels: dict[str, list[str]] = {}
     for row in qrels_ds:
         qid = str(row["query-id"])

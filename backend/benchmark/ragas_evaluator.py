@@ -16,10 +16,10 @@ from ragas.metrics import (
     context_recall,
     faithfulness,
 )
-from langchain_openai import ChatOpenAI
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 
 from backend.app.core.config import get_settings
-from backend.benchmark.config import REPORT_PATH
+from backend.benchmark.config import REPORT_PATH, EMBED_MODEL
 
 
 @dataclass
@@ -58,6 +58,14 @@ def _make_judge_llm() -> ChatOpenAI:
         temperature=0.0,
     )
 
+def _make_embeddings() -> OpenAIEmbeddings:
+    settings = get_settings()
+    return OpenAIEmbeddings(
+        model=EMBED_MODEL,
+        openai_api_key=settings.openrouter_api_key,
+        openai_api_base="https://openrouter.ai/api/v1",
+    )
+
 
 def run_ragas_evaluation(
     naive_records: list[BenchmarkRecord],
@@ -77,6 +85,7 @@ def run_ragas_evaluation(
         a dict of metric_name → score.
     """
     judge_llm = _make_judge_llm()
+    embeddings = _make_embeddings()
     metrics = [faithfulness, answer_correctness, context_precision, context_recall]
 
     # Evaluate naive
@@ -86,6 +95,7 @@ def run_ragas_evaluation(
         dataset=naive_ds,
         metrics=metrics,
         llm=judge_llm,
+        embeddings=embeddings,
     )
 
     # Evaluate optimized
@@ -95,6 +105,7 @@ def run_ragas_evaluation(
         dataset=optimized_ds,
         metrics=metrics,
         llm=judge_llm,
+        embeddings=embeddings,
     )
 
     results = {
