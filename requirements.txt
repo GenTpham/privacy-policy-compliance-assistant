@@ -26,3 +26,8 @@ alembic
 google-cloud-storage
 httpx
 respx==0.23.1
+
+# --- Benchmark ---
+datasets
+ragas
+langchain-openai
