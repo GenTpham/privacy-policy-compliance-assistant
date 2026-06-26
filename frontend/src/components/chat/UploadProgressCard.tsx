@@ -43,70 +43,84 @@ export function UploadProgressCard({ fileName, docStatus, currentTask, jobStatus
   }
 
   const isFailed = docStatus === "failed" || jobStatus === "failed";
+  
+  // Claude Code Agent Style: Reveal steps sequentially
+  const visibleSteps = steps.filter((_, idx) => idx <= activeIndex);
 
   return (
-    <div className="bg-surface border border-border rounded-2xl p-5 shadow-[var(--shadow-diffusion)] w-full max-w-md my-4">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center border border-accent/20">
-          <FileText className="w-5 h-5 text-accent" />
+    <motion.div 
+      layout
+      className="bg-surface border border-border rounded-2xl p-5 shadow-[var(--shadow-diffusion)] w-full max-w-md my-4"
+    >
+      <motion.div layout className="flex items-center gap-4 mb-4">
+        <div className="w-10 h-10 rounded-xl bg-surface-2 flex items-center justify-center border border-border-2 shrink-0">
+          <FileText className="w-5 h-5 text-text-2" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="text-[14px] font-bold text-text-1 truncate">{fileName}</div>
-          <div className="text-[12px] font-medium text-muted">
+          <div className="text-[14px] font-bold text-text-1 truncate tracking-tight">{fileName}</div>
+          <div className="text-[12px] font-medium mt-0.5">
             {isFailed ? (
               <span className="text-red-500">Failed to process</span>
             ) : docStatus === "ready" ? (
-              <span className="text-green-600">Processing complete</span>
+              <span className="text-green-500">Processing complete</span>
             ) : (
-              <span className="text-accent animate-pulse">Processing...</span>
+              <span className="text-accent flex items-center gap-1.5">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-accent"></span>
+                </span>
+                Processing...
+              </span>
             )}
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      <div className="space-y-3 relative">
-        {/* Subtle vertical line connecting steps */}
-        <div className="absolute left-[11px] top-2 bottom-4 w-[2px] bg-border-2" />
-
-        <AnimatePresence>
-          {steps.map((step, idx) => {
-            // Don't show future steps if failed
-            if (isFailed && idx > activeIndex) return null;
-
+      <motion.div layout className="space-y-0 relative pl-2 mt-2">
+        <AnimatePresence initial={false}>
+          {visibleSteps.map((step, idx) => {
             const isPast = idx < activeIndex || docStatus === "ready";
             const isActive = idx === activeIndex && !isFailed && docStatus !== "ready";
             const isCurrentFail = isFailed && idx === activeIndex;
-
-            // Opacity logic: past steps are dimmed slightly, active is bright
-            const opacityClass = isPast ? "opacity-60" : isActive ? "opacity-100" : "opacity-30";
+            const isLastVisible = idx === visibleSteps.length - 1;
 
             return (
               <motion.div
                 key={step.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: idx * 0.1 }}
-                className={`flex items-start gap-3 relative ${opacityClass}`}
+                layout
+                initial={{ opacity: 0, y: -10, filter: "blur(4px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                transition={{ type: "spring", stiffness: 100, damping: 20 }}
+                className="relative"
               >
-                <div className="relative z-10 bg-surface py-1">
-                  {isCurrentFail ? (
-                    <XCircle className="w-5 h-5 text-red-500 bg-surface rounded-full" />
-                  ) : isPast ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-500 bg-surface rounded-full" />
-                  ) : isActive ? (
-                    <Loader2 className="w-5 h-5 text-accent animate-spin bg-surface rounded-full" />
-                  ) : (
-                    <div className="w-5 h-5 rounded-full border-2 border-border-2 bg-surface" />
-                  )}
-                </div>
-                <div className={`text-[13px] font-medium py-1 ${isActive ? "text-text-1" : "text-text-2"}`}>
-                  {step.label}
+                {!isLastVisible && (
+                  <motion.div 
+                    layout
+                    className="absolute left-[9px] top-6 bottom-[-6px] w-[2px] bg-border-2 opacity-50" 
+                  />
+                )}
+                
+                <div className="flex items-start gap-4 py-1.5 relative z-10">
+                  <div className="relative bg-surface py-0.5">
+                    {isCurrentFail ? (
+                      <XCircle className="w-5 h-5 text-red-500" />
+                    ) : isPast ? (
+                      <CheckCircle2 className="w-5 h-5 text-green-500" />
+                    ) : isActive ? (
+                      <Loader2 className="w-5 h-5 text-accent animate-spin" />
+                    ) : (
+                      <div className="w-5 h-5 rounded-full border-2 border-border-2" />
+                    )}
+                  </div>
+                  <div className={`text-[13px] py-0.5 transition-colors duration-300 ${isActive ? "text-text-1 font-semibold" : "text-text-2 font-medium"}`}>
+                    {step.label}
+                  </div>
                 </div>
               </motion.div>
             );
           })}
         </AnimatePresence>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
