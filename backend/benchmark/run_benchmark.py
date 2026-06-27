@@ -105,18 +105,19 @@ async def run_benchmark(
             top_k=TOP_K,
         )
 
-        # Generate answers using project's configured OSS LLM
         naive_answer = await generate_answer(
             question=question,
             contexts=naive_result.texts,
             llm_client=llm_client,
             chat_model=CHAT_MODEL,
+            is_optimized=False,
         )
         optimized_answer = await generate_answer(
             question=question,
             contexts=optimized_result.texts,
             llm_client=llm_client,
             chat_model=CHAT_MODEL,
+            is_optimized=True,
         )
 
         naive_records.append(BenchmarkRecord(
