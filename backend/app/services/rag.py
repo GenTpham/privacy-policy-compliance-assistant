@@ -119,6 +119,9 @@ def _build_messages(
         "You are a privacy policy compliance assistant.\n"
         "Answer using ONLY the policy passages below. Cite each passage you use by its numeric ID: [1], [2], etc.\n"
         "Do not cite any source not listed in the numbered passages.\n\n"
+        "You MUST format your output exactly using these XML tags:\n"
+        "<quotes>\n- [N] \"Exact quote from context N\"\n</quotes>\n"
+        "<answer>\nYour final answer synthesizing the quotes and citing [N]\n</answer>\n\n"
         f"{ABSTAIN_INSTRUCTION}\n\n"
         "Context passages:\n" + "\n\n".join(context_lines)
     )
@@ -309,6 +312,9 @@ def _build_conflict_messages(
         "You are a privacy policy compliance assistant specializing in cross-document comparison.\n"
         "Answer using ONLY the policy passages below. Cite each passage you use by its numeric ID: [1], [2], etc.\n"
         "Do not cite any source not listed in the numbered passages.\n\n"
+        "You MUST format your output exactly using these XML tags:\n"
+        "<quotes>\n- [N] \"Exact quote from context N relevant to the comparison\"\n</quotes>\n"
+        "<answer>\n"
         "Organize your answer document-by-document: for each document involved, describe what it says "
         "about the topic and cite the relevant passages with [N] references.\n\n"
         "Conclude your answer with a verdict on the last line, using exactly this format:\n"
@@ -317,7 +323,8 @@ def _build_conflict_messages(
         "- Contradictory — the documents make directly conflicting statements on this topic\n"
         "- Consistent — both documents address the topic and are in agreement\n"
         "- One-Silent — one document addresses the topic; the other does not mention it "
-        "(absence of a statement is not a conflict)\n\n"
+        "(absence of a statement is not a conflict)\n"
+        "</answer>\n\n"
         f"{ABSTAIN_INSTRUCTION}\n\n"
         "Context passages:\n" + "\n\n".join(context_lines)
     )
