@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from backend.benchmark.generator import generate_answer
+from backend.benchmark.generator import generate_answer, _extract_answer_tag
 
 
 @pytest.fixture
@@ -52,3 +52,18 @@ class TestGenerateAnswer:
             chat_model="test-model",
         )
         assert isinstance(result, str)
+
+
+class TestGenerateAnswerParser:
+    def test_extract_answer_tag_success(self):
+        content = "<quotes>\n- [1] foo\n</quotes>\n<answer>\nThis is the answer.\n</answer>"
+        assert _extract_answer_tag(content) == "This is the answer."
+
+    def test_extract_answer_tag_missing(self):
+        content = "This is just a raw answer without tags."
+        assert _extract_answer_tag(content) == content
+        
+    def test_extract_answer_tag_multiline_and_whitespace(self):
+        content = "<quotes>\n[1] quote\n</quotes>\n\n<answer>\nLine 1\nLine 2\n</answer>  "
+        assert _extract_answer_tag(content) == "Line 1\nLine 2"
+

@@ -2,8 +2,15 @@
 Generate answers using the project's configured OSS LLM.
 Non-streaming version for batch benchmark evaluation.
 """
+import re
 from openai import AsyncOpenAI
 
+def _extract_answer_tag(content: str) -> str:
+    """Extracts content inside <answer>...</answer> tags. Returns original if not found."""
+    match = re.search(r"<answer>(.*?)</answer>", content, flags=re.DOTALL | re.IGNORECASE)
+    if match:
+        return match.group(1).strip()
+    return content.strip()
 
 def _build_benchmark_prompt(question: str, contexts: list[str]) -> list[dict]:
     """
@@ -17,6 +24,9 @@ def _build_benchmark_prompt(question: str, contexts: list[str]) -> list[dict]:
         "You are a helpful assistant. "
         "Answer the question using ONLY the provided context passages below. "
         "If the passages do not contain the answer, say 'I cannot answer based on the provided context.'\n\n"
+        "You MUST format your output exactly like this:\n"
+        "<quotes>\n- [N] \"Exact quote from context N\"\n</quotes>\n"
+        "<answer>\nYour final answer citing [N]\n</answer>\n\n"
         "Context passages:\n" + "\n\n".join(context_lines)
     )
     return [
@@ -31,7 +41,7 @@ async def generate_answer(
     llm_client: AsyncOpenAI,
     chat_model: str,
     temperature: float = 0.0,
-    max_tokens: int = 512,
+    max_tokens: int = 1024,
 ) -> str:
     """
     Generate an answer using the LLM given a question and retrieved contexts.
@@ -57,4 +67,5 @@ async def generate_answer(
         stream=False,
     )
 
-    return response.choices[0].message.content.strip()
+    raw_content = response.choices[0].message.content.strip()
+    return _extract_answer_tag(raw_content)
