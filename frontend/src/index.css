@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap");
 @import "tailwindcss";
 
 @custom-variant dark (&:where(.dark, .dark *));
@@ -40,7 +40,7 @@
   html, body, #root {
     height: 100%;
     overflow: hidden;
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Plus Jakarta Sans', sans-serif;
   }
 
   body {
@@ -52,22 +52,22 @@
   ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
 
   :root {
-    --bg: #F9FAFB;
+    --bg: #F8FAFC;
     --surface: #FFFFFF;
-    --surface2: #F3F4F6;
-    --border: #E5E7EB;
-    --border2: #D1D5DB;
-    --text: #030712;
-    --text2: #374151;
-    --text3: #6B7280;
-    --muted: #9CA3AF;
-    --faint: #D1D5DB;
-    --faintest: #E5E7EB;
-    --userBubble: #030712;
-    --userBubbleText: #F9FAFB;
-    --accent: #2563EB;
-    --radius: 0.5rem;
-    --shadow-diffusion: 0 20px 40px -15px rgba(0, 0, 0, 0.05);
+    --surface2: #F1F5F9;
+    --border: #E2E8F0;
+    --border2: #CBD5E1;
+    --text: #0F172A;
+    --text2: #334155;
+    --text3: #475569;
+    --muted: #475569;
+    --faint: #64748B;
+    --faintest: #94A3B8;
+    --userBubble: #F8FAFC;
+    --userBubbleText: #0F172A;
+    --accent: #4F46E5;
+    --radius: 0.75rem;
+    --shadow-diffusion: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
   }
 
   .dark {
@@ -76,14 +76,14 @@
     --surface2: #1F2937;
     --border: #374151;
     --border2: #4B5563;
-    --text: #F9FAFB;
-    --text2: #D1D5DB;
-    --text3: #9CA3AF;
-    --muted: #6B7280;
-    --faint: #4B5563;
-    --faintest: #374151;
+    --text: #F8FAFC;
+    --text2: #E2E8F0;
+    --text3: #CBD5E1;
+    --muted: #CBD5E1;
+    --faint: #9CA3AF;
+    --faintest: #6B7280;
     --userBubble: #1F2937;
-    --userBubbleText: #F9FAFB;
+    --userBubbleText: #F8FAFC;
     --accent: #3B82F6;
     --shadow-diffusion: 0 20px 40px -15px rgba(0, 0, 0, 0.4);
   }
